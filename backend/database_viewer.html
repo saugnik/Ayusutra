@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AyurSutra Database Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #2d3748;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            font-size: 1.1em;
+            margin-bottom: 40px;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #2ba461 0%, #1e854c 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .stat-card h3 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .stat-card p {
+            opacity: 0.95;
+            font-size: 1.1em;
+        }
+        .table-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+        .table-card {
+            border: 2px solid #e2e8f0;
+            border-radius: 15px;
+            padding: 25px;
+            background: #f7fafc;
+            transition: all 0.3s;
+        }
+        .table-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+            border-color: #2ba461;
+        }
+        .table-card h3 {
+            color: #2d3748;
+            font-size: 1.4em;
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 3px solid #2ba461;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .table-icon {
+            font-size: 1.2em;
+        }
+        .table-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .info-item {
+            text-align: center;
+        }
+        .info-label {
+            color: #718096;
+            font-size: 0.85em;
+            margin-bottom: 5px;
+        }
+        .info-value {
+            color: #2d3748;
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        .status-empty {
+            background: #fed7d7;
+            color: #c53030;
+        }
+        .status-data {
+            background: #c6f6d5;
+            color: #2f855a;
+        }
+        .columns-list {
+            max-height: 250px;
+            overflow-y: auto;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 0.9em;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .column-item {
+            padding: 8px;
+            border-bottom: 1px solid #e2e8f0;
+            color: #4a5568;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .column-item:last-child {
+            border-bottom: none;
+        }
+        .column-bullet {
+            color: #2ba461;
+            font-weight: bold;
+        }
+        .section-title {
+            margin: 40px 0 20px 0;
+            color: #2d3748;
+            font-size: 1.8em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .refresh-btn {
+            background: linear-gradient(135deg, #2ba461 0%, #1e854c 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1em;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+            margin: 20px auto;
+            display: block;
+        }
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #718096;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗄️ AyurSutra Database</h1>
+        <p class="subtitle">SQLite Database Structure - ayursutra.db</p>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <h3>11</h3>
+                <p>Total Tables</p>
+            </div>
+            <div class="stat-card">
+                <h3>0</h3>
+                <p>Total Rows</p>
+            </div>
+            <div class="stat-card">
+                <h3>128 KB</h3>
+                <p>Database Size</p>
+            </div>
+            <div class="stat-card">
+                <h3>✅</h3>
+                <p>Ready</p>
+            </div>
+        </div>
+
+        <h2 class="section-title">📋 Database Tables</h2>
+        
+        <div class="table-grid">
+            <!-- Users Table -->
+            <div class="table-card">
+                <h3><span class="table-icon">👤</span> users</h3>
+                <div class="table-info">
+                    <div class="info-item">
+                        <div class="info-label">Columns</div>
+                        <div class="info-value">11</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Rows</div>
+                        <div class="info-value">0</div>
+                    </div>
+                </div>
+                <span class="status-badge status-empty">EMPTY</span>
+                <div class="columns-list">
+                    <div class="column-item"><span class="column-bullet">•</span> id (INTEGER) - PRIMARY KEY</div>
+                    <div class="column-item"><span class="column-bullet">•</span> email (VARCHAR) - UNIQUE</div>
+                    <div class="column-item"><span class="column-bullet">•</span> full_name (VARCHAR)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> hashed_password (VARCHAR)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> role (ENUM)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> phone (VARCHAR)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> profile_picture (VARCHAR)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> is_active (BOOLEAN)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> is_verified (BOOLEAN)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> created_at (DATETIME)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> last_login (DATETIME)</div>
+                </div>
+            </div>
+
+            <!-- Patients Table -->
+            <div class="table-card">
+                <h3><span class="table-icon">🏥</span> patients</h3>
+                <div class="table-info">
+                    <div class="info-item">
+                        <div class="info-label">Columns</div>
+                        <div class="info-value">12</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Rows</div>
+                        <div class="info-value">0</div>
+                    </div>
+                </div>
+                <span class="status-badge status-empty">EMPTY</span>
+                <div class="columns-list">
+                    <div class="column-item"><span class="column-bullet">•</span> id (INTEGER) - PRIMARY KEY</div>
+                    <div class="column-item"><span class="column-bullet">•</span> user_id (INTEGER) - FK</div>
+                    <div class="column-item"><span class="column-bullet">•</span> date_of_birth (DATETIME)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> gender (VARCHAR)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> address (TEXT)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> emergency_contact (VARCHAR)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> medical_history (JSON)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> current_medications (JSON)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> allergies (JSON)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> prakriti_type (VARCHAR)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> lifestyle_preferences (JSON)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> created_at (DATETIME)</div>
+                </div>
+            </div>
+
+            <!-- Practitioners Table -->
+            <div class="table-card">
+                <h3><span class="table-icon">👨‍⚕️</span> practitioners</h3>
+                <div class="table-info">
+                    <div class="info-item">
+                        <div class="info-label">Columns</div>
+                        <div class="info-value">14</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Rows</div>
+                        <div class="info-value">0</div>
+                    </div>
+                </div>
+                <span class="status-badge status-empty">EMPTY</span>
+                <div class="columns-list">
+                    <div class="column-item"><span class="column-bullet">•</span> id (INTEGER) - PRIMARY KEY</div>
+                    <div class="column-item"><span class="column-bullet">•</span> user_id (INTEGER) - FK</div>
+                    <div class="column-item"><span class="column-bullet">•</span> license_number (VARCHAR)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> specializations (JSON)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> experience_years (INTEGER)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> qualification (VARCHAR)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> clinic_name (VARCHAR)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> clinic_address (TEXT)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> consultation_fee (FLOAT)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> availability_schedule (JSON)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> bio (TEXT)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> rating (FLOAT)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> total_reviews (INTEGER)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> is_verified (BOOLEAN)</div>
+                </div>
+            </div>
+
+            <!-- Appointments Table -->
+            <div class="table-card">
+                <h3><span class="table-icon">📅</span> appointments</h3>
+                <div class="table-info">
+                    <div class="info-item">
+                        <div class="info-label">Columns</div>
+                        <div class="info-value">16</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Rows</div>
+                        <div class="info-value">0</div>
+                    </div>
+                </div>
+                <span class="status-badge status-empty">EMPTY</span>
+                <div class="columns-list">
+                    <div class="column-item"><span class="column-bullet">•</span> id (INTEGER) - PRIMARY KEY</div>
+                    <div class="column-item"><span class="column-bullet">•</span> patient_id (INTEGER) - FK</div>
+                    <div class="column-item"><span class="column-bullet">•</span> practitioner_id (INTEGER) - FK</div>
+                    <div class="column-item"><span class="column-bullet">•</span> therapy_type (VARCHAR)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> scheduled_datetime (DATETIME)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> duration_minutes (INTEGER)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> status (ENUM)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> notes (TEXT)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> fee (FLOAT)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> payment_status (VARCHAR)</div>
+                </div>
+            </div>
+
+            <!-- Therapy Sessions Table -->
+            <div class="table-card">
+                <h3><span class="table-icon">🧘</span> therapy_sessions</h3>
+                <div class="table-info">
+                    <div class="info-item">
+                        <div class="info-label">Columns</div>
+                        <div class="info-value">17</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Rows</div>
+                        <div class="info-value">0</div>
+                    </div>
+                </div>
+                <span class="status-badge status-empty">EMPTY</span>
+                <div class="columns-list">
+                    <div class="column-item"><span class="column-bullet">•</span> id (INTEGER) - PRIMARY KEY</div>
+                    <div class="column-item"><span class="column-bullet">•</span> appointment_id (INTEGER) - FK</div>
+                    <div class="column-item"><span class="column-bullet">•</span> therapy_type (VARCHAR)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> start_time (DATETIME)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> end_time (DATETIME)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> status (VARCHAR)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> vitals_before (JSON)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> vitals_after (JSON)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> therapy_parameters (JSON)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> recommendations (TEXT)</div>
+                </div>
+            </div>
+
+            <!-- Feedback Table -->
+            <div class="table-card">
+                <h3><span class="table-icon">⭐</span> feedback</h3>
+                <div class="table-info">
+                    <div class="info-item">
+                        <div class="info-label">Columns</div>
+                        <div class="info-value">13</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Rows</div>
+                        <div class="info-value">0</div>
+                    </div>
+                </div>
+                <span class="status-badge status-empty">EMPTY</span>
+                <div class="columns-list">
+                    <div class="column-item"><span class="column-bullet">•</span> id (INTEGER) - PRIMARY KEY</div>
+                    <div class="column-item"><span class="column-bullet">•</span> patient_id (INTEGER) - FK</div>
+                    <div class="column-item"><span class="column-bullet">•</span> practitioner_id (INTEGER) - FK</div>
+                    <div class="column-item"><span class="column-bullet">•</span> rating (INTEGER) 1-5</div>
+                    <div class="column-item"><span class="column-bullet">•</span> satisfaction_level (VARCHAR)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> comments (TEXT)</div>
+                </div>
+            </div>
+
+            <!-- Admins Table -->
+            <div class="table-card">
+                <h3><span class="table-icon">🛡️</span> admins</h3>
+                <div class="table-info">
+                    <div class="info-item">
+                        <div class="info-label">Columns</div>
+                        <div class="info-value">7</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Rows</div>
+                        <div class="info-value">0</div>
+                    </div>
+                </div>
+                <span class="status-badge status-empty">EMPTY</span>
+                <div class="columns-list">
+                    <div class="column-item"><span class="column-bullet">•</span> id (INTEGER) - PRIMARY KEY</div>
+                    <div class="column-item"><span class="column-bullet">•</span> user_id (INTEGER) - FK</div>
+                    <div class="column-item"><span class="column-bullet">•</span> admin_level (VARCHAR)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> permissions (JSON)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> department (VARCHAR)</div>
+                </div>
+            </div>
+
+            <!-- Therapy Templates Table -->
+            <div class="table-card">
+                <h3><span class="table-icon">📋</span> therapy_templates</h3>
+                <div class="table-info">
+                    <div class="info-item">
+                        <div class="info-label">Columns</div>
+                        <div class="info-value">14</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Rows</div>
+                        <div class="info-value">0</div>
+                    </div>
+                </div>
+                <span class="status-badge status-empty">EMPTY</span>
+                <div class="columns-list">
+                    <div class="column-item"><span class="column-bullet">•</span> id (INTEGER) - PRIMARY KEY</div>
+                    <div class="column-item"><span class="column-bullet">•</span> name (VARCHAR)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> category (VARCHAR)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> preparation_steps (JSON)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> procedure_steps (JSON)</div>
+                </div>
+            </div>
+
+            <!-- Notifications Table -->
+            <div class="table-card">
+                <h3><span class="table-icon">🔔</span> notifications</h3>
+                <div class="table-info">
+                    <div class="info-item">
+                        <div class="info-label">Columns</div>
+                        <div class="info-value">9</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Rows</div>
+                        <div class="info-value">0</div>
+                    </div>
+                </div>
+                <span class="status-badge status-empty">EMPTY</span>
+                <div class="columns-list">
+                    <div class="column-item"><span class="column-bullet">•</span> id (INTEGER) - PRIMARY KEY</div>
+                    <div class="column-item"><span class="column-bullet">•</span> user_id (INTEGER) - FK</div>
+                    <div class="column-item"><span class="column-bullet">•</span> title (VARCHAR)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> message (TEXT)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> type (VARCHAR)</div>
+                </div>
+            </div>
+
+            <!-- System Settings Table -->
+            <div class="table-card">
+                <h3><span class="table-icon">⚙️</span> system_settings</h3>
+                <div class="table-info">
+                    <div class="info-item">
+                        <div class="info-label">Columns</div>
+                        <div class="info-value">7</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Rows</div>
+                        <div class="info-value">0</div>
+                    </div>
+                </div>
+                <span class="status-badge status-empty">EMPTY</span>
+                <div class="columns-list">
+                    <div class="column-item"><span class="column-bullet">•</span> id (INTEGER) - PRIMARY KEY</div>
+                    <div class="column-item"><span class="column-bullet">•</span> key (VARCHAR) - UNIQUE</div>
+                    <div class="column-item"><span class="column-bullet">•</span> value (JSON)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> is_public (BOOLEAN)</div>
+                </div>
+            </div>
+
+            <!-- Audit Logs Table -->
+            <div class="table-card">
+                <h3><span class="table-icon">📝</span> audit_logs</h3>
+                <div class="table-info">
+                    <div class="info-item">
+                        <div class="info-label">Columns</div>
+                        <div class="info-value">8</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Rows</div>
+                        <div class="info-value">0</div>
+                    </div>
+                </div>
+                <span class="status-badge status-empty">EMPTY</span>
+                <div class="columns-list">
+                    <div class="column-item"><span class="column-bullet">•</span> id (INTEGER) - PRIMARY KEY</div>
+                    <div class="column-item"><span class="column-bullet">•</span> user_id (INTEGER) - FK</div>
+                    <div class="column-item"><span class="column-bullet">•</span> action (VARCHAR)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> resource_type (VARCHAR)</div>
+                    <div class="column-item"><span class="column-bullet">•</span> ip_address (VARCHAR)</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="empty-state">
+            <p>💡 Database is empty and ready for data. Once you connect the frontend and register users, data will appear here!</p>
+        </div>
+    </div>
+</body>
+</html>

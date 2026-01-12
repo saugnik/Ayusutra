@@ -1,8 +1,4 @@
-"""
-AyurSutra Backend API
-Comprehensive backend service for the Panchakarma management platform.
-Integrates with existing RAG service for AI functionality.
-"""
+
 
 import os
 from datetime import datetime, timedelta
@@ -18,8 +14,8 @@ import uvicorn
 from sqlalchemy.orm import Session
 import requests
 
-from database import engine, SessionLocal, Base
-from models import User, Patient, Practitioner, Admin, Appointment, TherapySession, Feedback
+from database import engine, SessionLocal
+from models import User, Patient, Practitioner, Admin, Appointment, TherapySession, Feedback, UserRole, Base
 from schemas import (
     UserCreate, UserResponse, UserLogin, TokenResponse,
     PatientCreate, PatientResponse, PatientUpdate,
@@ -50,13 +46,28 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Configure CORS
+# Custom CORS middleware - Add headers to ALL responses
+@app.middleware("http")
+async def add_cors_headers(request, call_next):
+    response = await call_next(request)
+    response.headers["Access-Control-Allow-Origin"] = "http://localhost:3000"
+    response.headers["Access-Control-Allow-Credentials"] = "true"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
+    response.headers["Access-Control-Allow-Headers"] = "*"
+    return response
+
+# Configure CORS - Specific origins required when using credentials
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
-    allow_credentials=True,
-    allow_methods=["*"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://10.233.32.74:3000"  # Network address
+    ],
+    allow_credentials=False,  # Disable credentials to allow broader access
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["*"],
+    expose_headers=["*"]
 )
 
 # Security
@@ -101,68 +112,96 @@ async def health_check():
 @app.post("/auth/register", response_model=UserResponse)
 async def register(user_data: UserCreate, db: Session = Depends(get_db)):
     """Register a new user"""
-    # Check if user already exists
-    existing_user = db.query(User).filter(User.email == user_data.email).first()
-    if existing_user:
+    try:
+        # Check if user already exists
+        existing_user = db.query(User).filter(User.email == user_data.email).first()
+        if existing_user:
+            raise HTTPException(
+                status_code=400,
+                detail="Email already registered"
+            )
+        
+        # Create new user
+        hashed_password = get_password_hash(user_data.password)
+        
+        # Convert role string to enum
+        role_map = {
+            "patient": UserRole.PATIENT,
+            "practitioner": UserRole.PRACTITIONER,
+            "admin": UserRole.ADMIN
+        }
+        user_role = role_map.get(user_data.role.lower(), UserRole.PATIENT)
+        
+        db_user = User(
+            email=user_data.email,
+            full_name=user_data.full_name,
+            hashed_password=hashed_password,
+            role=user_role,
+            phone=user_data.phone,
+            is_active=True,
+            created_at=datetime.utcnow()
+        )
+        
+        db.add(db_user)
+        db.commit()
+        db.refresh(db_user)
+        
+        # Create role-specific profile
+        if user_data.role == "patient":
+            patient_profile = Patient(
+                user_id=db_user.id,
+                date_of_birth=user_data.date_of_birth,
+                gender=user_data.gender,
+                address=user_data.address,
+                emergency_contact=user_data.emergency_contact,
+                medical_history=[],
+                current_medications=[],
+                allergies=[],
+                prakriti_type="Unknown",
+                lifestyle_preferences={}
+            )
+            db.add(patient_profile)
+        
+        elif user_data.role == "practitioner":
+            practitioner_profile = Practitioner(
+                user_id=db_user.id,
+                license_number=user_data.license_number,
+                specializations=user_data.specializations or [],
+                experience_years=user_data.experience_years or 0,
+                clinic_name=user_data.clinic_name,
+                clinic_address=user_data.clinic_address,
+                availability_schedule={},
+                consultation_fee=user_data.consultation_fee or 0
+            )
+            db.add(practitioner_profile)
+        
+        elif user_data.role == "admin":
+            admin_profile = Admin(
+                user_id=db_user.id,
+                admin_level="standard",
+                permissions=["user_management", "system_monitoring"]
+            )
+            db.add(admin_profile)
+        
+        db.commit()
+        
+        return UserResponse.from_orm(db_user)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        print(f"\n{'='*60}")
+        print(f"REGISTRATION ERROR:")
+        print(f"Error Type: {type(e).__name__}")
+        print(f"Error Message: {str(e)}")
+        print(f"{'='*60}\n")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(
-            status_code=400,
-            detail="Email already registered"
+            status_code=500,
+            detail=f"Registration failed: {str(e)}"
         )
-    
-    # Create new user
-    hashed_password = get_password_hash(user_data.password)
-    db_user = User(
-        email=user_data.email,
-        full_name=user_data.full_name,
-        hashed_password=hashed_password,
-        role=user_data.role,
-        phone=user_data.phone,
-        is_active=True,
-        created_at=datetime.utcnow()
-    )
-    
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
-    
-    # Create role-specific profile
-    if user_data.role == "patient":
-        patient_profile = Patient(
-            user_id=db_user.id,
-            date_of_birth=user_data.date_of_birth,
-            gender=user_data.gender,
-            address=user_data.address,
-            emergency_contact=user_data.emergency_contact,
-            medical_history=[],
-            current_medications=[],
-            prakriti_type="Unknown"
-        )
-        db.add(patient_profile)
-    
-    elif user_data.role == "practitioner":
-        practitioner_profile = Practitioner(
-            user_id=db_user.id,
-            license_number=user_data.license_number,
-            specializations=user_data.specializations or [],
-            experience_years=user_data.experience_years or 0,
-            clinic_name=user_data.clinic_name,
-            clinic_address=user_data.clinic_address,
-            availability_schedule={},
-            consultation_fee=user_data.consultation_fee or 0
-        )
-        db.add(practitioner_profile)
-    
-    elif user_data.role == "admin":
-        admin_profile = Admin(
-            user_id=db_user.id,
-            admin_level="standard",
-            permissions=["user_management", "system_monitoring"]
-        )
-        db.add(admin_profile)
-    
-    db.commit()
-    
-    return UserResponse.from_orm(db_user)
 
 
 @app.post("/auth/login", response_model=TokenResponse)
@@ -186,14 +225,14 @@ async def login(user_credentials: UserLogin, db: Session = Depends(get_db)):
     user.last_login = datetime.utcnow()
     db.commit()
     
-    # Create access token
-    access_token = create_access_token(data={"sub": user.email, "role": user.role})
+    # Create access token (convert enum to string for serialization)
+    access_token = create_access_token(data={"sub": user.email, "role": user.role.value})
     
     return TokenResponse(
         access_token=access_token,
         token_type="bearer",
         user_id=user.id,
-        role=user.role,
+        role=user.role.value,  # Convert enum to string
         full_name=user.full_name
     )
 
