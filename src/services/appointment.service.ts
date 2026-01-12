@@ -1,45 +1,25 @@
-/**
- * Appointment Service
- * API calls for appointment management
- */
 
 import apiClient from './api';
-import { Appointment, AppointmentCreate } from '../types/api.types';
+import { AppointmentCreate, AppointmentResponse, Practitioner } from '../types/api.types';
 
-class AppointmentService {
-    /**
-     * Create a new appointment
-     */
-    async createAppointment(appointmentData: AppointmentCreate): Promise<Appointment> {
-        const response = await apiClient.post<Appointment>('/appointments', appointmentData);
+export type { Practitioner };
+
+const appointmentService = {
+    getAllPractitioners: async (): Promise<Practitioner[]> => {
+        const response = await apiClient.get<Practitioner[]>('/practitioners');
+        return response.data;
+    },
+
+    createAppointment: async (data: AppointmentCreate): Promise<AppointmentResponse> => {
+        const response = await apiClient.post<AppointmentResponse>('/appointments', data);
+        return response.data;
+    },
+
+    getMyAppointments: async (status?: string): Promise<AppointmentResponse[]> => {
+        const params = status ? { status } : {};
+        const response = await apiClient.get<AppointmentResponse[]>('/appointments', { params });
         return response.data;
     }
+};
 
-    /**
-     * Get all appointments for current user
-     */
-    async getAppointments(status?: string, limit: number = 50): Promise<Appointment[]> {
-        const params: any = { limit };
-        if (status) params.status = status;
-
-        const response = await apiClient.get<Appointment[]>('/appointments', { params });
-        return response.data;
-    }
-
-    /**
-     * Update appointment
-     */
-    async updateAppointment(id: number, updates: Partial<Appointment>): Promise<Appointment> {
-        const response = await apiClient.put<Appointment>(`/appointments/${id}`, updates);
-        return response.data;
-    }
-
-    /**
-     * Cancel appointment
-     */
-    async cancelAppointment(id: number): Promise<Appointment> {
-        return this.updateAppointment(id, { status: 'cancelled' });
-    }
-}
-
-export default new AppointmentService();
+export default appointmentService;

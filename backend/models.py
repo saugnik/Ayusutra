@@ -42,9 +42,9 @@ class User(Base):
     last_login = Column(DateTime(timezone=True), nullable=True)
     
     # Relationships
-    patient_profile = relationship("Patient", back_populates="user", uselist=False)
-    practitioner_profile = relationship("Practitioner", back_populates="user", uselist=False)
-    admin_profile = relationship("Admin", back_populates="user", uselist=False)
+    patient_profile = relationship("Patient", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    practitioner_profile = relationship("Practitioner", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    admin_profile = relationship("Admin", back_populates="user", uselist=False, cascade="all, delete-orphan")
 
 class Patient(Base):
     __tablename__ = "patients"

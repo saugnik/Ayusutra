@@ -82,10 +82,15 @@ export interface Practitioner {
     total_reviews: number;
     is_verified: boolean;
     created_at: string;
+    user?: {
+        full_name: string;
+        email: string;
+        profile_picture?: string;
+    };
 }
 
 // ==================== APPOINTMENT TYPES ====================
-export interface Appointment {
+export interface AppointmentResponse {
     id: number;
     patient_id: number;
     practitioner_id: number;
@@ -101,6 +106,8 @@ export interface Appointment {
     created_at: string;
     updated_at?: string;
 }
+
+export type Appointment = AppointmentResponse;
 
 export interface AppointmentCreate {
     patient_id: number;

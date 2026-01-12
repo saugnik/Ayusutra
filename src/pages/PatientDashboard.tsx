@@ -1,44 +1,58 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { 
-  Calendar, 
-  Clock, 
-  Bell, 
-  Activity, 
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import {
+  Calendar,
+  Clock,
+  Bell,
+  Activity,
   TrendingUp,
   CheckCircle,
-  AlertTriangle,
-  User,
+  User as UserIcon,
   Settings,
   LogOut,
   MessageCircle,
   Video,
   FileText,
-  Phone,
   Menu,
   X
 } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
+import appointmentService from '../services/appointment.service';
+import { AppointmentResponse } from '../types/api.types';
+import BookAppointmentModal from '../components/BookAppointmentModal';
+import toast from 'react-hot-toast';
 
 const PatientDashboard = () => {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [checkedItems, setCheckedItems] = useState<{ [key: string]: boolean }>({});
+  const [appointments, setAppointments] = useState<AppointmentResponse[]>([]);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
 
-  // Mock data - in real app this would come from API
-  const patient = {
-    name: 'Rajesh Kumar',
-    id: 'P001',
-    avatar: '/api/placeholder/40/40',
-    nextSession: {
-      id: 'S001',
-      therapy: 'Virechana Therapy',
-      practitioner: 'Dr. Priya Sharma',
-      date: '2024-03-15',
-      time: '14:00',
-      room: 'Room 3',
-      status: 'confirmed'
+  useEffect(() => {
+    if (user) {
+      loadAppointments();
+    }
+  }, [user]);
+
+  const loadAppointments = async () => {
+    try {
+      const data = await appointmentService.getMyAppointments('scheduled');
+      setAppointments(data);
+    } catch (error) {
+      console.error("Failed to load appointments", error);
     }
   };
 
+  const handleLogout = () => {
+    logout();
+    navigate('/auth');
+  };
+
+  const nextSession = appointments.length > 0 ? appointments[0] : null;
+
+  // Mock data for other sections
   const preCheckItems = [
     { id: 'pc1', text: 'Complete 12-hour fasting', completed: true, required: true },
     { id: 'pc2', text: 'Avoid oil consumption for 24 hours', completed: true, required: true },
@@ -47,21 +61,8 @@ const PatientDashboard = () => {
     { id: 'pc5', text: 'Arrive 30 minutes before session', completed: false, required: true }
   ];
 
-  const upcomingSessions = [
-    { id: 'S002', therapy: 'Abhyanga', date: '2024-03-18', time: '10:00', practitioner: 'Dr. Ananya Reddy' },
-    { id: 'S003', therapy: 'Shirodhara', date: '2024-03-20', time: '15:00', practitioner: 'Dr. Priya Sharma' },
-    { id: 'S004', therapy: 'Basti', date: '2024-03-22', time: '11:00', practitioner: 'Dr. Raj Patel' }
-  ];
-
-  const recentFeedback = [
-    { id: 'F001', session: 'Panchakarma Prep', date: '2024-03-10', rating: 5, note: 'Excellent preparation guidance' },
-    { id: 'F002', session: 'Abhyanga', date: '2024-03-08', rating: 4, note: 'Very relaxing, minor room temperature issue' }
-  ];
-
   const notifications = [
-    { id: 'N001', type: 'reminder', title: 'Upcoming Session Tomorrow', message: 'Virechana therapy at 2:00 PM with Dr. Priya Sharma', time: '2 hours ago', read: false },
-    { id: 'N002', type: 'info', title: 'Pre-procedure Checklist Updated', message: 'New items added to your checklist for tomorrow\'s session', time: '5 hours ago', read: false },
-    { id: 'N003', type: 'success', title: 'Session Completed', message: 'Abhyanga therapy completed successfully', time: '2 days ago', read: true }
+    { id: 'N001', type: 'reminder', title: 'Welcome to AyurSutra', message: 'We are glad to have you on your wellness journey.', time: '1 hour ago', read: false },
   ];
 
   const handleCheckItem = (itemId: string) => {
@@ -72,10 +73,10 @@ const PatientDashboard = () => {
   };
 
   const progressData = {
-    sessionsCompleted: 8,
-    totalSessions: 15,
-    improvementScore: 78,
-    adherenceRate: 92
+    sessionsCompleted: 0,
+    totalSessions: 10,
+    improvementScore: 0,
+    adherenceRate: 100
   };
 
   const sidebarItems = [
@@ -89,6 +90,12 @@ const PatientDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <BookAppointmentModal
+        isOpen={isBookingModalOpen}
+        onClose={() => setIsBookingModalOpen(false)}
+        onSuccess={loadAppointments}
+      />
+
       {/* Mobile sidebar overlay */}
       {isSidebarOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
@@ -103,7 +110,7 @@ const PatientDashboard = () => {
               </button>
             </div>
             {/* Mobile sidebar content */}
-            <SidebarContent items={sidebarItems} patient={patient} />
+            <SidebarContent items={sidebarItems} user={user} onLogout={handleLogout} />
           </div>
         </div>
       )}
@@ -111,7 +118,7 @@ const PatientDashboard = () => {
       {/* Desktop sidebar */}
       <div className="hidden lg:flex lg:flex-shrink-0">
         <div className="flex flex-col w-64 bg-white border-r border-gray-200">
-          <SidebarContent items={sidebarItems} patient={patient} />
+          <SidebarContent items={sidebarItems} user={user} onLogout={handleLogout} />
         </div>
       </div>
 
@@ -127,7 +134,7 @@ const PatientDashboard = () => {
           </button>
           <div className="flex-1 px-4 flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-semibold text-gray-900">Good afternoon, {patient.name}!</h1>
+              <h1 className="text-2xl font-semibold text-gray-900">Namaste, {user?.full_name}!</h1>
               <p className="text-sm text-gray-600">Your wellness journey continues</p>
             </div>
             <div className="flex items-center space-x-4">
@@ -153,31 +160,45 @@ const PatientDashboard = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <h2 className="text-2xl font-bold mb-2">Next Session</h2>
-                    <div className="space-y-2">
-                      <p className="text-xl font-medium">{patient.nextSession.therapy}</p>
-                      <p className="text-primary-100">
-                        with {patient.nextSession.practitioner} • {patient.nextSession.room}
-                      </p>
-                      <div className="flex items-center space-x-4 text-primary-100">
-                        <div className="flex items-center">
-                          <Calendar className="h-4 w-4 mr-1" />
-                          <span>March 15, 2024</span>
-                        </div>
-                        <div className="flex items-center">
-                          <Clock className="h-4 w-4 mr-1" />
-                          <span>2:00 PM</span>
+                    {nextSession ? (
+                      <div className="space-y-2">
+                        <p className="text-xl font-medium">{nextSession.therapy_type}</p>
+                        <p className="text-primary-100">
+                          Doctor ID: {nextSession.practitioner_id} • 60 mins
+                        </p>
+                        <div className="flex items-center space-x-4 text-primary-100">
+                          <div className="flex items-center">
+                            <Calendar className="h-4 w-4 mr-1" />
+                            <span>{new Date(nextSession.scheduled_datetime).toLocaleDateString()}</span>
+                          </div>
+                          <div className="flex items-center">
+                            <Clock className="h-4 w-4 mr-1" />
+                            <span>{new Date(nextSession.scheduled_datetime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <p className="text-xl font-medium">No upcoming sessions</p>
+                        <p className="text-primary-100">Book your first consultation to get started.</p>
+                      </div>
+                    )}
                   </div>
                   <div className="flex flex-col space-y-2">
-                    <button className="bg-white text-primary-600 px-6 py-2 rounded-lg font-medium hover:bg-primary-50">
-                      <Video className="h-4 w-4 inline mr-2" />
-                      Join Session
-                    </button>
-                    <button className="bg-primary-400 text-white px-6 py-2 rounded-lg font-medium hover:bg-primary-300">
-                      Reschedule
-                    </button>
+                    {!nextSession && (
+                      <button
+                        onClick={() => setIsBookingModalOpen(true)}
+                        className="bg-white text-primary-600 px-6 py-2 rounded-lg font-medium hover:bg-primary-50"
+                      >
+                        Book Now
+                      </button>
+                    )}
+                    {nextSession && (
+                      <button className="bg-white text-primary-600 px-6 py-2 rounded-lg font-medium hover:bg-primary-50">
+                        <Video className="h-4 w-4 inline mr-2" />
+                        Join Session
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -189,29 +210,27 @@ const PatientDashboard = () => {
                 <div className="card">
                   <div className="flex items-center justify-between mb-6">
                     <h3 className="text-lg font-semibold text-gray-900">Pre-procedure Checklist</h3>
-                    <span className="text-sm text-gray-500">For tomorrow's session</span>
+                    <span className="text-sm text-gray-500">For your wellbeing</span>
                   </div>
                   <div className="space-y-4">
                     {preCheckItems.map((item) => (
                       <div key={item.id} className="flex items-start space-x-3">
                         <button
                           onClick={() => handleCheckItem(item.id)}
-                          className={`flex-shrink-0 mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center ${
-                            item.completed || checkedItems[item.id]
-                              ? 'bg-green-500 border-green-500' 
+                          className={`flex-shrink-0 mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center ${item.completed || checkedItems[item.id]
+                              ? 'bg-green-500 border-green-500'
                               : 'border-gray-300 hover:border-primary-500'
-                          }`}
+                            }`}
                         >
                           {(item.completed || checkedItems[item.id]) && (
                             <CheckCircle className="h-3 w-3 text-white" />
                           )}
                         </button>
                         <div className="flex-1">
-                          <p className={`text-sm ${
-                            item.completed || checkedItems[item.id] 
-                              ? 'text-gray-500 line-through' 
+                          <p className={`text-sm ${item.completed || checkedItems[item.id]
+                              ? 'text-gray-500 line-through'
                               : 'text-gray-900'
-                          }`}>
+                            }`}>
                             {item.text}
                             {item.required && (
                               <span className="text-red-500 ml-1">*</span>
@@ -224,72 +243,19 @@ const PatientDashboard = () => {
                       </div>
                     ))}
                   </div>
-                  <div className="mt-6 pt-4 border-t">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600">
-                        {preCheckItems.filter(item => item.completed || checkedItems[item.id]).length} of {preCheckItems.length} completed
-                      </span>
-                      <button className="text-primary-600 hover:text-primary-700 font-medium">
-                        View Details
-                      </button>
-                    </div>
-                  </div>
                 </div>
               </div>
 
-              {/* Progress Overview */}
+              {/* Progress & Actions */}
               <div className="space-y-6">
-                <div className="card">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Progress Overview</h3>
-                  <div className="space-y-4">
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-900">Sessions Completed</span>
-                        <span className="text-sm text-gray-600">{progressData.sessionsCompleted}/{progressData.totalSessions}</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-primary-600 h-2 rounded-full" 
-                          style={{ width: `${(progressData.sessionsCompleted / progressData.totalSessions) * 100}%` }}
-                        ></div>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-900">Improvement Score</span>
-                        <span className="text-sm text-gray-600">{progressData.improvementScore}%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-green-500 h-2 rounded-full" 
-                          style={{ width: `${progressData.improvementScore}%` }}
-                        ></div>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-900">Adherence Rate</span>
-                        <span className="text-sm text-gray-600">{progressData.adherenceRate}%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-secondary-500 h-2 rounded-full" 
-                          style={{ width: `${progressData.adherenceRate}%` }}
-                        ></div>
-                      </div>
-                    </div>
-                  </div>
-                  <Link to="/patient/progress" className="block mt-4 text-center text-primary-600 hover:text-primary-700 font-medium">
-                    View Detailed Progress
-                  </Link>
-                </div>
 
                 <div className="card">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
                   <div className="space-y-3">
-                    <button className="w-full btn-primary text-left flex items-center">
+                    <button
+                      onClick={() => setIsBookingModalOpen(true)}
+                      className="w-full btn-primary text-left flex items-center"
+                    >
                       <Calendar className="h-4 w-4 mr-3" />
                       Book New Session
                     </button>
@@ -297,71 +263,41 @@ const PatientDashboard = () => {
                       <MessageCircle className="h-4 w-4 mr-3" />
                       Contact Practitioner
                     </button>
-                    <button className="w-full bg-gray-100 text-gray-900 px-4 py-3 rounded-lg font-medium hover:bg-gray-200 text-left flex items-center">
-                      <FileText className="h-4 w-4 mr-3" />
-                      Submit Feedback
-                    </button>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Upcoming Sessions & Notifications */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
-              {/* Upcoming Sessions */}
+            {/* Upcoming Sessions List */}
+            <div className="grid grid-cols-1 gap-6 mt-8">
               <div className="card">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900">Upcoming Sessions</h3>
-                  <Link to="/patient/sessions" className="text-primary-600 hover:text-primary-700 text-sm font-medium">
-                    View All
-                  </Link>
+                  <h3 className="text-lg font-semibold text-gray-900">Your Appointments</h3>
                 </div>
-                <div className="space-y-4">
-                  {upcomingSessions.map((session) => (
-                    <div key={session.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                      <div>
-                        <p className="font-medium text-gray-900">{session.therapy}</p>
-                        <p className="text-sm text-gray-600">{session.practitioner}</p>
-                        <div className="flex items-center space-x-4 text-xs text-gray-500 mt-1">
-                          <span>{session.date}</span>
-                          <span>{session.time}</span>
+                {appointments.length === 0 ? (
+                  <p className="text-gray-500 text-center py-4">No appointments scheduled.</p>
+                ) : (
+                  <div className="space-y-4">
+                    {appointments.map((session) => (
+                      <div key={session.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div>
+                          <p className="font-medium text-gray-900">{session.therapy_type}</p>
+                          <p className="text-sm text-gray-600">Practitioner ID: {session.practitioner_id}</p>
+                          <div className="flex items-center space-x-4 text-xs text-gray-500 mt-1">
+                            <span>{new Date(session.scheduled_datetime).toLocaleDateString()}</span>
+                            <span>{new Date(session.scheduled_datetime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                          </div>
                         </div>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${session.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                            session.status === 'scheduled' ? 'bg-blue-100 text-blue-800' :
+                              'bg-gray-100 text-gray-800'
+                          }`}>
+                          {session.status.toUpperCase()}
+                        </span>
                       </div>
-                      <button className="text-primary-600 hover:text-primary-700 text-sm font-medium">
-                        Manage
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Recent Notifications */}
-              <div className="card">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900">Notifications</h3>
-                  <Link to="/patient/notifications" className="text-primary-600 hover:text-primary-700 text-sm font-medium">
-                    View All
-                  </Link>
-                </div>
-                <div className="space-y-4">
-                  {notifications.slice(0, 3).map((notification) => (
-                    <div key={notification.id} className={`p-4 rounded-lg border ${
-                      notification.read ? 'bg-white border-gray-200' : 'bg-primary-50 border-primary-200'
-                    }`}>
-                      <div className="flex items-start space-x-3">
-                        <div className={`flex-shrink-0 w-2 h-2 mt-2 rounded-full ${
-                          notification.type === 'reminder' ? 'bg-yellow-400' :
-                          notification.type === 'info' ? 'bg-blue-400' : 'bg-green-400'
-                        }`}></div>
-                        <div className="flex-1">
-                          <p className="font-medium text-gray-900 text-sm">{notification.title}</p>
-                          <p className="text-sm text-gray-600 mt-1">{notification.message}</p>
-                          <p className="text-xs text-gray-500 mt-2">{notification.time}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -372,7 +308,7 @@ const PatientDashboard = () => {
 };
 
 // Sidebar Component
-const SidebarContent = ({ items, patient }: { items: any[], patient: any }) => (
+const SidebarContent = ({ items, user, onLogout }: { items: any[], user: any, onLogout: () => void }) => (
   <div className="flex flex-col h-full">
     {/* Logo */}
     <div className="flex items-center h-16 flex-shrink-0 px-6 bg-primary-600">
@@ -386,11 +322,11 @@ const SidebarContent = ({ items, patient }: { items: any[], patient: any }) => (
     <div className="p-6 border-b border-gray-200">
       <div className="flex items-center">
         <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-          <User className="h-6 w-6 text-gray-600" />
+          <UserIcon className="h-6 w-6 text-gray-600" />
         </div>
         <div className="ml-3">
-          <p className="text-sm font-medium text-gray-900">{patient.name}</p>
-          <p className="text-xs text-gray-500">Patient ID: {patient.id}</p>
+          <p className="text-sm font-medium text-gray-900">{user?.full_name || 'Guest'}</p>
+          <p className="text-xs text-gray-500">{user?.role === 'patient' ? 'Patient' : 'User'}</p>
         </div>
       </div>
     </div>
@@ -401,11 +337,10 @@ const SidebarContent = ({ items, patient }: { items: any[], patient: any }) => (
         {items.map((item, index) => (
           <button
             key={index}
-            className={`group flex items-center w-full px-4 py-2 text-sm font-medium rounded-lg ${
-              item.active 
-                ? 'bg-primary-100 text-primary-700' 
+            className={`group flex items-center w-full px-4 py-2 text-sm font-medium rounded-lg ${item.active
+                ? 'bg-primary-100 text-primary-700'
                 : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-            }`}
+              }`}
           >
             <item.icon className="mr-3 h-5 w-5" />
             {item.label}
@@ -416,7 +351,10 @@ const SidebarContent = ({ items, patient }: { items: any[], patient: any }) => (
 
     {/* Footer */}
     <div className="flex-shrink-0 p-6 border-t border-gray-200">
-      <button className="group flex items-center w-full px-4 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
+      <button
+        onClick={onLogout}
+        className="group flex items-center w-full px-4 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900"
+      >
         <LogOut className="mr-3 h-5 w-5" />
         Sign Out
       </button>

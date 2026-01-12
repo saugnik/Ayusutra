@@ -14,6 +14,14 @@ class BaseSchema(BaseModel):
         from_attributes = True
 
 # ==================== USER SCHEMAS ====================
+class UserShort(BaseModel):
+    full_name: str
+    email: EmailStr
+    profile_picture: Optional[str] = None
+    
+    class Config:
+        orm_mode = True
+
 class UserBase(BaseModel):
     email: EmailStr
     full_name: str
@@ -120,6 +128,7 @@ class PractitionerResponse(BaseSchema):
     rating: float
     total_reviews: int
     is_verified: bool
+    user: Optional['UserShort'] = None
     created_at: datetime
 
 # ==================== ADMIN SCHEMAS ====================

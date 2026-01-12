@@ -8,14 +8,15 @@ import logging
 from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 from pydantic import BaseModel
 import uvicorn
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 import requests
 
 from database import engine, SessionLocal
-from models import User, Patient, Practitioner, Admin, Appointment, TherapySession, Feedback, UserRole, Base
+from models import User, Patient, Practitioner, Admin, Appointment, TherapySession, Feedback, UserRole, Base, Notification, SystemSettings, AuditLog
 from schemas import (
     UserCreate, UserResponse, UserLogin, TokenResponse,
     PatientCreate, PatientResponse, PatientUpdate,
@@ -147,7 +148,9 @@ async def register(user_data: UserCreate, db: Session = Depends(get_db)):
         db.refresh(db_user)
         
         # Create role-specific profile
-        if user_data.role == "patient":
+        role_lower = user_data.role.lower()
+        
+        if role_lower == "patient":
             patient_profile = Patient(
                 user_id=db_user.id,
                 date_of_birth=user_data.date_of_birth,
@@ -162,7 +165,7 @@ async def register(user_data: UserCreate, db: Session = Depends(get_db)):
             )
             db.add(patient_profile)
         
-        elif user_data.role == "practitioner":
+        elif role_lower == "practitioner":
             practitioner_profile = Practitioner(
                 user_id=db_user.id,
                 license_number=user_data.license_number,
@@ -175,7 +178,7 @@ async def register(user_data: UserCreate, db: Session = Depends(get_db)):
             )
             db.add(practitioner_profile)
         
-        elif user_data.role == "admin":
+        elif role_lower == "admin":
             admin_profile = Admin(
                 user_id=db_user.id,
                 admin_level="standard",
@@ -550,6 +553,72 @@ async def get_treatment_analytics(
         ]
     }
 
+
+# ==================== DEBUG / DB VIEWER ====================
+@app.get("/db-viewer")
+async def db_viewer():
+    """Serve the database viewer HTML page"""
+    return FileResponse("database_viewer.html")
+
+@app.get("/debug/db-data")
+async def get_db_data(db: Session = Depends(get_db)):
+    """Get database statistics and user data for the viewer"""
+    
+    # 1. Get counts
+    counts = {
+        "users": db.query(User).count(),
+        "patients": db.query(Patient).count(),
+        "practitioners": db.query(Practitioner).count(),
+        "admins": db.query(Admin).count(),
+        "appointments": db.query(Appointment).count(),
+        "therapy_sessions": db.query(TherapySession).count(),
+        "feedback": db.query(Feedback).count(),
+        "notifications": db.query(Notification).count(),
+        "system_settings": db.query(SystemSettings).count(),
+        "audit_logs": db.query(AuditLog).count()
+    }
+    
+    # 2. Get Users List (limited details for security)
+    users = db.query(User).all()
+    users_list = []
+    for u in users:
+        users_list.append({
+            "id": u.id,
+            "email": u.email,
+            "full_name": u.full_name,
+            "role": u.role.value if hasattr(u.role, 'value') else str(u.role),
+            "phone": u.phone,
+            "is_active": u.is_active,
+            "is_verified": u.is_verified,
+            "created_at": u.created_at.isoformat() if u.created_at else None,
+            "last_login": u.last_login.isoformat() if u.last_login else "Never"
+        })
+        
+    return {
+        "stats": counts,
+        "users": users_list,
+        "database_size": "Unknown" # Calculating file size would require os path access which is fine but keep it simple
+    }
+
+
+@app.delete("/debug/delete-user/{user_id}")
+async def delete_user(user_id: int, db: Session = Depends(get_db)):
+    """Delete a user and their associated profile"""
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    db.delete(user)
+    db.commit()
+    return {"message": f"User {user_id} deleted successfully"}
+
+
+@app.get("/practitioners", response_model=List[PractitionerResponse])
+async def get_all_practitioners(db: Session = Depends(get_db)):
+    """Get list of all practitioners with their user profiles"""
+    practitioners = db.query(Practitioner).join(User).filter(User.is_active == True).all()
+    # Ensure relationships are loaded for response model
+    return practitioners
 
 if __name__ == "__main__":
     uvicorn.run(
