@@ -21,6 +21,7 @@ import appointmentService from '../services/appointment.service';
 import { AppointmentResponse } from '../types/api.types';
 import BookAppointmentModal from '../components/BookAppointmentModal';
 import toast from 'react-hot-toast';
+import DailyWisdom from '../components/DailyWisdom';
 
 const PatientDashboard = () => {
   const { user, logout } = useAuth();
@@ -70,13 +71,6 @@ const PatientDashboard = () => {
       ...prev,
       [itemId]: !prev[itemId]
     }));
-  };
-
-  const progressData = {
-    sessionsCompleted: 0,
-    totalSessions: 10,
-    improvementScore: 0,
-    adherenceRate: 100
   };
 
   const sidebarItems = [
@@ -205,8 +199,13 @@ const PatientDashboard = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Pre-procedure Checklist */}
-              <div className="lg:col-span-2">
+              {/* Daily Wisdom & Checklist */}
+              <div className="lg:col-span-2 space-y-6">
+
+                {/* Daily Wisdom Widget */}
+                <DailyWisdom />
+
+                {/* Checklist */}
                 <div className="card">
                   <div className="flex items-center justify-between mb-6">
                     <h3 className="text-lg font-semibold text-gray-900">Pre-procedure Checklist</h3>
@@ -218,8 +217,8 @@ const PatientDashboard = () => {
                         <button
                           onClick={() => handleCheckItem(item.id)}
                           className={`flex-shrink-0 mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center ${item.completed || checkedItems[item.id]
-                              ? 'bg-green-500 border-green-500'
-                              : 'border-gray-300 hover:border-primary-500'
+                            ? 'bg-green-500 border-green-500'
+                            : 'border-gray-300 hover:border-primary-500'
                             }`}
                         >
                           {(item.completed || checkedItems[item.id]) && (
@@ -228,8 +227,8 @@ const PatientDashboard = () => {
                         </button>
                         <div className="flex-1">
                           <p className={`text-sm ${item.completed || checkedItems[item.id]
-                              ? 'text-gray-500 line-through'
-                              : 'text-gray-900'
+                            ? 'text-gray-500 line-through'
+                            : 'text-gray-900'
                             }`}>
                             {item.text}
                             {item.required && (
@@ -289,8 +288,8 @@ const PatientDashboard = () => {
                           </div>
                         </div>
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${session.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                            session.status === 'scheduled' ? 'bg-blue-100 text-blue-800' :
-                              'bg-gray-100 text-gray-800'
+                          session.status === 'scheduled' ? 'bg-blue-100 text-blue-800' :
+                            'bg-gray-100 text-gray-800'
                           }`}>
                           {session.status.toUpperCase()}
                         </span>
@@ -321,8 +320,12 @@ const SidebarContent = ({ items, user, onLogout }: { items: any[], user: any, on
     {/* Patient Info */}
     <div className="p-6 border-b border-gray-200">
       <div className="flex items-center">
-        <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-          <UserIcon className="h-6 w-6 text-gray-600" />
+        <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-primary-200">
+          <img
+            src={`https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(user?.full_name || 'Guest')}&backgroundColor=e5e7eb`}
+            alt="User Avatar"
+            className="w-full h-full object-cover"
+          />
         </div>
         <div className="ml-3">
           <p className="text-sm font-medium text-gray-900">{user?.full_name || 'Guest'}</p>
@@ -338,8 +341,8 @@ const SidebarContent = ({ items, user, onLogout }: { items: any[], user: any, on
           <button
             key={index}
             className={`group flex items-center w-full px-4 py-2 text-sm font-medium rounded-lg ${item.active
-                ? 'bg-primary-100 text-primary-700'
-                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+              ? 'bg-primary-100 text-primary-700'
+              : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
               }`}
           >
             <item.icon className="mr-3 h-5 w-5" />

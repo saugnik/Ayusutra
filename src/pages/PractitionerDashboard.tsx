@@ -158,7 +158,7 @@ const PractitionerDashboard = () => {
             </div>
           </div>
         </div>
-        
+
         <div className="card">
           <div className="flex items-center">
             <div className="p-3 bg-green-100 rounded-lg">
@@ -170,7 +170,7 @@ const PractitionerDashboard = () => {
             </div>
           </div>
         </div>
-        
+
         <div className="card">
           <div className="flex items-center">
             <div className="p-3 bg-primary-100 rounded-lg">
@@ -182,7 +182,7 @@ const PractitionerDashboard = () => {
             </div>
           </div>
         </div>
-        
+
         <div className="card">
           <div className="flex items-center">
             <div className="p-3 bg-orange-100 rounded-lg">
@@ -205,7 +205,7 @@ const PractitionerDashboard = () => {
               <Plus className="h-4 w-4 mr-1" /> Add Appointment
             </button>
           </div>
-          
+
           <div className="space-y-4">
             {todayAppointments.map((appointment) => (
               <div key={appointment.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
@@ -238,10 +238,9 @@ const PractitionerDashboard = () => {
           <div className="space-y-4">
             {recentAlerts.map((alert) => (
               <div key={alert.id} className="flex items-start space-x-3">
-                <div className={`p-2 rounded-lg ${
-                  alert.type === 'warning' ? 'bg-yellow-100' :
-                  alert.type === 'info' ? 'bg-blue-100' : 'bg-green-100'
-                }`}>
+                <div className={`p-2 rounded-lg ${alert.type === 'warning' ? 'bg-yellow-100' :
+                    alert.type === 'info' ? 'bg-blue-100' : 'bg-green-100'
+                  }`}>
                   {alert.type === 'warning' ? (
                     <AlertCircle className="h-4 w-4 text-yellow-600" />
                   ) : alert.type === 'info' ? (
@@ -344,7 +343,7 @@ const PractitionerDashboard = () => {
   const renderReports = () => (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-900">Reports & Analytics</h2>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div className="card text-center">
           <TrendingUp className="h-12 w-12 text-primary-600 mx-auto mb-4" />
@@ -352,14 +351,14 @@ const PractitionerDashboard = () => {
           <p className="text-3xl font-bold text-primary-600 mb-2">94.5%</p>
           <p className="text-sm text-gray-600">Last 30 days</p>
         </div>
-        
+
         <div className="card text-center">
           <Users className="h-12 w-12 text-green-600 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Patient Satisfaction</h3>
           <p className="text-3xl font-bold text-green-600 mb-2">4.8/5</p>
           <p className="text-sm text-gray-600">Average rating</p>
         </div>
-        
+
         <div className="card text-center">
           <Calendar className="h-12 w-12 text-blue-600 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Monthly Treatments</h3>
@@ -376,19 +375,19 @@ const PractitionerDashboard = () => {
             <h4 className="font-medium text-gray-900">Patient Progress Report</h4>
             <p className="text-sm text-gray-600">Detailed progress for individual patients</p>
           </button>
-          
+
           <button className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow text-left">
             <TrendingUp className="h-6 w-6 text-green-600 mb-2" />
             <h4 className="font-medium text-gray-900">Treatment Analytics</h4>
             <p className="text-sm text-gray-600">Success rates and outcomes analysis</p>
           </button>
-          
+
           <button className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow text-left">
             <Calendar className="h-6 w-6 text-blue-600 mb-2" />
             <h4 className="font-medium text-gray-900">Monthly Summary</h4>
             <p className="text-sm text-gray-600">Complete monthly activity report</p>
           </button>
-          
+
           <button className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow text-left">
             <Users className="h-6 w-6 text-purple-600 mb-2" />
             <h4 className="font-medium text-gray-900">Patient Feedback</h4>
@@ -413,27 +412,31 @@ const PractitionerDashboard = () => {
                 <span className="ml-3 text-xl font-bold text-gray-900">AyurSutra</span>
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-4">
               <button className="p-2 hover:bg-gray-100 rounded-lg relative">
                 <Bell className="h-5 w-5 text-gray-600" />
                 <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white rounded-full text-xs flex items-center justify-center">3</span>
               </button>
-              
+
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
-                  <User className="h-5 w-5 text-primary-600" />
+                <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-primary-200">
+                  <img
+                    src={`https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent('Dr. Priya Sharma')}&backgroundColor=e5e7eb`}
+                    alt="User Avatar"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-900">Dr. Priya Sharma</p>
                   <p className="text-xs text-gray-600">Practitioner</p>
                 </div>
               </div>
-              
+
               <button className="p-2 hover:bg-gray-100 rounded-lg">
                 <Settings className="h-5 w-5 text-gray-600" />
               </button>
-              
+
               <button className="p-2 hover:bg-gray-100 rounded-lg">
                 <LogOut className="h-5 w-5 text-gray-600" />
               </button>
@@ -454,11 +457,10 @@ const PractitionerDashboard = () => {
               <button
                 key={tab.id}
                 onClick={() => setSelectedTab(tab.id)}
-                className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm ${
-                  selectedTab === tab.id
+                className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm ${selectedTab === tab.id
                     ? 'border-primary-500 text-primary-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
+                  }`}
               >
                 <tab.icon className="h-5 w-5" />
                 <span>{tab.name}</span>

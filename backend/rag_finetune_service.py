@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 AyurSutra RAG Fine-tuning Service
-Knowledge base and retrieval system for Panchakarma treatments using ChromaDB and OpenAI.
+Knowledge base and retrieval system for Panchakarma treatments using ChromaDB and Google Gemini.
 """
 
 import os
@@ -12,7 +12,7 @@ from datetime import datetime
 
 import chromadb
 from chromadb.config import Settings
-import openai
+import google.generativeai as genai
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -29,15 +29,17 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Configuration
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 CHROMA_DB_PATH = os.getenv("CHROMA_DB_PATH", "./chroma_db")
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
 
-# Initialize OpenAI
-if OPENAI_API_KEY:
-    openai.api_key = OPENAI_API_KEY
+# Initialize Gemini
+if GOOGLE_API_KEY:
+    genai.configure(api_key=GOOGLE_API_KEY)
+    model = genai.GenerativeModel('gemini-pro')
 else:
-    logger.warning("OpenAI API key not found. AI responses will use mock data.")
+    logger.warning("Google API key not found. AI responses will use mock data.")
+    model = None
 
 # Initialize embedding model
 try:
@@ -295,52 +297,44 @@ def query_knowledge_base(query: str, top_k: int = 5) -> List[Dict[str, Any]]:
         return []
 
 async def generate_ai_response(query: str, context: List[Dict[str, Any]]) -> Dict[str, Any]:
-    """Generate AI response using OpenAI API or mock response"""
+    """Generate AI response using Google Gemini or mock response"""
     
     # Prepare context for AI
     context_text = "\n\n".join([doc["content"] for doc in context[:3]])
     
-    if OPENAI_API_KEY:
+    if model:
         try:
-            # Create prompt for OpenAI
+            # Create prompt for Gemini
             prompt = f"""You are an expert Ayurveda practitioner specializing in Panchakarma treatments. 
-Answer the following question based on the provided context about Ayurveda and Panchakarma therapies.
-
-Context:
-{context_text}
-
-Question: {query}
-
-Please provide a comprehensive answer that includes:
-1. Direct answer to the question
-2. Relevant benefits and contraindications if applicable  
-3. Practical recommendations
-4. Any important safety considerations
-
-Answer in a clear, professional manner suitable for both patients and practitioners."""
-
-            response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": "You are an expert Ayurveda practitioner."},
-                    {"role": "user", "content": prompt}
-                ],
-                max_tokens=500,
-                temperature=0.7
-            )
+            Answer the following question based on the provided context about Ayurveda and Panchakarma therapies.
             
-            answer_text = response.choices[0].message.content.strip()
+            Context:
+            {context_text}
+            
+            Question: {query}
+            
+            Please provide a comprehensive answer that includes:
+            1. Direct answer to the question
+            2. Relevant benefits and contraindications if applicable  
+            3. Practical recommendations
+            4. Any important safety considerations
+            
+            Answer in a clear, professional manner suitable for both patients and practitioners."""
+
+            response = model.generate_content(prompt)
+            
+            answer_text = response.text
             confidence = "high"
             evidence = [doc["metadata"].get("title", "Unknown") for doc in context[:2]]
             
         except Exception as e:
-            logger.error(f"Error calling OpenAI API: {e}")
+            logger.error(f"Error calling Gemini API: {e}")
             # Fallback to knowledge base response
             answer_text = generate_knowledge_based_response(query, context)
             confidence = "medium"
             evidence = [doc["metadata"].get("title", "Knowledge Base") for doc in context[:2]]
     else:
-        # Knowledge base response when no OpenAI API key
+        # Knowledge base response when no API key
         answer_text = generate_knowledge_based_response(query, context)
         confidence = "high" if context else "medium"
         evidence = [doc["metadata"].get("title", "Knowledge Base") for doc in context[:2]]

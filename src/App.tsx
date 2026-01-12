@@ -11,6 +11,7 @@ import TherapyRoom from './pages/TherapyRoom';
 import AdminConsole from './pages/AdminConsole';
 import Settings from './pages/Settings';
 import DebugAuth from './components/DebugAuth';
+import AIAssistant from './components/AIAssistant';
 import './App.css';
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
             <Route path="/settings" element={<Settings />} />
             <Route path="/debug" element={<DebugAuth />} />
           </Routes>
+          <AIAssistant />
         </div>
       </Router>
     </AuthProvider>
