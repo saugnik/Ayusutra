@@ -1,5 +1,4 @@
 
-
 import os
 from datetime import datetime, timedelta
 from typing import Optional, List
@@ -16,17 +15,21 @@ from sqlalchemy import func
 import requests
 
 from database import engine, SessionLocal
-from models import User, Patient, Practitioner, Admin, Appointment, TherapySession, Feedback, UserRole, Base, Notification, SystemSettings, AuditLog
+from models import User, Patient, Practitioner, Admin, Appointment, TherapySession, Feedback, UserRole, Base, Notification, SystemSettings, AuditLog, PatientHealthLog, Symptom, AIConversation, ChatMessage
 from schemas import (
-    UserCreate, UserResponse, UserLogin, TokenResponse,
+    UserCreate, UserResponse, TokenResponse, UserLogin,
     PatientCreate, PatientResponse, PatientUpdate,
     PractitionerCreate, PractitionerResponse, PractitionerUpdate,
     AdminCreate, AdminResponse,
     AppointmentCreate, AppointmentResponse, AppointmentUpdate,
-    TherapySessionCreate, TherapySessionResponse,
+    TherapySessionCreate, TherapySessionResponse, TherapySessionUpdate,
     FeedbackCreate, FeedbackResponse,
     AIAssistantRequest, AIAssistantResponse,
-    DashboardStats
+    DashboardStats, PatientListItem, UserUpdate,
+    NotificationResponse, TherapyTemplateResponse, HealthLogCreate, HealthLogResponse,
+    SymptomCreate, SymptomResponse, AIHealthRequest, AIHealthResponse,
+    HealthRecommendationsResponse, ChatMessageCreate, ChatMessageResponse,
+    PractitionerAvailability, AIChatRequest, AIChatResponse
 )
 from auth import (
     create_access_token, verify_token, get_password_hash, verify_password,
@@ -240,10 +243,41 @@ async def login(user_credentials: UserLogin, db: Session = Depends(get_db)):
     )
 
 
-@app.get("/auth/me", response_model=UserResponse)
-async def get_current_user_info(current_user: User = Depends(get_current_user)):
-    """Get current user information"""
-    return UserResponse.from_orm(current_user)
+@app.get("/users/me", response_model=UserResponse)
+async def read_users_me(
+    current_user: User = Depends(get_current_user)
+):
+    return current_user
+
+@app.put("/users/me", response_model=UserResponse)
+async def update_user_profile(
+    user_update: UserUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Update current user profile"""
+    # Check email uniqueness if changing
+    if user_update.email and user_update.email != current_user.email:
+        existing = db.query(User).filter(User.email == user_update.email).first()
+        if existing:
+            raise HTTPException(status_code=400, detail="Email already registered")
+        current_user.email = user_update.email
+        
+    if user_update.full_name:
+        current_user.full_name = user_update.full_name
+    
+    if user_update.phone:
+        current_user.phone = user_update.phone
+        
+    if user_update.profile_picture:
+        current_user.profile_picture = user_update.profile_picture
+        
+    if user_update.password:
+        current_user.hashed_password = get_password_hash(user_update.password)
+        
+    db.commit()
+    db.refresh(current_user)
+    return current_user
 
 
 # ==================== AI ASSISTANT ====================
@@ -434,9 +468,66 @@ async def get_practitioner_dashboard(
         today_appointments=today_appointments,
         active_treatments=active_treatments,
         pending_reports=pending_reports,
-        success_rate=94.5,  # Mock data
-        avg_session_rating=4.8  # Mock data
+        success_rate=0.0,  # Real data pending implementation
+        avg_session_rating=0.0  # Real data pending implementation
     )
+
+
+@app.get("/practitioner/patients", response_model=List[PatientListItem])
+async def get_my_patients(
+    current_practitioner: Practitioner = Depends(get_current_practitioner),
+    db: Session = Depends(get_db)
+):
+    """Get list of patients for current practitioner"""
+    # Find patients with appointments with this practitioner
+    # Subquery or distinct join
+    patients = db.query(Patient).join(Appointment).filter(
+        Appointment.practitioner_id == current_practitioner.id
+    ).distinct().all()
+    
+    patient_list = []
+    now = datetime.utcnow()
+
+    for p in patients:
+        user = db.query(User).filter(User.id == p.user_id).first()
+        if not user:
+            continue
+            
+        # detailed logic for fields
+        age = None
+        if p.date_of_birth:
+             age = (datetime.utcnow().date() - p.date_of_birth.date()).days // 365
+        
+        # Current therapy (last appointment or active)
+        last_appt = db.query(Appointment).filter(
+            Appointment.patient_id == p.id,
+            Appointment.practitioner_id == current_practitioner.id
+        ).order_by(Appointment.scheduled_datetime.desc()).first()
+        
+        current_therapy = last_appt.therapy_type if last_appt else "None"
+        
+        # Next appointment
+        next_appt = db.query(Appointment).filter(
+            Appointment.patient_id == p.id,
+            Appointment.practitioner_id == current_practitioner.id,
+            Appointment.scheduled_datetime > now
+        ).order_by(Appointment.scheduled_datetime.asc()).first()
+        
+        patient_list.append(PatientListItem(
+            id=p.id,
+            name=user.full_name,
+            age=age,
+            gender=p.gender or "Unknown",
+            phone=user.phone,
+            email=user.email,
+            current_therapy=current_therapy,
+            stage="Active" if next_appt else "Inactive",
+            next_appointment=next_appt.scheduled_datetime if next_appt else None,
+            status="active" if next_appt else "completed", # Simple logic
+            prakriti=p.prakriti_type or "Unknown"
+        ))
+        
+    return patient_list
 
 
 # ==================== ADMIN DASHBOARD ====================
@@ -534,23 +625,65 @@ async def get_treatment_analytics(
     if current_user.role not in ["practitioner", "admin"]:
         raise HTTPException(status_code=403, detail="Access denied")
     
-    # Mock analytics data
+    # Real Analytics Data
+    now = datetime.utcnow()
+    thirty_days_ago = now - timedelta(days=days)
+    
+    # 1. Total Sessions (Completed Appointments in period)
+    total_sessions = db.query(Appointment).filter(
+        Appointment.status == "completed",
+        Appointment.scheduled_datetime >= thirty_days_ago
+    ).count()
+    
+    # 2. Success Rate (Mock logic based on completion vs cancellation)
+    completed_count = total_sessions
+    cancelled_count = db.query(Appointment).filter(
+        Appointment.status == "cancelled",
+        Appointment.scheduled_datetime >= thirty_days_ago
+    ).count()
+    total_relevant = completed_count + cancelled_count
+    success_rate = (completed_count / total_relevant * 100) if total_relevant > 0 else 0.0
+    
+    # 3. Average Duration
+    avg_duration = db.query(func.avg(Appointment.duration_minutes)).filter(
+        Appointment.status == "completed"
+    ).scalar() or 0.0
+    
+    # 4. Patient Satisfaction (from Feedback)
+    avg_rating = db.query(func.avg(Feedback.rating)).scalar() or 0.0
+    
+    # 5. Popular Therapies
+    popular_therapies_query = db.query(
+        Appointment.therapy_type, func.count(Appointment.id)
+    ).group_by(Appointment.therapy_type).order_by(func.count(Appointment.id).desc()).limit(4).all()
+    
+    popular_therapies = [{"name": t, "count": c} for t, c in popular_therapies_query]
+    
+    # 6. Monthly Trends (Last 6 months)
+    monthly_trends = []
+    for i in range(5, -1, -1):
+        month_start = datetime(now.year, now.month, 1) - timedelta(days=30*i) # Approx
+        # Better date logic needed for strict months, but approx is fine for now
+        # Actually let's use simple logic: distinct months from data or just query last 3 months explicitly
+        pass
+
+    # Simplified Monthly Trends (Current Month)
+    current_month_count = db.query(Appointment).filter(
+        func.extract('month', Appointment.scheduled_datetime) == now.month,
+        func.extract('year', Appointment.scheduled_datetime) == now.year
+    ).count()
+    
+    monthly_trends = [
+        {"month": now.strftime("%b"), "sessions": current_month_count}
+    ]
+
     return {
-        "total_sessions": 156,
-        "success_rate": 94.5,
-        "average_duration": 75.5,
-        "patient_satisfaction": 4.8,
-        "popular_therapies": [
-            {"name": "Abhyanga", "count": 45},
-            {"name": "Shirodhara", "count": 32},
-            {"name": "Nasya", "count": 28},
-            {"name": "Virechana", "count": 25}
-        ],
-        "monthly_trends": [
-            {"month": "Jan", "sessions": 120},
-            {"month": "Feb", "sessions": 135},
-            {"month": "Mar", "sessions": 156}
-        ]
+        "total_sessions": total_sessions,
+        "success_rate": round(success_rate, 1),
+        "average_duration": round(avg_duration, 1),
+        "patient_satisfaction": round(float(avg_rating), 1),
+        "popular_therapies": popular_therapies,
+        "monthly_trends": monthly_trends
     }
 
 
@@ -619,6 +752,534 @@ async def get_all_practitioners(db: Session = Depends(get_db)):
     practitioners = db.query(Practitioner).join(User).filter(User.is_active == True).all()
     # Ensure relationships are loaded for response model
     return practitioners
+
+
+# ==================== HEALTH LOGS ====================
+@app.post("/api/health-logs", response_model=HealthLogResponse)
+async def create_health_log(
+    log_data: HealthLogCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Create a new health log (Practitioner only)"""
+    if current_user.role != UserRole.PRACTITIONER and current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Only practitioners can update health logs")
+        
+    practitioner = db.query(Practitioner).filter(Practitioner.user_id == current_user.id).first()
+    if not practitioner and current_user.role == UserRole.PRACTITIONER:
+        raise HTTPException(status_code=404, detail="Practitioner profile not found")
+        
+    # Verify patient exists
+    patient = db.query(Patient).filter(Patient.id == log_data.patient_id).first()
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient not found")
+
+    new_log = PatientHealthLog(
+        patient_id=log_data.patient_id,
+        practitioner_id=practitioner.id if practitioner else 1, # Fallback for admin
+        dosha_vata=log_data.dosha_vata,
+        dosha_pitta=log_data.dosha_pitta,
+        dosha_kapha=log_data.dosha_kapha,
+        sleep_score=log_data.sleep_score,
+        stress_level=log_data.stress_level,
+        hydration=log_data.hydration,
+        weight=log_data.weight,
+        blood_pressure=log_data.blood_pressure,
+        notes=log_data.notes,
+        recommendations=log_data.recommendations
+    )
+    
+    db.add(new_log)
+    db.commit()
+    db.refresh(new_log)
+    return new_log
+
+@app.get("/api/health-logs/me", response_model=List[HealthLogResponse])
+async def get_my_health_logs(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    limit: int = 10
+):
+    """Get health logs for current patient"""
+    if current_user.role != UserRole.PATIENT:
+        raise HTTPException(status_code=403, detail="Only patients can access their health logs")
+        
+    patient = db.query(Patient).filter(Patient.user_id == current_user.id).first()
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient profile not found")
+        
+    logs = db.query(PatientHealthLog).filter(
+        PatientHealthLog.patient_id == patient.id
+    ).order_by(PatientHealthLog.date.desc()).limit(limit).all()
+    
+    return logs
+
+# ==================== HEALTH SUPPORT ENDPOINTS ====================
+
+@app.post("/health/symptoms", response_model=SymptomResponse)
+async def log_symptom(
+    symptom_data: SymptomCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Log a new symptom for the current patient"""
+    if current_user.role != UserRole.PATIENT:
+        raise HTTPException(status_code=403, detail="Only patients can log symptoms")
+    
+    patient = db.query(Patient).filter(Patient.user_id == current_user.id).first()
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient profile not found")
+    
+    symptom = Symptom(
+        patient_id=patient.id,
+        symptom_name=symptom_data.symptom_name,
+        severity=symptom_data.severity,
+        notes=symptom_data.notes,
+        duration_days=symptom_data.duration_days
+    )
+    
+    db.add(symptom)
+    db.commit()
+    db.refresh(symptom)
+    
+    return symptom
+
+@app.get("/health/symptoms")
+async def get_symptoms(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    limit: int = 20
+):
+    """Get symptom history for current patient"""
+    if current_user.role != UserRole.PATIENT:
+        raise HTTPException(status_code=403, detail="Only patients can access symptoms")
+    
+    patient = db.query(Patient).filter(Patient.user_id == current_user.id).first()
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient profile not found")
+    
+    symptoms = db.query(Symptom).filter(
+        Symptom.patient_id == patient.id
+    ).order_by(Symptom.created_at.desc()).limit(limit).all()
+    
+    return symptoms
+
+@app.post("/health/ask-ai", response_model=AIHealthResponse)
+async def ask_health_ai(
+    request: AIHealthRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Enhanced AI health assistant with conversational capabilities"""
+    if current_user.role != UserRole.PATIENT:
+        raise HTTPException(status_code=403, detail="Only patients can use AI health assistant")
+    
+    patient = db.query(Patient).filter(Patient.user_id == current_user.id).first()
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient profile not found")
+    
+    # Generate or use existing conversation ID
+    import uuid
+    conversation_id = None
+    if request.context and 'conversation_id' in request.context:
+        conversation_id = request.context['conversation_id']
+    
+    if not conversation_id:
+        conversation_id = f"conv_{patient.id}_{uuid.uuid4().hex[:8]}"
+    
+    # Get or create conversation
+    conversation = db.query(AIConversation).filter(
+        AIConversation.conversation_id == conversation_id
+    ).first()
+    
+    if not conversation:
+        conversation = AIConversation(
+            patient_id=patient.id,
+            conversation_id=conversation_id,
+            messages=[]
+        )
+        db.add(conversation)
+    
+    # Add user message
+    user_message = {
+        "role": "user",
+        "content": request.question,
+        "timestamp": datetime.utcnow().isoformat()
+    }
+    
+    if conversation.messages is None:
+        conversation.messages = []
+    conversation.messages.append(user_message)
+    
+    # Get latest health log for dosha analysis
+    latest_log = db.query(PatientHealthLog).filter(
+        PatientHealthLog.patient_id == patient.id
+    ).order_by(PatientHealthLog.date.desc()).first()
+    
+    dosha_analysis = {
+        "vata": latest_log.dosha_vata if latest_log else 33,
+        "pitta": latest_log.dosha_pitta if latest_log else 33,
+        "kapha": latest_log.dosha_kapha if latest_log else 34
+    }
+    
+    # Build user profile from context and patient data
+    user_profile = request.context if request.context else {}
+    user_profile.update({
+        'prakriti_type': patient.prakriti_type,
+        'medical_history': patient.medical_history,
+        'allergies': patient.allergies
+    })
+    
+    try:
+        # Use enhanced health assistant
+        from enhanced_health_assistant import health_assistant
+        
+        response_data = await health_assistant.generate_conversational_response(
+            query=request.question,
+            user_profile=user_profile,
+            conversation_history=conversation.messages,
+            dosha_analysis=dosha_analysis
+        )
+        
+        # Format response based on type
+        if response_data['type'] == 'clarification':
+            # Use the pre-formatted message from enhanced assistant
+            ai_answer = response_data['message']
+        elif response_data['type'] == 'diet_plan':
+            diet_plan = response_data['data']
+            ai_answer = f"{response_data['message']}\\n\\n"
+            ai_answer += f"📊 **Your Metrics:**\\n"
+            ai_answer += f"- BMI: {diet_plan['bmi']}\\n"
+            ai_answer += f"- Daily Calorie Target: {diet_plan['target_calories']} kcal\\n"
+            ai_answer += f"- Dominant Dosha: {diet_plan['dominant_dosha'].title()}\\n\\n"
+            ai_answer += f"🥗 **Macros:**\\n"
+            ai_answer += f"- Protein: {diet_plan['macros']['protein']}\\n"
+            ai_answer += f"- Carbs: {diet_plan['macros']['carbs']}\\n"
+            ai_answer += f"- Fats: {diet_plan['macros']['fats']}\\n\\n"
+            ai_answer += f"✅ **Foods to Favor:** {', '.join(diet_plan['foods_to_favor'][:5])}\\n\\n"
+            ai_answer += f"❌ **Foods to Avoid:** {', '.join(diet_plan['foods_to_avoid'][:5])}\\n\\n"
+            ai_answer += f"🍽️ **Sample Meal Plan:**\\n"
+            for meal, details in diet_plan['meal_plan'].items():
+                ai_answer += f"- **{meal.title()}**: {details['suggestion']} ({details['calories']} kcal)\\n"
+            ai_answer += f"\\n💧 **Hydration:** {diet_plan['hydration']}\\n"
+        elif response_data['type'] == 'workout_plan':
+            workout_plan = response_data['data']
+            ai_answer = f"{response_data['message']}\\n\\n"
+            ai_answer += f"🏋️ **Workout Style:** {workout_plan['workout_style']}\\n\\n"
+            ai_answer += f"✅ **Recommended Activities:** {', '.join(workout_plan['recommended_activities'][:4])}\\n\\n"
+            ai_answer += f"📅 **Weekly Plan:**\\n"
+            for day, activity in workout_plan['weekly_plan'].items():
+                ai_answer += f"- **{day}**: {activity}\\n"
+            ai_answer += f"\\n🧘 **Yoga Sequence:**\\n"
+            for pose in workout_plan['yoga_sequence'][:5]:
+                ai_answer += f"- {pose}\\n"
+        else:
+            ai_answer = response_data['message']
+        
+        # Add AI response to conversation
+        ai_message = {
+            "role": "assistant",
+            "content": ai_answer,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        conversation.messages.append(ai_message)
+        
+        db.commit()
+        
+        return AIHealthResponse(
+            answer=ai_answer,
+            sources=response_data.get('sources', ["Enhanced Health Assistant"]),
+            conversation_id=conversation_id
+        )
+        
+    except Exception as e:
+        logger.error(f"Enhanced AI health assistant error: {str(e)}")
+        # Fallback to simple response
+        ai_answer = "I can help you with personalized diet plans, workout recommendations, and general health guidance. What would you like to know more about?"
+        
+        ai_message = {
+            "role": "assistant",
+            "content": ai_answer,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        conversation.messages.append(ai_message)
+        db.commit()
+        
+        return AIHealthResponse(
+            answer=ai_answer,
+            sources=["Health Assistant"],
+            conversation_id=conversation_id
+        )
+
+@app.get("/health/recommendations", response_model=HealthRecommendationsResponse)
+async def get_health_recommendations(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get AI-generated health recommendations based on patient data"""
+    if current_user.role != UserRole.PATIENT:
+        raise HTTPException(status_code=403, detail="Only patients can get recommendations")
+    
+    patient = db.query(Patient).filter(Patient.user_id == current_user.id).first()
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient profile not found")
+    
+    # Get recent symptoms
+    recent_symptoms = db.query(Symptom).filter(
+        Symptom.patient_id == patient.id
+    ).order_by(Symptom.created_at.desc()).limit(5).all()
+    
+    # Get latest health log
+    latest_log = db.query(PatientHealthLog).filter(
+        PatientHealthLog.patient_id == patient.id
+    ).order_by(PatientHealthLog.date.desc()).first()
+    
+    # Generate recommendations based on data
+    recommendations = []
+    
+    # Dosha-based recommendations
+    if latest_log:
+        if latest_log.dosha_vata > 60:
+            recommendations.append({
+                "category": "diet",
+                "suggestion": "Consume warm, cooked foods and avoid cold, raw foods",
+                "reason": "High Vata levels indicate need for grounding and warmth",
+                "priority": "high"
+            })
+        if latest_log.dosha_pitta > 60:
+            recommendations.append({
+                "category": "lifestyle",
+                "suggestion": "Practice cooling pranayama and avoid excessive heat",
+                "reason": "Elevated Pitta requires cooling practices",
+                "priority": "high"
+            })
+        if latest_log.dosha_kapha > 60:
+            recommendations.append({
+                "category": "lifestyle",
+                "suggestion": "Increase physical activity and reduce heavy foods",
+                "reason": "High Kapha benefits from movement and lightness",
+                "priority": "high"
+            })
+        
+        # Sleep recommendations
+        if latest_log.sleep_score and latest_log.sleep_score < 60:
+            recommendations.append({
+                "category": "lifestyle",
+                "suggestion": "Establish a regular sleep schedule and practice evening meditation",
+                "reason": "Low sleep score indicates need for better sleep hygiene",
+                "priority": "normal"
+            })
+        
+        # Hydration recommendations
+        if latest_log.hydration < 2.0:
+            recommendations.append({
+                "category": "diet",
+                "suggestion": "Increase water intake to at least 2.5 liters per day",
+                "reason": "Current hydration levels are below optimal",
+                "priority": "normal"
+            })
+    
+    # Symptom-based recommendations
+    for symptom in recent_symptoms:
+        if "headache" in symptom.symptom_name.lower():
+            recommendations.append({
+                "category": "herbs",
+                "suggestion": "Try ginger tea or apply cooling sandalwood paste to forehead",
+                "reason": "Natural remedies for headache relief",
+                "priority": "normal"
+            })
+    
+    # Default recommendations if none generated
+    if not recommendations:
+        recommendations = [
+            {
+                "category": "lifestyle",
+                "suggestion": "Maintain a balanced daily routine (Dinacharya)",
+                "reason": "Foundation of Ayurvedic health",
+                "priority": "normal"
+            },
+            {
+                "category": "diet",
+                "suggestion": "Eat according to your Prakriti type",
+                "reason": "Personalized nutrition for optimal health",
+                "priority": "normal"
+            }
+        ]
+    
+    dosha_analysis = {
+        "vata": latest_log.dosha_vata if latest_log else 33,
+        "pitta": latest_log.dosha_pitta if latest_log else 33,
+        "kapha": latest_log.dosha_kapha if latest_log else 34
+    }
+    
+    return HealthRecommendationsResponse(
+        recommendations=recommendations,
+        dosha_analysis=dosha_analysis
+    )
+
+# ==================== CHAT SUPPORT ENDPOINTS ====================
+
+@app.get("/chat/practitioners")
+async def get_available_practitioners(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get list of available practitioners for chat"""
+    practitioners = db.query(Practitioner).join(User).filter(
+        User.is_active == True
+    ).limit(20).all()
+    
+    result = []
+    for prac in practitioners:
+        result.append({
+            "id": prac.id,
+            "name": prac.user.full_name,
+            "specialization": prac.specializations[0] if prac.specializations else None,
+            "online": True,  # TODO: Implement real online status
+            "last_seen": datetime.utcnow()
+        })
+    
+    return result
+
+@app.get("/chat/messages", response_model=List[ChatMessageResponse])
+async def get_chat_messages(
+    recipient_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    limit: int = 50
+):
+    """Get chat message history with a specific user"""
+    # Determine sender type
+    sender_type = current_user.role.value
+    sender_id = current_user.id
+    
+    # Get messages where user is either sender or recipient
+    messages = db.query(ChatMessage).filter(
+        ((ChatMessage.sender_id == sender_id) & (ChatMessage.recipient_id == recipient_id)) |
+        ((ChatMessage.sender_id == recipient_id) & (ChatMessage.recipient_id == sender_id))
+    ).order_by(ChatMessage.created_at.desc()).limit(limit).all()
+    
+    # Mark messages as read
+    for msg in messages:
+        if msg.recipient_id == sender_id and not msg.read:
+            msg.read = True
+    
+    db.commit()
+    
+    return list(reversed(messages))
+
+@app.post("/chat/send", response_model=ChatMessageResponse)
+async def send_chat_message(
+    message_data: ChatMessageCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Send a chat message"""
+    sender_type = current_user.role.value
+    
+    message = ChatMessage(
+        sender_id=current_user.id,
+        sender_type=sender_type,
+        recipient_id=message_data.recipient_id,
+        recipient_type=message_data.recipient_type,
+        content=message_data.content,
+        read=False
+    )
+    
+    db.add(message)
+    db.commit()
+    db.refresh(message)
+    
+    return message
+
+@app.post("/chat/ai-assistant", response_model=AIChatResponse)
+async def chat_with_ai_assistant(
+    request: AIChatRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Chat with AI assistant"""
+    # Generate or use existing conversation ID
+    import uuid
+    conversation_id = request.conversation_id or f"chat_{current_user.id}_{uuid.uuid4().hex[:8]}"
+    
+    # Get or create conversation
+    conversation = db.query(AIConversation).filter(
+        AIConversation.conversation_id == conversation_id
+    ).first()
+    
+    if not conversation:
+        # Try to get patient ID if user is a patient
+        patient = db.query(Patient).filter(Patient.user_id == current_user.id).first()
+        patient_id = patient.id if patient else None
+        
+        # Create conversation (patient_id can be None for non-patients)
+        conversation = AIConversation(
+            patient_id=patient_id,
+            conversation_id=conversation_id,
+            messages=[]
+        )
+        db.add(conversation)
+    
+    # Add user message
+    user_message = {
+        "role": "user",
+        "content": request.message,
+        "timestamp": datetime.utcnow().isoformat()
+    }
+    
+    if conversation.messages is None:
+        conversation.messages = []
+    conversation.messages.append(user_message)
+    
+    # Call AI service
+    try:
+        gemini_api_key = os.getenv("GEMINI_API_KEY")
+        if not gemini_api_key:
+            raise HTTPException(status_code=500, detail="AI service not configured")
+        
+        gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={gemini_api_key}"
+        
+        # Build conversation context
+        context = "You are an Ayurvedic health assistant. Provide helpful, accurate information about Ayurveda, wellness, and natural health practices.\n\n"
+        for msg in conversation.messages[-5:]:  # Last 5 messages for context
+            context += f"{msg['role']}: {msg['content']}\n"
+        
+        response = requests.post(
+            gemini_url,
+            json={
+                "contents": [{
+                    "parts": [{"text": context}]
+                }]
+            }
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            ai_reply = result['candidates'][0]['content']['parts'][0]['text']
+        else:
+            ai_reply = "I apologize, but I'm having trouble right now. Please try again later."
+        
+        # Add AI response
+        ai_message = {
+            "role": "assistant",
+            "content": ai_reply,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        conversation.messages.append(ai_message)
+        
+        db.commit()
+        
+        return AIChatResponse(
+            reply=ai_reply,
+            conversation_id=conversation_id
+        )
+        
+    except Exception as e:
+        logger.error(f"AI chat error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get AI response: {str(e)}")
+
+
 
 if __name__ == "__main__":
     uvicorn.run(

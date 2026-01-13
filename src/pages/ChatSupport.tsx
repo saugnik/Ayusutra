@@ -1,0 +1,424 @@
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
+import {
+    Activity,
+    Calendar,
+    CheckCircle,
+    Heart,
+    Home,
+    Loader,
+    MessageCircle,
+    Send,
+    Settings,
+    Sparkles,
+    User,
+    Users
+} from 'lucide-react';
+import Sidebar from '../components/Sidebar';
+import api from '../services/api';
+import NotificationDropdown, { Notification } from '../components/NotificationDropdown';
+import { Bell } from 'lucide-react';
+
+interface Practitioner {
+    id: number;
+    name: string;
+    specialization?: string;
+    online: boolean;
+    last_seen?: string;
+}
+
+interface ChatMessage {
+    id: number;
+    sender_id: number;
+    sender_type: string;
+    recipient_id: number;
+    recipient_type: string;
+    content: string;
+    read: boolean;
+    created_at: string;
+}
+
+const ChatSupport = () => {
+    const { user, logout } = useAuth();
+    const navigate = useNavigate();
+
+    // State
+    const [practitioners, setPractitioners] = useState<Practitioner[]>([]);
+    const [selectedPractitioner, setSelectedPractitioner] = useState<Practitioner | null>(null);
+    const [messages, setMessages] = useState<ChatMessage[]>([]);
+    const [messageInput, setMessageInput] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [chatMode, setChatMode] = useState<'practitioner' | 'ai'>('practitioner');
+
+    // AI Chat state
+    const [aiMessages, setAiMessages] = useState<any[]>([]);
+    const [aiConversationId, setAiConversationId] = useState<string | null>(null);
+    const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+    const [notificationsList, setNotificationsList] = useState<Notification[]>([
+        { id: 'CN1', type: 'reminder', title: 'Message from Practitioner', message: 'Dr. Priya Sharma sent you a message about your diet plan.', time: '10 mins ago', read: false },
+        { id: 'CN2', type: 'alert', title: 'Health Update', message: 'New activity detected in your metrics.', time: '3 hours ago', read: true },
+    ]);
+
+    // Sidebar items
+    const sidebarItems = [
+        { icon: Home, label: 'Dashboard', path: '/dashboard' },
+        { icon: Calendar, label: 'Appointments', path: '/appointments' },
+        { icon: Activity, label: 'My Progress', path: '/progress' },
+        { icon: Heart, label: 'Health Support', path: '/health-support' },
+        { icon: MessageCircle, label: 'Chat Support', path: '/chat-support' },
+        { icon: Settings, label: 'Settings', path: '/settings' }
+    ];
+
+    const handleLogout = () => {
+        logout();
+        navigate('/auth');
+    };
+
+    // Fetch practitioners on mount
+    useEffect(() => {
+        fetchPractitioners();
+    }, []);
+
+    // Poll for new messages when a practitioner is selected
+    useEffect(() => {
+        if (selectedPractitioner && chatMode === 'practitioner') {
+            fetchMessages(selectedPractitioner.id);
+            const interval = setInterval(() => {
+                fetchMessages(selectedPractitioner.id);
+            }, 5000); // Poll every 5 seconds
+
+            return () => clearInterval(interval);
+        }
+    }, [selectedPractitioner, chatMode]);
+
+    const fetchPractitioners = async () => {
+        try {
+            const response = await api.get('/chat/practitioners');
+            setPractitioners(response.data);
+        } catch (error) {
+            console.error('Failed to fetch practitioners:', error);
+        }
+    };
+
+    const fetchMessages = async (practitionerId: number) => {
+        try {
+            const response = await api.get(`/chat/messages?recipient_id=${practitionerId}`);
+            setMessages(response.data);
+        } catch (error) {
+            console.error('Failed to fetch messages:', error);
+        }
+    };
+
+    const handleSendMessage = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!messageInput.trim() || !selectedPractitioner) return;
+
+        setLoading(true);
+
+        try {
+            await api.post('/chat/send', {
+                recipient_id: selectedPractitioner.id,
+                recipient_type: 'practitioner',
+                content: messageInput
+            });
+
+            setMessageInput('');
+            fetchMessages(selectedPractitioner.id);
+        } catch (error) {
+            console.error('Failed to send message:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleAIChat = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!messageInput.trim()) return;
+
+        const userMessage = {
+            role: 'user',
+            content: messageInput,
+            timestamp: new Date().toISOString()
+        };
+
+        setAiMessages(prev => [...prev, userMessage]);
+        setMessageInput('');
+        setLoading(true);
+
+        try {
+            const response = await api.post('/chat/ai-assistant', {
+                message: messageInput,
+                conversation_id: aiConversationId
+            });
+
+            const aiMessage = {
+                role: 'assistant',
+                content: response.data.reply,
+                timestamp: new Date().toISOString()
+            };
+
+            setAiMessages(prev => [...prev, aiMessage]);
+            setAiConversationId(response.data.conversation_id);
+        } catch (error) {
+            console.error('Failed to chat with AI:', error);
+            const errorMessage = {
+                role: 'assistant',
+                content: 'Sorry, I encountered an error. Please try again.',
+                timestamp: new Date().toISOString()
+            };
+            setAiMessages(prev => [...prev, errorMessage]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleMarkAsRead = (id: string) => {
+        setNotificationsList(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+    };
+
+    const handleClearAll = () => {
+        setNotificationsList([]);
+        setIsNotificationOpen(false);
+    };
+
+    const handleViewAllActivities = () => {
+        setIsNotificationOpen(false);
+        if (user?.role === 'practitioner') {
+            navigate('/practitioner');
+        } else if (user?.role === 'admin') {
+            navigate('/admin');
+        } else {
+            navigate('/progress');
+        }
+    };
+
+    const renderPractitionerList = () => (
+        <div className="w-80 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Contacts</h2>
+            </div>
+
+            {/* Mode Toggle */}
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex space-x-2">
+                    <button
+                        onClick={() => setChatMode('practitioner')}
+                        className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${chatMode === 'practitioner' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                    >
+                        <Users className="h-4 w-4 inline mr-2" />
+                        Practitioners
+                    </button>
+                    <button
+                        onClick={() => setChatMode('ai')}
+                        className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${chatMode === 'ai' ? 'bg-primary-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}
+                    >
+                        <Sparkles className="h-4 w-4 inline mr-2" />
+                        AI Assistant
+                    </button>
+                </div>
+            </div>
+
+            {/* Practitioner List */}
+            {chatMode === 'practitioner' && (
+                <div className="overflow-y-auto" style={{ height: 'calc(100vh - 200px)' }}>
+                    {practitioners.length === 0 ? (
+                        <p className="text-gray-500 text-center py-8 text-sm">No practitioners available</p>
+                    ) : (
+                        practitioners.map((prac) => (
+                            <div
+                                key={prac.id}
+                                onClick={() => setSelectedPractitioner(prac)}
+                                className={`p-4 border-b border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${selectedPractitioner?.id === prac.id ? 'bg-primary-50 dark:bg-primary-900/20' : ''}`}
+                            >
+                                <div className="flex items-center space-x-3">
+                                    <div className="relative">
+                                        <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center">
+                                            <User className="h-5 w-5 text-primary-600 dark:text-primary-400" />
+                                        </div>
+                                        {prac.online && (
+                                            <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white dark:border-gray-800 rounded-full"></div>
+                                        )}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{prac.name}</p>
+                                        {prac.specialization && (
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{prac.specialization}</p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    )}
+                </div>
+            )}
+
+            {/* AI Assistant Info */}
+            {chatMode === 'ai' && (
+                <div className="p-6">
+                    <div className="text-center">
+                        <div className="w-16 h-16 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Sparkles className="h-8 w-8 text-white" />
+                        </div>
+                        <h3 className="font-medium text-gray-900 dark:text-white mb-2">AI Health Assistant</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Get instant answers to your health and wellness questions</p>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+
+    const renderChatWindow = () => {
+        if (chatMode === 'practitioner' && !selectedPractitioner) {
+            return (
+                <div className="flex-1 flex items-center justify-center bg-dashboard">
+                    <div className="text-center">
+                        <MessageCircle className="h-16 w-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+                        <p className="text-gray-500 dark:text-gray-400">Select a practitioner to start chatting</p>
+                    </div>
+                </div>
+            );
+        }
+
+        const displayMessages = chatMode === 'practitioner' ? messages : aiMessages;
+
+        return (
+            <div className="flex-1 flex flex-col bg-white dark:bg-gray-900">
+                {/* Chat Header */}
+                <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                    <div className="flex items-center space-x-3">
+                        {chatMode === 'practitioner' ? (
+                            <>
+                                <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center">
+                                    <User className="h-5 w-5 text-primary-600 dark:text-primary-400" />
+                                </div>
+                                <div>
+                                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{selectedPractitioner?.name}</h2>
+                                    {selectedPractitioner?.specialization && (
+                                        <p className="text-sm text-gray-500 dark:text-gray-400">{selectedPractitioner.specialization}</p>
+                                    )}
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <div className="w-10 h-10 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center">
+                                    <Sparkles className="h-5 w-5 text-white" />
+                                </div>
+                                <div>
+                                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">AI Health Assistant</h2>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">Always available</p>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </div>
+
+                {/* Messages */}
+                <div className="flex-1 overflow-y-auto p-6 space-y-4" style={{ height: 'calc(100vh - 240px)' }}>
+                    {displayMessages.length === 0 ? (
+                        <div className="text-center py-12">
+                            <MessageCircle className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                            <p className="text-gray-500">No messages yet. Start the conversation!</p>
+                        </div>
+                    ) : (
+                        displayMessages.map((msg: any, idx: number) => {
+                            const isUser = chatMode === 'practitioner'
+                                ? msg.sender_type === 'patient'
+                                : msg.role === 'user';
+
+                            return (
+                                <div key={idx} className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
+                                    <div className={`max-w-[70%] rounded-lg p-4 ${isUser ? 'bg-primary-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100'}`}>
+                                        <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                                        <p className={`text-xs mt-2 ${isUser ? 'text-primary-100' : 'text-gray-500 dark:text-gray-400'}`}>
+                                            {new Date(msg.created_at || msg.timestamp).toLocaleTimeString()}
+                                        </p>
+                                    </div>
+                                </div>
+                            );
+                        })
+                    )}
+                    {loading && (
+                        <div className="flex justify-start">
+                            <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
+                                <Loader className="h-5 w-5 animate-spin text-gray-500 dark:text-gray-400" />
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Message Input */}
+                <form
+                    onSubmit={chatMode === 'practitioner' ? handleSendMessage : handleAIChat}
+                    className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                >
+                    <div className="flex space-x-2">
+                        <input
+                            type="text"
+                            value={messageInput}
+                            onChange={(e) => setMessageInput(e.target.value)}
+                            placeholder="Type your message..."
+                            className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            disabled={loading}
+                        />
+                        <button
+                            type="submit"
+                            disabled={loading || !messageInput.trim()}
+                            className="btn-primary px-6"
+                        >
+                            <Send className="h-5 w-5" />
+                        </button>
+                    </div>
+                </form>
+            </div>
+        );
+    };
+
+    return (
+        <div className="flex h-screen bg-dashboard">
+            <Sidebar items={sidebarItems} user={user} onLogout={handleLogout} />
+
+            <div className="flex-1 flex flex-col overflow-hidden">
+                {/* Header */}
+                <div className="p-6 header-bg flex justify-between items-center">
+                    <div>
+                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Chat Support</h1>
+                        <p className="text-gray-600 dark:text-gray-400 mt-1">Connect with practitioners or chat with AI assistant</p>
+                    </div>
+
+                    <div className="flex items-center space-x-4 relative">
+                        <button
+                            onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+                            className="p-2 text-gray-400 hover:text-gray-500 relative"
+                        >
+                            <Bell className="h-6 w-6" />
+                            {notificationsList.filter(n => !n.read).length > 0 && (
+                                <span className="absolute top-1 right-1 flex h-3 w-3">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                                </span>
+                            )}
+                        </button>
+
+                        <NotificationDropdown
+                            notifications={notificationsList}
+                            isOpen={isNotificationOpen}
+                            onClose={() => setIsNotificationOpen(false)}
+                            onMarkAsRead={handleMarkAsRead}
+                            onClearAll={handleClearAll}
+                            onViewAll={handleViewAllActivities}
+                        />
+                    </div>
+                </div>
+
+                {/* Chat Interface */}
+                <div className="flex-1 flex overflow-hidden">
+                    {renderPractitionerList()}
+                    {renderChatWindow()}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default ChatSupport;

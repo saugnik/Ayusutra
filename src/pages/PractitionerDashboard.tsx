@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Calendar,
   Users,
@@ -20,128 +21,113 @@ import {
   Eye,
   Edit,
   MoreVertical,
-  LogOut
+  LogOut,
+  Download
 } from 'lucide-react';
+import PractitionerUpdateModal from '../components/PractitionerUpdateModal';
+import practitionerService from '../services/practitioner.service';
+import { useAuth } from '../hooks/useAuth';
+import { Appointment, DashboardStats, PatientListItem } from '../types/api.types';
+import NotificationDropdown, { Notification } from '../components/NotificationDropdown';
 
 const PractitionerDashboard = () => {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
   const [selectedTab, setSelectedTab] = useState('overview');
-  const [selectedPatient, setSelectedPatient] = useState(null);
+  const [selectedPatient, setSelectedPatient] = useState<{ id: number, name: string } | null>(null);
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([
+    { id: 'PN1', type: 'alert', title: 'New Patient Registration', message: 'Rahul Kumar has registered for consultations.', time: '10 mins ago', read: false },
+    { id: 'PN2', type: 'appointment', title: 'Upcoming Session', message: 'You have a Shirodhara session in 15 minutes.', time: '15 mins ago', read: false },
+    { id: 'PN3', type: 'info', title: 'Report Due', message: 'Monthly analysis report for June is ready to view.', time: '1 hour ago', read: true },
+  ]);
 
-  // Mock data
-  const todayStats = {
-    totalPatients: 24,
-    todayAppointments: 8,
-    activeTherapies: 12,
-    pendingReports: 3
+  // Real Data State
+  const [stats, setStats] = useState<DashboardStats>({
+    total_patients: 0,
+    today_appointments: 0,
+    active_treatments: 0,
+    pending_reports: 0
+  });
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [patients, setPatients] = useState<PatientListItem[]>([]);
+
+  // Analytics State
+  const [analytics, setAnalytics] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [dashboardStats, myPatients, allAppointments, analyticsData] = await Promise.all([
+          practitionerService.getDashboardStats(),
+          practitionerService.getMyPatients(),
+          practitionerService.getAppointments(),
+          practitionerService.getAnalytics()
+        ]);
+
+        setStats(dashboardStats);
+        setPatients(myPatients);
+        setAnalytics(analyticsData);
+
+        // Filter appointments for today
+        const today = new Date().toDateString();
+        const todays = allAppointments.filter(app =>
+          new Date(app.scheduled_datetime).toDateString() === today
+        ).sort((a, b) => new Date(a.scheduled_datetime).getTime() - new Date(b.scheduled_datetime).getTime());
+
+        setAppointments(todays);
+      } catch (error) {
+        console.error("Failed to fetch dashboard data", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Helpers
+  const handleLogout = () => {
+    logout();
+    navigate('/auth');
   };
-
-  const todayAppointments = [
-    {
-      id: 1,
-      patient: 'Rajesh Kumar',
-      time: '9:00 AM',
-      therapy: 'Abhyanga',
-      status: 'upcoming',
-      duration: '90 min'
-    },
-    {
-      id: 2,
-      patient: 'Priya Sharma',
-      time: '11:00 AM',
-      therapy: 'Virechana',
-      status: 'in-progress',
-      duration: '120 min'
-    },
-    {
-      id: 3,
-      patient: 'Amit Singh',
-      time: '2:00 PM',
-      therapy: 'Nasya',
-      status: 'upcoming',
-      duration: '60 min'
-    },
-    {
-      id: 4,
-      patient: 'Sunita Devi',
-      time: '4:00 PM',
-      therapy: 'Shirodhara',
-      status: 'upcoming',
-      duration: '75 min'
-    }
-  ];
-
-  const allPatients = [
-    {
-      id: 1,
-      name: 'Rajesh Kumar',
-      age: 45,
-      gender: 'Male',
-      phone: '+91 98765 43210',
-      email: 'rajesh.k@email.com',
-      currentTherapy: 'Panchakarma',
-      stage: 'Purvakarma',
-      nextAppointment: '2024-01-15',
-      status: 'active',
-      prakriti: 'Vata-Pitta'
-    },
-    {
-      id: 2,
-      name: 'Priya Sharma',
-      age: 38,
-      gender: 'Female',
-      phone: '+91 87654 32109',
-      email: 'priya.s@email.com',
-      currentTherapy: 'Virechana',
-      stage: 'Pradhanakarma',
-      nextAppointment: '2024-01-16',
-      status: 'active',
-      prakriti: 'Pitta-Kapha'
-    },
-    {
-      id: 3,
-      name: 'Amit Singh',
-      age: 52,
-      gender: 'Male',
-      phone: '+91 76543 21098',
-      email: 'amit.s@email.com',
-      currentTherapy: 'Nasya',
-      stage: 'Paschatkarma',
-      nextAppointment: '2024-01-17',
-      status: 'completed',
-      prakriti: 'Vata-Kapha'
-    }
-  ];
-
-  const recentAlerts = [
-    {
-      id: 1,
-      type: 'warning',
-      message: 'Patient Rajesh Kumar missed yesterday\'s appointment',
-      time: '2 hours ago'
-    },
-    {
-      id: 2,
-      type: 'info',
-      message: 'New patient registration: Sunita Devi',
-      time: '4 hours ago'
-    },
-    {
-      id: 3,
-      type: 'success',
-      message: 'Priya Sharma completed Virechana therapy successfully',
-      time: '1 day ago'
-    }
-  ];
 
   const getStatusColor = (status: string) => {
     switch (status) {
+      case 'scheduled': return 'text-blue-600 bg-blue-100'; // Maps to 'upcoming' visually
       case 'upcoming': return 'text-blue-600 bg-blue-100';
+      case 'in_progress': return 'text-green-600 bg-green-100';
       case 'in-progress': return 'text-green-600 bg-green-100';
       case 'completed': return 'text-gray-600 bg-gray-100';
       case 'active': return 'text-primary-600 bg-primary-100';
       default: return 'text-gray-600 bg-gray-100';
     }
   };
+
+  const handleOpenUpdateModal = (patient: any) => {
+    setSelectedPatient({ id: patient.id, name: patient.name });
+    setIsUpdateModalOpen(true);
+  };
+
+  const handleMarkAsRead = (id: string) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  };
+
+  const handleClearAll = () => {
+    setNotifications([]);
+    setIsNotificationOpen(false);
+  };
+
+  const handleViewAllActivities = () => {
+    setIsNotificationOpen(false);
+    setSelectedTab('activities');
+  };
+
+  // Mock Alerts (Leave as mock for now or clear)
+  const recentAlerts: any[] = [];
 
   const renderOverview = () => (
     <div className="space-y-6">
@@ -154,7 +140,7 @@ const PractitionerDashboard = () => {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Total Patients</p>
-              <p className="text-2xl font-bold text-gray-900">{todayStats.totalPatients}</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.total_patients || 0}</p>
             </div>
           </div>
         </div>
@@ -166,7 +152,7 @@ const PractitionerDashboard = () => {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Today's Appointments</p>
-              <p className="text-2xl font-bold text-gray-900">{todayStats.todayAppointments}</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.today_appointments || 0}</p>
             </div>
           </div>
         </div>
@@ -178,7 +164,7 @@ const PractitionerDashboard = () => {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Active Therapies</p>
-              <p className="text-2xl font-bold text-gray-900">{todayStats.activeTherapies}</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.active_treatments || 0}</p>
             </div>
           </div>
         </div>
@@ -190,7 +176,7 @@ const PractitionerDashboard = () => {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Pending Reports</p>
-              <p className="text-2xl font-bold text-gray-900">{todayStats.pendingReports}</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.pending_reports || 0}</p>
             </div>
           </div>
         </div>
@@ -207,54 +193,74 @@ const PractitionerDashboard = () => {
           </div>
 
           <div className="space-y-4">
-            {todayAppointments.map((appointment) => (
-              <div key={appointment.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
-                <div className="flex items-center space-x-4">
-                  <div className="text-center">
-                    <p className="text-sm font-medium text-gray-900">{appointment.time}</p>
-                    <p className="text-xs text-gray-500">{appointment.duration}</p>
+            {appointments.length === 0 ? (
+              <p className="text-gray-500 text-center py-4">No appointments scheduled for today.</p>
+            ) : (
+              appointments.map((appointment) => (
+                <div key={appointment.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
+                  <div className="flex items-center space-x-4">
+                    <div className="text-center">
+                      <p className="text-sm font-medium text-gray-900">
+                        {new Date(appointment.scheduled_datetime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                      <p className="text-xs text-gray-500">{appointment.duration_minutes} min</p>
+                    </div>
+                    <div>
+                      {/* Assuming we might not have patient name populated in Appointment list yet without join, checking API response */}
+                      {/* The AppointmentResponse doesn't technically have patient name, but in a real app we'd fetch it or include it. 
+                            For now, since appointment creation might be bare bones, I'll fallback or use ID if name missing. 
+                            Wait, AppointmentResponse has patient_id. I can look up the patient name from `patients` list.
+                        */}
+                      <p className="font-medium text-gray-900">
+                        {patients.find(p => p.id === appointment.patient_id)?.name || `Patient #${appointment.patient_id}`}
+                      </p>
+                      <p className="text-sm text-gray-600">{appointment.therapy_type}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium text-gray-900">{appointment.patient}</p>
-                    <p className="text-sm text-gray-600">{appointment.therapy}</p>
+                  <div className="flex items-center space-x-3">
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(appointment.status)}`}>
+                      {appointment.status.replace('_', ' ')}
+                    </span>
+                    <button className="p-2 hover:bg-gray-100 rounded-lg">
+                      <MoreVertical className="h-4 w-4 text-gray-600" />
+                    </button>
                   </div>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(appointment.status)}`}>
-                    {appointment.status.replace('-', ' ')}
-                  </span>
-                  <button className="p-2 hover:bg-gray-100 rounded-lg">
-                    <MoreVertical className="h-4 w-4 text-gray-600" />
-                  </button>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
 
         {/* Recent Alerts */}
         <div className="card">
-          <h3 className="text-lg font-semibold text-gray-900 mb-6">Recent Alerts</h3>
-          <div className="space-y-4">
-            {recentAlerts.map((alert) => (
-              <div key={alert.id} className="flex items-start space-x-3">
-                <div className={`p-2 rounded-lg ${alert.type === 'warning' ? 'bg-yellow-100' :
-                    alert.type === 'info' ? 'bg-blue-100' : 'bg-green-100'
-                  }`}>
-                  {alert.type === 'warning' ? (
-                    <AlertCircle className="h-4 w-4 text-yellow-600" />
-                  ) : alert.type === 'info' ? (
-                    <Bell className="h-4 w-4 text-blue-600" />
-                  ) : (
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                  )}
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm text-gray-900">{alert.message}</p>
-                  <p className="text-xs text-gray-500 mt-1">{alert.time}</p>
-                </div>
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Alerts</h3>
+            <button
+              onClick={handleViewAllActivities}
+              className="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 font-medium"
+            >
+              View All
+            </button>
+          </div>
+          <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+            {recentAlerts.length === 0 ? (
+              <div className="text-center py-8">
+                <Bell className="h-12 w-12 text-gray-200 dark:text-gray-700 mx-auto mb-3" />
+                <p className="text-gray-500 dark:text-gray-400">No recent alerts.</p>
               </div>
-            ))}
+            ) : (
+              recentAlerts.map((alert: any) => (
+                <div key={alert.id} className="flex items-start space-x-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-100 dark:border-gray-800">
+                  <div className={`p-2 rounded-lg ${alert.status === 'urgent' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}>
+                    <AlertCircle className="h-4 w-4" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{alert.title}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{alert.message}</p>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
@@ -265,7 +271,9 @@ const PractitionerDashboard = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-gray-900">Patient Management</h2>
+        {/* ... buttons ... */}
         <div className="flex space-x-3">
+          {/* Search/Filter UI preserved */}
           <div className="relative">
             <Search className="h-5 w-5 text-gray-400 absolute left-3 top-3" />
             <input
@@ -297,44 +305,104 @@ const PractitionerDashboard = () => {
               </tr>
             </thead>
             <tbody>
-              {allPatients.map((patient) => (
-                <tr key={patient.id} className="border-b border-gray-100 hover:bg-gray-50">
-                  <td className="py-4 px-4">
-                    <div>
-                      <p className="font-medium text-gray-900">{patient.name}</p>
-                      <p className="text-sm text-gray-600">{patient.age}yr, {patient.gender} • {patient.prakriti}</p>
-                    </div>
-                  </td>
-                  <td className="py-4 px-4">
-                    <p className="font-medium text-gray-900">{patient.currentTherapy}</p>
-                  </td>
-                  <td className="py-4 px-4">
-                    <span className="px-3 py-1 bg-primary-100 text-primary-800 rounded-full text-sm">
-                      {patient.stage}
-                    </span>
-                  </td>
-                  <td className="py-4 px-4">
-                    <p className="text-gray-900">{patient.nextAppointment}</p>
-                  </td>
-                  <td className="py-4 px-4">
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(patient.status)}`}>
-                      {patient.status}
-                    </span>
-                  </td>
-                  <td className="py-4 px-4">
-                    <div className="flex space-x-2">
-                      <button className="p-2 hover:bg-gray-100 rounded-lg">
-                        <Eye className="h-4 w-4 text-gray-600" />
-                      </button>
-                      <button className="p-2 hover:bg-gray-100 rounded-lg">
-                        <Edit className="h-4 w-4 text-gray-600" />
-                      </button>
-                    </div>
-                  </td>
+              {patients.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-8 text-center text-gray-500">No patients found. Create one to get started.</td>
                 </tr>
-              ))}
+              ) : (
+                patients.map((patient) => (
+                  <tr key={patient.id} className="border-b border-gray-100 hover:bg-gray-50">
+                    <td className="py-4 px-4">
+                      <div>
+                        <p className="font-medium text-gray-900">{patient.name}</p>
+                        <p className="text-sm text-gray-600">{patient.age ? `${patient.age}yr, ` : ''}{patient.gender} • {patient.prakriti}</p>
+                      </div>
+                    </td>
+                    <td className="py-4 px-4">
+                      <p className="font-medium text-gray-900">{patient.current_therapy}</p>
+                    </td>
+                    <td className="py-4 px-4">
+                      <span className="px-3 py-1 bg-primary-100 text-primary-800 rounded-full text-sm">
+                        {patient.stage}
+                      </span>
+                    </td>
+                    <td className="py-4 px-4">
+                      <p className="text-gray-900">
+                        {patient.next_appointment ? new Date(patient.next_appointment).toLocaleDateString() : 'None'}
+                      </p>
+                    </td>
+                    <td className="py-4 px-4">
+                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(patient.status)}`}>
+                        {patient.status}
+                      </span>
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => handleOpenUpdateModal(patient)}
+                          className="p-2 hover:bg-green-100 text-green-600 rounded-lg flex items-center"
+                          title="Update Health Status"
+                        >
+                          <Activity className="h-4 w-4" />
+                        </button>
+                        <button className="p-2 hover:bg-gray-100 rounded-lg">
+                          <Eye className="h-4 w-4 text-gray-600" />
+                        </button>
+                        <button className="p-2 hover:bg-gray-100 rounded-lg">
+                          <Edit className="h-4 w-4 text-gray-600" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderActivities = () => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Activity History</h2>
+        <div className="flex space-x-3">
+          <button className="btn-outline px-4 py-2">
+            <Download className="h-4 w-4 mr-2" /> Export History
+          </button>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="divide-y divide-gray-100 dark:divide-gray-800">
+          {[...notifications, ...notifications].map((item, idx) => (
+            <div key={`${item.id}-${idx}`} className="py-6 flex items-start space-x-4">
+              <div className={`p-2 rounded-lg ${item.type === 'alert' ? 'bg-red-100 text-red-600' :
+                item.type === 'appointment' ? 'bg-green-100 text-green-600' :
+                  item.type === 'reminder' ? 'bg-blue-100 text-blue-600' :
+                    'bg-gray-100 text-gray-600'
+                }`}>
+                {item.type === 'alert' ? <AlertCircle className="h-5 w-5" /> :
+                  item.type === 'appointment' ? <Calendar className="h-5 w-5" /> :
+                    <Bell className="h-5 w-5" />}
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-1">
+                  <h4 className="text-lg font-semibold text-gray-900 dark:text-white">{item.title}</h4>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">{item.time}</span>
+                </div>
+                <p className="text-gray-600 dark:text-gray-400 leading-relaxed">{item.message}</p>
+                <div className="mt-3 flex items-center space-x-4">
+                  <span className={`px-2 py-0.5 rounded text-xs font-medium uppercase tracking-wider ${item.read ? 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400' : 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400'
+                    }`}>
+                    {item.read ? 'Read' : 'New'}
+                  </span>
+                  <button className="text-sm text-primary-600 dark:text-primary-400 hover:underline">Mark as flagship</button>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
@@ -345,24 +413,29 @@ const PractitionerDashboard = () => {
       <h2 className="text-2xl font-bold text-gray-900">Reports & Analytics</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Using real analytics from state */}
         <div className="card text-center">
           <TrendingUp className="h-12 w-12 text-primary-600 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Treatment Success Rate</h3>
-          <p className="text-3xl font-bold text-primary-600 mb-2">94.5%</p>
+          <p className="text-3xl font-bold text-primary-600 mb-2">{analytics?.success_rate || 0}%</p>
           <p className="text-sm text-gray-600">Last 30 days</p>
         </div>
 
         <div className="card text-center">
           <Users className="h-12 w-12 text-green-600 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Patient Satisfaction</h3>
-          <p className="text-3xl font-bold text-green-600 mb-2">4.8/5</p>
+          <p className="text-3xl font-bold text-green-600 mb-2">{analytics?.patient_satisfaction || 0}/5</p>
           <p className="text-sm text-gray-600">Average rating</p>
         </div>
 
         <div className="card text-center">
           <Calendar className="h-12 w-12 text-blue-600 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Monthly Treatments</h3>
-          <p className="text-3xl font-bold text-blue-600 mb-2">156</p>
+          <p className="text-3xl font-bold text-blue-600 mb-2">
+            {analytics?.monthly_trends && analytics.monthly_trends.length > 0
+              ? analytics.monthly_trends[0].sessions
+              : 0}
+          </p>
           <p className="text-sm text-gray-600">This month</p>
         </div>
       </div>
@@ -399,9 +472,9 @@ const PractitionerDashboard = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="bg-dashboard">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
+      <header className="shadow-sm header-bg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
@@ -409,18 +482,36 @@ const PractitionerDashboard = () => {
                 <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-xl">आ</span>
                 </div>
-                <span className="ml-3 text-xl font-bold text-gray-900">AyurSutra</span>
+                <span className="ml-3 text-xl font-bold text-gray-900 dark:text-white">AyurSutra</span>
               </div>
             </div>
 
             <div className="flex items-center space-x-4">
-              <button className="p-2 hover:bg-gray-100 rounded-lg relative">
-                <Bell className="h-5 w-5 text-gray-600" />
-                <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white rounded-full text-xs flex items-center justify-center">3</span>
-              </button>
+              <div className="flex items-center space-x-4 relative">
+                <button
+                  onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+                  className="p-2 hover:bg-gray-100 rounded-lg relative"
+                >
+                  <Bell className="h-5 w-5 text-gray-600" />
+                  {notifications.filter(n => !n.read).length > 0 && (
+                    <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white rounded-full text-xs flex items-center justify-center">
+                      {notifications.filter(n => !n.read).length}
+                    </span>
+                  )}
+                </button>
+
+                <NotificationDropdown
+                  notifications={notifications}
+                  isOpen={isNotificationOpen}
+                  onClose={() => setIsNotificationOpen(false)}
+                  onMarkAsRead={handleMarkAsRead}
+                  onClearAll={handleClearAll}
+                  onViewAll={handleViewAllActivities}
+                />
+              </div>
 
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-primary-200">
+                <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-primary-200 dark:border-primary-800">
                   <img
                     src={`https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent('Dr. Priya Sharma')}&backgroundColor=e5e7eb`}
                     alt="User Avatar"
@@ -428,17 +519,21 @@ const PractitionerDashboard = () => {
                   />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-900">Dr. Priya Sharma</p>
-                  <p className="text-xs text-gray-600">Practitioner</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">Dr. Priya Sharma</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">Practitioner</p>
                 </div>
               </div>
 
               <button className="p-2 hover:bg-gray-100 rounded-lg">
-                <Settings className="h-5 w-5 text-gray-600" />
+                <Settings className="h-5 w-5 text-gray-600 dark:text-gray-400" />
               </button>
 
-              <button className="p-2 hover:bg-gray-100 rounded-lg">
-                <LogOut className="h-5 w-5 text-gray-600" />
+              <button
+                onClick={handleLogout}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
+                title="Sign Out"
+              >
+                <LogOut className="h-5 w-5 text-gray-600 dark:text-gray-400" />
               </button>
             </div>
           </div>
@@ -446,20 +541,21 @@ const PractitionerDashboard = () => {
       </header>
 
       {/* Navigation Tabs */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="header-bg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="flex space-x-8">
             {[
               { id: 'overview', name: 'Overview', icon: TrendingUp },
               { id: 'patients', name: 'Patients', icon: Users },
-              { id: 'reports', name: 'Reports', icon: FileText }
+              { id: 'reports', name: 'Reports', icon: FileText },
+              { id: 'activities', name: 'Activities', icon: Bell }
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setSelectedTab(tab.id)}
-                className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm ${selectedTab === tab.id
-                    ? 'border-primary-500 text-primary-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm transition-all ${selectedTab === tab.id
+                  ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-600'
                   }`}
               >
                 <tab.icon className="h-5 w-5" />
@@ -475,7 +571,18 @@ const PractitionerDashboard = () => {
         {selectedTab === 'overview' && renderOverview()}
         {selectedTab === 'patients' && renderPatients()}
         {selectedTab === 'reports' && renderReports()}
+        {selectedTab === 'activities' && renderActivities()}
       </main>
+
+      {/* Update Modal */}
+      {selectedPatient && (
+        <PractitionerUpdateModal
+          isOpen={isUpdateModalOpen}
+          onClose={() => setIsUpdateModalOpen(false)}
+          patientId={selectedPatient.id}
+          patientName={selectedPatient.name}
+        />
+      )}
     </div>
   );
 };

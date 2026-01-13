@@ -46,7 +46,7 @@ const DailyWisdom = () => {
     }, []);
 
     return (
-        <div className="card bg-gradient-to-br from-orange-50 to-white border-orange-100 relative overflow-hidden">
+        <div className="card bg-gradient-to-br from-orange-50 to-white dark:from-orange-950/20 dark:to-gray-800 border-orange-100 dark:border-orange-900/30 relative overflow-hidden">
             {/* Decorative Background */}
             <div className="absolute top-0 right-0 -mr-4 -mt-4 opacity-10">
                 <Sun className="h-24 w-24 text-orange-500" />
@@ -56,7 +56,7 @@ const DailyWisdom = () => {
                 <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center space-x-2">
                         <Sparkles className="h-5 w-5 text-orange-500" />
-                        <h3 className="font-bold text-gray-800">Daily Wisdom</h3>
+                        <h3 className="font-bold text-gray-800 dark:text-gray-100">Daily Wisdom</h3>
                     </div>
                     <button
                         onClick={() => fetchTip(true)}
@@ -75,7 +75,7 @@ const DailyWisdom = () => {
                             <div className="h-4 bg-orange-100 rounded w-1/2 animate-pulse"></div>
                         </div>
                     ) : (
-                        <p className="text-gray-700 italic text-lg leading-relaxed font-serif">
+                        <p className="text-gray-700 dark:text-gray-200 italic text-lg leading-relaxed font-serif">
                             "{tip}"
                         </p>
                     )}

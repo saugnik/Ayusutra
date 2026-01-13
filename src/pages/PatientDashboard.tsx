@@ -6,15 +6,14 @@ import {
   Bell,
   Activity,
   TrendingUp,
-  CheckCircle,
   User as UserIcon,
   Settings,
-  LogOut,
   MessageCircle,
   Video,
   FileText,
   Menu,
-  X
+  X,
+  CheckCircle
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import appointmentService from '../services/appointment.service';
@@ -22,6 +21,8 @@ import { AppointmentResponse } from '../types/api.types';
 import BookAppointmentModal from '../components/BookAppointmentModal';
 import toast from 'react-hot-toast';
 import DailyWisdom from '../components/DailyWisdom';
+import Sidebar, { SidebarItem } from '../components/Sidebar';
+import NotificationDropdown, { Notification } from '../components/NotificationDropdown';
 
 const PatientDashboard = () => {
   const { user, logout } = useAuth();
@@ -30,6 +31,11 @@ const PatientDashboard = () => {
   const [checkedItems, setCheckedItems] = useState<{ [key: string]: boolean }>({});
   const [appointments, setAppointments] = useState<AppointmentResponse[]>([]);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([
+    { id: 'N001', type: 'reminder', title: 'Welcome to AyurSutra', message: 'We are glad to have you on your wellness journey.', time: '1 hour ago', read: false },
+    { id: 'N002', type: 'appointment', title: 'Session Confirmed', message: 'Your Shirodhara session with Dr. Sharma is confirmed.', time: '2 hours ago', read: false },
+  ]);
 
   useEffect(() => {
     if (user) {
@@ -62,9 +68,19 @@ const PatientDashboard = () => {
     { id: 'pc5', text: 'Arrive 30 minutes before session', completed: false, required: true }
   ];
 
-  const notifications = [
-    { id: 'N001', type: 'reminder', title: 'Welcome to AyurSutra', message: 'We are glad to have you on your wellness journey.', time: '1 hour ago', read: false },
-  ];
+  const handleMarkAsRead = (id: string) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  };
+
+  const handleClearAll = () => {
+    setNotifications([]);
+    setIsNotificationOpen(false);
+  };
+
+  const handleViewAllActivities = () => {
+    setIsNotificationOpen(false);
+    navigate('/progress'); // Redirect to Progress for now as it has history/activity
+  };
 
   const handleCheckItem = (itemId: string) => {
     setCheckedItems(prev => ({
@@ -73,17 +89,17 @@ const PatientDashboard = () => {
     }));
   };
 
-  const sidebarItems = [
-    { icon: Activity, label: 'Dashboard', active: true },
-    { icon: Calendar, label: 'My Sessions', active: false },
-    { icon: TrendingUp, label: 'Progress', active: false },
-    { icon: FileText, label: 'Health Records', active: false },
-    { icon: MessageCircle, label: 'Chat Support', active: false },
-    { icon: Settings, label: 'Settings', active: false }
+  const sidebarItems: SidebarItem[] = [
+    { icon: Activity, label: 'Dashboard', path: '/patient' },
+    { icon: Calendar, label: 'My Sessions', path: '/my-sessions' },
+    { icon: TrendingUp, label: 'Progress', path: '/progress' },
+    { icon: FileText, label: 'Health Records', path: '/health-support' },
+    { icon: MessageCircle, label: 'Chat Support', path: '/chat-support' }, // Placeholder
+    { icon: Settings, label: 'Settings', path: '/settings' }
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="bg-dashboard flex text-gray-900 dark:text-gray-100">
       <BookAppointmentModal
         isOpen={isBookingModalOpen}
         onClose={() => setIsBookingModalOpen(false)}
@@ -104,22 +120,20 @@ const PatientDashboard = () => {
               </button>
             </div>
             {/* Mobile sidebar content */}
-            <SidebarContent items={sidebarItems} user={user} onLogout={handleLogout} />
+            <Sidebar items={sidebarItems} user={user} onLogout={handleLogout} />
           </div>
         </div>
       )}
 
       {/* Desktop sidebar */}
-      <div className="hidden lg:flex lg:flex-shrink-0">
-        <div className="flex flex-col w-64 bg-white border-r border-gray-200">
-          <SidebarContent items={sidebarItems} user={user} onLogout={handleLogout} />
-        </div>
+      <div className="hidden lg:flex lg:flex-col lg:flex-shrink-0 w-64">
+        <Sidebar items={sidebarItems} user={user} onLogout={handleLogout} />
       </div>
 
       {/* Main content */}
-      <div className="lg:pl-64 flex flex-col flex-1">
+      <div className="flex flex-col flex-1">
         {/* Top navigation */}
-        <div className="relative z-10 flex-shrink-0 flex h-16 bg-white shadow-sm border-b border-gray-200">
+        <div className="relative z-10 flex-shrink-0 flex h-16 header-bg shadow-sm">
           <button
             className="px-4 border-r border-gray-200 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 lg:hidden"
             onClick={() => setIsSidebarOpen(true)}
@@ -128,19 +142,31 @@ const PatientDashboard = () => {
           </button>
           <div className="flex-1 px-4 flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-semibold text-gray-900">Namaste, {user?.full_name}!</h1>
-              <p className="text-sm text-gray-600">Your wellness journey continues</p>
+              <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Namaste, {user?.full_name || 'AyurSeeker'}!</h1>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Your wellness journey continues</p>
             </div>
-            <div className="flex items-center space-x-4">
-              <button className="p-2 text-gray-500 hover:text-gray-700">
+            <div className="flex items-center space-x-4 relative">
+              <button
+                onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+                className="p-2 text-gray-500 hover:text-gray-700 relative"
+              >
                 <Bell className="h-6 w-6" />
                 {notifications.filter(n => !n.read).length > 0 && (
-                  <span className="absolute -mt-1 ml-2 flex h-3 w-3">
+                  <span className="absolute -mt-1 ml-2 flex h-3 w-3 top-2 right-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
                   </span>
                 )}
               </button>
+
+              <NotificationDropdown
+                notifications={notifications}
+                isOpen={isNotificationOpen}
+                onClose={() => setIsNotificationOpen(false)}
+                onMarkAsRead={handleMarkAsRead}
+                onClearAll={handleClearAll}
+                onViewAll={handleViewAllActivities}
+              />
             </div>
           </div>
         </div>
@@ -208,8 +234,8 @@ const PatientDashboard = () => {
                 {/* Checklist */}
                 <div className="card">
                   <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-lg font-semibold text-gray-900">Pre-procedure Checklist</h3>
-                    <span className="text-sm text-gray-500">For your wellbeing</span>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Pre-procedure Checklist</h3>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">For your wellbeing</span>
                   </div>
                   <div className="space-y-4">
                     {preCheckItems.map((item) => (
@@ -227,8 +253,8 @@ const PatientDashboard = () => {
                         </button>
                         <div className="flex-1">
                           <p className={`text-sm ${item.completed || checkedItems[item.id]
-                            ? 'text-gray-500 line-through'
-                            : 'text-gray-900'
+                            ? 'text-gray-400 dark:text-gray-500 line-through'
+                            : 'text-gray-900 dark:text-gray-200'
                             }`}>
                             {item.text}
                             {item.required && (
@@ -249,7 +275,7 @@ const PatientDashboard = () => {
               <div className="space-y-6">
 
                 <div className="card">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
                   <div className="space-y-3">
                     <button
                       onClick={() => setIsBookingModalOpen(true)}
@@ -258,7 +284,7 @@ const PatientDashboard = () => {
                       <Calendar className="h-4 w-4 mr-3" />
                       Book New Session
                     </button>
-                    <button className="w-full bg-gray-100 text-gray-900 px-4 py-3 rounded-lg font-medium hover:bg-gray-200 text-left flex items-center">
+                    <button className="w-full bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-4 py-3 rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-700 text-left flex items-center">
                       <MessageCircle className="h-4 w-4 mr-3" />
                       Contact Practitioner
                     </button>
@@ -271,25 +297,25 @@ const PatientDashboard = () => {
             <div className="grid grid-cols-1 gap-6 mt-8">
               <div className="card">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900">Your Appointments</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Your Appointments</h3>
                 </div>
                 {appointments.length === 0 ? (
                   <p className="text-gray-500 text-center py-4">No appointments scheduled.</p>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
                     {appointments.map((session) => (
-                      <div key={session.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div key={session.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-100 dark:border-gray-800">
                         <div>
-                          <p className="font-medium text-gray-900">{session.therapy_type}</p>
-                          <p className="text-sm text-gray-600">Practitioner ID: {session.practitioner_id}</p>
-                          <div className="flex items-center space-x-4 text-xs text-gray-500 mt-1">
+                          <p className="font-medium text-gray-900 dark:text-white">{session.therapy_type}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">Practitioner ID: {session.practitioner_id}</p>
+                          <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400 mt-1">
                             <span>{new Date(session.scheduled_datetime).toLocaleDateString()}</span>
                             <span>{new Date(session.scheduled_datetime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                           </div>
                         </div>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${session.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                          session.status === 'scheduled' ? 'bg-blue-100 text-blue-800' :
-                            'bg-gray-100 text-gray-800'
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${session.status === 'confirmed' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
+                          session.status === 'scheduled' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
+                            'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300'
                           }`}>
                           {session.status.toUpperCase()}
                         </span>
@@ -305,64 +331,5 @@ const PatientDashboard = () => {
     </div>
   );
 };
-
-// Sidebar Component
-const SidebarContent = ({ items, user, onLogout }: { items: any[], user: any, onLogout: () => void }) => (
-  <div className="flex flex-col h-full">
-    {/* Logo */}
-    <div className="flex items-center h-16 flex-shrink-0 px-6 bg-primary-600">
-      <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-        <span className="text-primary-600 font-bold text-lg">आ</span>
-      </div>
-      <span className="ml-3 text-xl font-bold text-white">AyurSutra</span>
-    </div>
-
-    {/* Patient Info */}
-    <div className="p-6 border-b border-gray-200">
-      <div className="flex items-center">
-        <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-primary-200">
-          <img
-            src={`https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(user?.full_name || 'Guest')}&backgroundColor=e5e7eb`}
-            alt="User Avatar"
-            className="w-full h-full object-cover"
-          />
-        </div>
-        <div className="ml-3">
-          <p className="text-sm font-medium text-gray-900">{user?.full_name || 'Guest'}</p>
-          <p className="text-xs text-gray-500">{user?.role === 'patient' ? 'Patient' : 'User'}</p>
-        </div>
-      </div>
-    </div>
-
-    {/* Navigation */}
-    <nav className="mt-6 flex-1 px-6">
-      <div className="space-y-2">
-        {items.map((item, index) => (
-          <button
-            key={index}
-            className={`group flex items-center w-full px-4 py-2 text-sm font-medium rounded-lg ${item.active
-              ? 'bg-primary-100 text-primary-700'
-              : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-              }`}
-          >
-            <item.icon className="mr-3 h-5 w-5" />
-            {item.label}
-          </button>
-        ))}
-      </div>
-    </nav>
-
-    {/* Footer */}
-    <div className="flex-shrink-0 p-6 border-t border-gray-200">
-      <button
-        onClick={onLogout}
-        className="group flex items-center w-full px-4 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900"
-      >
-        <LogOut className="mr-3 h-5 w-5" />
-        Sign Out
-      </button>
-    </div>
-  </div>
-);
 
 export default PatientDashboard;

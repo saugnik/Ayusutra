@@ -131,8 +131,41 @@ export interface Feedback {
     practitioner_professionalism?: number;
     facility_cleanliness?: number;
     would_recommend?: boolean;
-    suggestions?: string;
+    action_url?: string;
     created_at: string;
+}
+
+// ==================== HEALTH LOG TYPES ====================
+export interface HealthLog {
+    id: number;
+    patient_id: number;
+    practitioner_id: number;
+    date: string;
+    dosha_vata: number;
+    dosha_pitta: number;
+    dosha_kapha: number;
+    sleep_score?: number;
+    stress_level?: string;
+    hydration?: number;
+    weight?: number;
+    blood_pressure?: string;
+    notes?: string;
+    recommendations?: string;
+    created_at: string;
+}
+
+export interface HealthLogCreate {
+    patient_id: number;
+    dosha_vata: number;
+    dosha_pitta: number;
+    dosha_kapha: number;
+    sleep_score?: number;
+    stress_level?: string;
+    hydration?: number;
+    weight?: number;
+    blood_pressure?: string;
+    notes?: string;
+    recommendations?: string;
 }
 
 export interface FeedbackCreate {
@@ -166,6 +199,20 @@ export interface DashboardStats {
     total_practitioners?: number;
     recent_registrations?: number;
     system_health?: number;
+}
+
+export interface PatientListItem {
+    id: number;
+    name: string;
+    age?: number;
+    gender?: string;
+    phone?: string;
+    email: string;
+    current_therapy?: string;
+    stage?: string;
+    next_appointment?: string;
+    status: string;
+    prakriti?: string;
 }
 
 // ==================== AI ASSISTANT TYPES ====================

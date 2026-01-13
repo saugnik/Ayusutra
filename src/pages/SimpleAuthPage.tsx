@@ -117,7 +117,7 @@ const SimpleAuthPage = () => {
     return (
         <>
             <Toaster position="top-right" />
-            <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+            <div className="min-h-screen bg-dashboard bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-md w-full space-y-8">
                     <div>
                         <Link to="/home" className="flex justify-center">
@@ -125,14 +125,14 @@ const SimpleAuthPage = () => {
                                 <span className="text-3xl">🌿</span>
                             </div>
                         </Link>
-                        <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
+                        <h2 className="mt-6 text-center text-3xl font-bold text-gray-900 dark:text-white">
                             {isLogin ? 'Welcome back' : 'Create your account'}
                         </h2>
-                        <p className="mt-2 text-center text-sm text-gray-600">
+                        <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
                             {isLogin ? "Don't have an account? " : 'Already have an account? '}
                             <button
                                 onClick={() => setIsLogin(!isLogin)}
-                                className="font-medium text-primary-600 hover:text-primary-500"
+                                className="font-medium text-primary-600 dark:text-primary-400 hover:text-primary-500"
                             >
                                 {isLogin ? 'Sign up' : 'Sign in'}
                             </button>
@@ -144,11 +144,11 @@ const SimpleAuthPage = () => {
                             {!isLogin && (
                                 <>
                                     <div>
-                                        <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
+                                        <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                             Full Name *
                                         </label>
                                         <div className="relative">
-                                            <User className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                                            <User className="absolute left-3 top-3 h-5 w-5 text-gray-400 dark:text-gray-500" />
                                             <input
                                                 id="fullName"
                                                 name="fullName"
@@ -163,7 +163,7 @@ const SimpleAuthPage = () => {
                                     </div>
 
                                     <div>
-                                        <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
+                                        <label htmlFor="role" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                             I am a *
                                         </label>
                                         <select
@@ -183,11 +183,11 @@ const SimpleAuthPage = () => {
                             )}
 
                             <div>
-                                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     Email Address *
                                 </label>
                                 <div className="relative">
-                                    <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                                    <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400 dark:text-gray-500" />
                                     <input
                                         id="email"
                                         name="email"
@@ -203,11 +203,11 @@ const SimpleAuthPage = () => {
 
                             {!isLogin && (
                                 <div>
-                                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                         Phone Number
                                     </label>
                                     <div className="relative">
-                                        <Phone className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                                        <Phone className="absolute left-3 top-3 h-5 w-5 text-gray-400 dark:text-gray-500" />
                                         <input
                                             id="phone"
                                             name="phone"
@@ -224,11 +224,11 @@ const SimpleAuthPage = () => {
                             {!isLogin && formData.role === 'practitioner' && (
                                 <>
                                     <div>
-                                        <label htmlFor="licenseNumber" className="block text-sm font-medium text-gray-700 mb-1">
+                                        <label htmlFor="licenseNumber" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                             License Number
                                         </label>
                                         <div className="relative">
-                                            <FileText className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                                            <FileText className="absolute left-3 top-3 h-5 w-5 text-gray-400 dark:text-gray-500" />
                                             <input
                                                 id="licenseNumber"
                                                 name="licenseNumber"
@@ -242,7 +242,7 @@ const SimpleAuthPage = () => {
                                     </div>
 
                                     <div>
-                                        <label htmlFor="specializations" className="block text-sm font-medium text-gray-700 mb-1">
+                                        <label htmlFor="specializations" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                             Specializations (comma-separated)
                                         </label>
                                         <input
@@ -257,11 +257,11 @@ const SimpleAuthPage = () => {
                                     </div>
 
                                     <div>
-                                        <label htmlFor="clinicName" className="block text-sm font-medium text-gray-700 mb-1">
+                                        <label htmlFor="clinicName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                             Clinic Name
                                         </label>
                                         <div className="relative">
-                                            <Building className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                                            <Building className="absolute left-3 top-3 h-5 w-5 text-gray-400 dark:text-gray-500" />
                                             <input
                                                 id="clinicName"
                                                 name="clinicName"
@@ -277,11 +277,11 @@ const SimpleAuthPage = () => {
                             )}
 
                             <div>
-                                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                                <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     Password *
                                 </label>
                                 <div className="relative">
-                                    <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                                    <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400 dark:text-gray-500" />
                                     <input
                                         id="password"
                                         name="password"
@@ -297,11 +297,11 @@ const SimpleAuthPage = () => {
 
                             {!isLogin && (
                                 <div>
-                                    <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                         Confirm Password *
                                     </label>
                                     <div className="relative">
-                                        <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                                        <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400 dark:text-gray-500" />
                                         <input
                                             id="confirmPassword"
                                             name="confirmPassword"
@@ -329,7 +329,7 @@ const SimpleAuthPage = () => {
 
                         {isLogin && (
                             <div className="text-center">
-                                <Link to="/home" className="text-sm text-primary-600 hover:text-primary-500">
+                                <Link to="/home" className="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-500">
                                     Back to home
                                 </Link>
                             </div>

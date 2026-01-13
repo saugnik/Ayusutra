@@ -245,3 +245,76 @@ class AuditLog(Base):
     ip_address = Column(String(45), nullable=True)
     user_agent = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class PatientHealthLog(Base):
+    __tablename__ = "patient_health_logs"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    patient_id = Column(Integer, ForeignKey("patients.id"), nullable=False)
+    practitioner_id = Column(Integer, ForeignKey("practitioners.id"), nullable=False)
+    date = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Ayurvedic Metrics
+    dosha_vata = Column(Integer, default=50) # 0-100
+    dosha_pitta = Column(Integer, default=50)
+    dosha_kapha = Column(Integer, default=50)
+    
+    # General Metrics
+    sleep_score = Column(Integer, nullable=True) # 0-100
+    stress_level = Column(String(50), default="Medium") # Low, Medium, High
+    hydration = Column(Float, default=0.0) # Liters
+    weight = Column(Float, nullable=True)
+    blood_pressure = Column(String(20), nullable=True)
+    
+    # Notes
+    notes = Column(Text, nullable=True)
+    recommendations = Column(Text, nullable=True)
+    
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    # Relationships
+    patient = relationship("Patient")
+    practitioner = relationship("Practitioner")
+
+class Symptom(Base):
+    """Patient symptom logs for health tracking"""
+    __tablename__ = "symptoms"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    patient_id = Column(Integer, ForeignKey("patients.id"), nullable=False)
+    symptom_name = Column(String(255), nullable=False)
+    severity = Column(String(50), nullable=False)  # low, moderate, high, severe
+    notes = Column(Text, nullable=True)
+    duration_days = Column(Integer, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Relationship
+    patient = relationship("Patient", backref="symptoms")
+
+class AIConversation(Base):
+    """Store AI health assistant conversations"""
+    __tablename__ = "ai_conversations"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    patient_id = Column(Integer, ForeignKey("patients.id"), nullable=False)
+    conversation_id = Column(String(255), unique=True, nullable=False, index=True)
+    messages = Column(JSON, nullable=False, default=list)  # Array of {role, content, timestamp}
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    # Relationship
+    patient = relationship("Patient", backref="ai_conversations")
+
+class ChatMessage(Base):
+    """Messages between patients and practitioners"""
+    __tablename__ = "chat_messages"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    sender_id = Column(Integer, nullable=False)
+    sender_type = Column(String(50), nullable=False)  # 'patient' or 'practitioner'
+    recipient_id = Column(Integer, nullable=False)
+    recipient_type = Column(String(50), nullable=False)  # 'patient' or 'practitioner'
+    content = Column(Text, nullable=False)
+    read = Column(Boolean, default=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())

@@ -4,9 +4,17 @@
  */
 
 import apiClient from './api';
-import { DashboardStats, Appointment } from '../types/api.types';
+import { DashboardStats, Appointment, PatientListItem } from '../types/api.types';
 
 class PractitionerService {
+    /**
+     * Get list of patients for current practitioner
+     */
+    async getMyPatients(): Promise<PatientListItem[]> {
+        const response = await apiClient.get<PatientListItem[]>('/practitioner/patients');
+        return response.data;
+    }
+
     /**
      * Get practitioner dashboard statistics
      */

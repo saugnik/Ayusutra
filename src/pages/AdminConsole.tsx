@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 import {
   Users,
   UserCheck,
@@ -27,10 +29,19 @@ import {
   FileText,
   Download
 } from 'lucide-react';
+import NotificationDropdown, { Notification } from '../components/NotificationDropdown';
 
 const AdminConsole = () => {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
   const [selectedTab, setSelectedTab] = useState('dashboard');
   const [selectedTimeRange, setSelectedTimeRange] = useState('30d');
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([
+    { id: 'AN1', type: 'alert', title: 'System Security Alert', message: 'Multiple failed login attempts from IP 192.168.1.1', time: '10 mins ago', read: false },
+    { id: 'AN2', type: 'info', title: 'Backup Successful', message: 'Daily system backup completed successfully.', time: '1 hour ago', read: false },
+    { id: 'AN3', type: 'reminder', title: 'License Renewal', message: 'Enterprise license for "Holistic Health" expires in 15 days.', time: '2 hours ago', read: true },
+  ]);
 
   // Mock data
   const systemStats = {
@@ -139,6 +150,25 @@ const AdminConsole = () => {
     }
   ];
 
+  const handleLogout = () => {
+    logout();
+    navigate('/auth');
+  };
+
+  const handleMarkAsRead = (id: string) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  };
+
+  const handleClearAll = () => {
+    setNotifications([]);
+    setIsNotificationOpen(false);
+  };
+
+  const handleViewAllActivities = () => {
+    setIsNotificationOpen(false);
+    setSelectedTab('logs');
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active': return 'text-green-600 bg-green-100';
@@ -171,8 +201,8 @@ const AdminConsole = () => {
               <Users className="h-6 w-6 text-blue-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Users</p>
-              <p className="text-2xl font-bold text-gray-900">{systemStats.totalUsers.toLocaleString()}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Users</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{systemStats.totalUsers.toLocaleString()}</p>
             </div>
           </div>
         </div>
@@ -183,8 +213,8 @@ const AdminConsole = () => {
               <UserCheck className="h-6 w-6 text-green-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Active Practitioners</p>
-              <p className="text-2xl font-bold text-gray-900">{systemStats.activePractitioners}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active Practitioners</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{systemStats.activePractitioners}</p>
             </div>
           </div>
         </div>
@@ -195,8 +225,8 @@ const AdminConsole = () => {
               <Building2 className="h-6 w-6 text-purple-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Clinics</p>
-              <p className="text-2xl font-bold text-gray-900">{systemStats.totalClinics}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Clinics</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{systemStats.totalClinics}</p>
             </div>
           </div>
         </div>
@@ -207,8 +237,8 @@ const AdminConsole = () => {
               <Activity className="h-6 w-6 text-primary-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Active Patients</p>
-              <p className="text-2xl font-bold text-gray-900">{systemStats.activePatients.toLocaleString()}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active Patients</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{systemStats.activePatients.toLocaleString()}</p>
             </div>
           </div>
         </div>
@@ -219,8 +249,8 @@ const AdminConsole = () => {
               <CheckCircle className="h-6 w-6 text-orange-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Completed Treatments</p>
-              <p className="text-2xl font-bold text-gray-900">{systemStats.completedTreatments.toLocaleString()}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Completed Treatments</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{systemStats.completedTreatments.toLocaleString()}</p>
             </div>
           </div>
         </div>
@@ -231,8 +261,8 @@ const AdminConsole = () => {
               <DollarSign className="h-6 w-6 text-emerald-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Monthly Revenue</p>
-              <p className="text-2xl font-bold text-gray-900">₹{(systemStats.monthlyRevenue / 1000)}K</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Monthly Revenue</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">₹{(systemStats.monthlyRevenue / 1000)}K</p>
             </div>
           </div>
         </div>
@@ -242,7 +272,7 @@ const AdminConsole = () => {
         {/* Revenue Chart */}
         <div className="lg:col-span-2 card">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-gray-900">Revenue Analytics</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Revenue Analytics</h3>
             <select
               value={selectedTimeRange}
               onChange={(e) => setSelectedTimeRange(e.target.value)}
@@ -253,28 +283,36 @@ const AdminConsole = () => {
               <option value="90d">Last 90 days</option>
             </select>
           </div>
-          
-          <div className="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
+
+          <div className="h-64 flex items-center justify-center bg-gray-50 dark:bg-gray-800 rounded-lg">
             <div className="text-center">
-              <BarChart3 className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">Revenue chart would be displayed here</p>
-              <p className="text-sm text-gray-500 mt-2">Integration with charting library needed</p>
+              <BarChart3 className="h-16 w-16 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
+              <p className="text-gray-600 dark:text-gray-400">Revenue chart would be displayed here</p>
+              <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">Integration with charting library needed</p>
             </div>
           </div>
         </div>
 
         {/* Recent Activities */}
         <div className="card">
-          <h3 className="text-lg font-semibold text-gray-900 mb-6">Recent Activities</h3>
-          <div className="space-y-4">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Activities</h3>
+            <button
+              onClick={handleViewAllActivities}
+              className="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 font-medium"
+            >
+              View All
+            </button>
+          </div>
+          <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
             {recentActivities.map((activity) => (
-              <div key={activity.id} className="flex items-start space-x-3">
-                <div className={`p-2 rounded-lg ${getStatusColor(activity.status)}`}>
+              <div key={activity.id} className="flex items-start space-x-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-100 dark:border-gray-800">
+                <div className={`p-2 rounded-lg ${getStatusColor(activity.status)} text-white`}>
                   {getActivityIcon(activity.type)}
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm text-gray-900">{activity.message}</p>
-                  <p className="text-xs text-gray-500 mt-1">{activity.time}</p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-gray-900 dark:text-gray-200">{activity.message}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{activity.time}</p>
                 </div>
               </div>
             ))}
@@ -287,7 +325,7 @@ const AdminConsole = () => {
   const renderPractitioners = () => (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Practitioner Management</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Practitioner Management</h2>
         <div className="flex space-x-3">
           <div className="relative">
             <Search className="h-5 w-5 text-gray-400 absolute left-3 top-3" />
@@ -310,33 +348,33 @@ const AdminConsole = () => {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-200">
-                <th className="text-left py-3 px-4 font-medium text-gray-900">Practitioner</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-900">Clinic</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-900">Patients</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-900">Revenue</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-900">Status</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-900">Joined</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-900">Actions</th>
+              <tr className="border-b border-gray-200 dark:border-gray-700">
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Practitioner</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Clinic</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Patients</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Revenue</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Status</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Joined</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Actions</th>
               </tr>
             </thead>
             <tbody>
               {practitioners.map((practitioner) => (
-                <tr key={practitioner.id} className="border-b border-gray-100 hover:bg-gray-50">
+                <tr key={practitioner.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
                   <td className="py-4 px-4">
                     <div>
-                      <p className="font-medium text-gray-900">{practitioner.name}</p>
-                      <p className="text-sm text-gray-600">{practitioner.email}</p>
+                      <p className="font-medium text-gray-900 dark:text-white">{practitioner.name}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{practitioner.email}</p>
                     </div>
                   </td>
                   <td className="py-4 px-4">
-                    <p className="text-gray-900">{practitioner.clinic}</p>
+                    <p className="text-gray-900 dark:text-gray-300">{practitioner.clinic}</p>
                   </td>
                   <td className="py-4 px-4">
-                    <p className="font-medium text-gray-900">{practitioner.patients}</p>
+                    <p className="font-medium text-gray-900 dark:text-white">{practitioner.patients}</p>
                   </td>
                   <td className="py-4 px-4">
-                    <p className="font-medium text-gray-900">₹{practitioner.revenue.toLocaleString()}</p>
+                    <p className="font-medium text-gray-900 dark:text-white">₹{practitioner.revenue.toLocaleString()}</p>
                   </td>
                   <td className="py-4 px-4">
                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(practitioner.status)}`}>
@@ -344,7 +382,7 @@ const AdminConsole = () => {
                     </span>
                   </td>
                   <td className="py-4 px-4">
-                    <p className="text-gray-900">{new Date(practitioner.joinedDate).toLocaleDateString()}</p>
+                    <p className="text-gray-900 dark:text-gray-300">{new Date(practitioner.joinedDate).toLocaleDateString()}</p>
                   </td>
                   <td className="py-4 px-4">
                     <div className="flex space-x-2">
@@ -371,7 +409,7 @@ const AdminConsole = () => {
   const renderClinics = () => (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Clinic Management</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Clinic Management</h2>
         <div className="flex space-x-3">
           <div className="relative">
             <Search className="h-5 w-5 text-gray-400 absolute left-3 top-3" />
@@ -394,43 +432,42 @@ const AdminConsole = () => {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-200">
-                <th className="text-left py-3 px-4 font-medium text-gray-900">Clinic Name</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-900">Location</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-900">Practitioners</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-900">Patients</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-900">Subscription</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-900">Revenue</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-900">Status</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-900">Actions</th>
+              <tr className="border-b border-gray-200 dark:border-gray-700">
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Clinic Name</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Location</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Practitioners</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Patients</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Subscription</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Revenue</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Status</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Actions</th>
               </tr>
             </thead>
             <tbody>
               {clinics.map((clinic) => (
-                <tr key={clinic.id} className="border-b border-gray-100 hover:bg-gray-50">
+                <tr key={clinic.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
                   <td className="py-4 px-4">
                     <div>
-                      <p className="font-medium text-gray-900">{clinic.name}</p>
+                      <p className="font-medium text-gray-900 dark:text-white">{clinic.name}</p>
                     </div>
                   </td>
                   <td className="py-4 px-4">
-                    <p className="text-gray-900">{clinic.location}</p>
+                    <p className="text-gray-900 dark:text-gray-300">{clinic.location}</p>
                   </td>
                   <td className="py-4 px-4">
-                    <p className="font-medium text-gray-900">{clinic.practitioners}</p>
+                    <p className="font-medium text-gray-900 dark:text-white">{clinic.practitioners}</p>
                   </td>
                   <td className="py-4 px-4">
-                    <p className="font-medium text-gray-900">{clinic.patients}</p>
+                    <p className="font-medium text-gray-900 dark:text-white">{clinic.patients}</p>
                   </td>
                   <td className="py-4 px-4">
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                      clinic.subscription === 'Premium' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
-                    }`}>
+                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${clinic.subscription === 'Premium' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
+                      }`}>
                       {clinic.subscription}
                     </span>
                   </td>
                   <td className="py-4 px-4">
-                    <p className="font-medium text-gray-900">₹{clinic.monthlyRevenue.toLocaleString()}</p>
+                    <p className="font-medium text-gray-900 dark:text-white">₹{clinic.monthlyRevenue.toLocaleString()}</p>
                   </td>
                   <td className="py-4 px-4">
                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(clinic.status)}`}>
@@ -461,74 +498,74 @@ const AdminConsole = () => {
 
   const renderSettings = () => (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900">System Settings</h2>
-      
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">System Settings</h2>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="card">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">System Configuration</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">System Configuration</h3>
           <div className="space-y-4">
-            <div className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
+            <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="font-medium text-gray-900">Email Notifications</h4>
-                  <p className="text-sm text-gray-600">System-wide email notification settings</p>
+                  <h4 className="font-medium text-gray-900 dark:text-white">Email Notifications</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">System-wide email notification settings</p>
                 </div>
                 <button className="btn-outline px-4 py-2">Configure</button>
               </div>
             </div>
-            
-            <div className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
+
+            <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="font-medium text-gray-900">Security Settings</h4>
-                  <p className="text-sm text-gray-600">Password policies and security configurations</p>
+                  <h4 className="font-medium text-gray-900 dark:text-white">Security Settings</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Password policies and security configurations</p>
                 </div>
                 <button className="btn-outline px-4 py-2">Manage</button>
               </div>
             </div>
-            
-            <div className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
+
+            <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="font-medium text-gray-900">Backup & Recovery</h4>
-                  <p className="text-sm text-gray-600">Data backup and recovery settings</p>
+                  <h4 className="font-medium text-gray-900 dark:text-white">Backup & Recovery</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Data backup and recovery settings</p>
                 </div>
                 <button className="btn-outline px-4 py-2">Setup</button>
               </div>
             </div>
           </div>
         </div>
-        
+
         <div className="card">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Integration Settings</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Integration Settings</h3>
           <div className="space-y-4">
-            <div className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
+            <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="font-medium text-gray-900">Payment Gateway</h4>
-                  <p className="text-sm text-gray-600">Configure payment processing settings</p>
+                  <h4 className="font-medium text-gray-900 dark:text-white">Payment Gateway</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Configure payment processing settings</p>
                 </div>
-                <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">Active</span>
+                <span className="px-3 py-1 bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-400 rounded-full text-sm">Active</span>
               </div>
             </div>
-            
-            <div className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
+
+            <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="font-medium text-gray-900">SMS Service</h4>
-                  <p className="text-sm text-gray-600">SMS notification service configuration</p>
+                  <h4 className="font-medium text-gray-900 dark:text-white">SMS Service</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">SMS notification service configuration</p>
                 </div>
-                <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">Active</span>
+                <span className="px-3 py-1 bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-400 rounded-full text-sm">Active</span>
               </div>
             </div>
-            
-            <div className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
+
+            <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="font-medium text-gray-900">Analytics</h4>
-                  <p className="text-sm text-gray-600">Third-party analytics integration</p>
+                  <h4 className="font-medium text-gray-900 dark:text-white">Analytics</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Third-party analytics integration</p>
                 </div>
-                <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm">Pending</span>
+                <span className="px-3 py-1 bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-400 rounded-full text-sm">Pending</span>
               </div>
             </div>
           </div>
@@ -537,10 +574,55 @@ const AdminConsole = () => {
     </div>
   );
 
+  const renderLogs = () => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">System Logs & Activities</h2>
+        <div className="flex space-x-3">
+          <button className="btn-outline px-4 py-2">
+            <Download className="h-4 w-4 mr-2" /> Export Logs
+          </button>
+          <button className="btn-primary px-4 py-2">
+            <Filter className="h-4 w-4 mr-2" /> Filter
+          </button>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-gray-200 dark:border-gray-700">
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Time</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Type</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Activity</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+              {[...recentActivities, ...recentActivities].map((activity, idx) => (
+                <tr key={`${activity.id}-${idx}`} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                  <td className="py-4 px-4 text-sm text-gray-600 dark:text-gray-400">{activity.time}</td>
+                  <td className="py-4 px-4 text-sm font-medium text-gray-900 dark:text-white uppercase tracking-wider">{activity.type.replace('_', ' ')}</td>
+                  <td className="py-4 px-4 text-sm text-gray-900 dark:text-gray-300">{activity.message}</td>
+                  <td className="py-4 px-4">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(activity.status)}`}>
+                      {activity.status.toUpperCase()}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="bg-dashboard">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
+      <header className="shadow-sm header-bg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
@@ -548,32 +630,52 @@ const AdminConsole = () => {
                 <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-xl">आ</span>
                 </div>
-                <span className="ml-3 text-xl font-bold text-gray-900">AyurSutra Admin</span>
+                <span className="ml-3 text-xl font-bold text-gray-900 dark:text-white">AyurSutra Admin</span>
               </div>
             </div>
-            
-            <div className="flex items-center space-x-4">
-              <button className="p-2 hover:bg-gray-100 rounded-lg relative">
-                <Bell className="h-5 w-5 text-gray-600" />
-                <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white rounded-full text-xs flex items-center justify-center">5</span>
+
+            <div className="flex items-center space-x-4 relative">
+              <button
+                onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg relative"
+              >
+                <Bell className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                {notifications.filter(n => !n.read).length > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white rounded-full text-xs flex items-center justify-center">
+                    {notifications.filter(n => !n.read).length}
+                  </span>
+                )}
               </button>
-              
+
+              <NotificationDropdown
+                notifications={notifications}
+                isOpen={isNotificationOpen}
+                onClose={() => setIsNotificationOpen(false)}
+                onMarkAsRead={handleMarkAsRead}
+                onClearAll={handleClearAll}
+                onViewAll={handleViewAllActivities}
+              />
+
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
-                  <Shield className="h-5 w-5 text-primary-600" />
+                <div className="w-8 h-8 bg-primary-100 dark:bg-primary-900/40 rounded-full flex items-center justify-center">
+                  <Shield className="h-5 w-5 text-primary-600 dark:text-primary-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-900">System Admin</p>
-                  <p className="text-xs text-gray-600">Administrator</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">System Admin</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">Administrator</p>
                 </div>
               </div>
-              
-              <button className="p-2 hover:bg-gray-100 rounded-lg">
-                <Settings className="h-5 w-5 text-gray-600" />
+
+              <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
+                <Settings className="h-5 w-5 text-gray-600 dark:text-gray-400" />
               </button>
-              
-              <button className="p-2 hover:bg-gray-100 rounded-lg">
-                <LogOut className="h-5 w-5 text-gray-600" />
+
+              <button
+                onClick={handleLogout}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
+                title="Sign Out"
+              >
+                <LogOut className="h-5 w-5 text-gray-600 dark:text-gray-400" />
               </button>
             </div>
           </div>
@@ -581,23 +683,23 @@ const AdminConsole = () => {
       </header>
 
       {/* Navigation Tabs */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="header-bg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="flex space-x-8">
             {[
               { id: 'dashboard', name: 'Dashboard', icon: TrendingUp },
               { id: 'practitioners', name: 'Practitioners', icon: UserCheck },
               { id: 'clinics', name: 'Clinics', icon: Building2 },
+              { id: 'logs', name: 'Logs', icon: FileText },
               { id: 'settings', name: 'Settings', icon: Settings }
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setSelectedTab(tab.id)}
-                className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm ${
-                  selectedTab === tab.id
-                    ? 'border-primary-500 text-primary-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
+                className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm transition-all ${selectedTab === tab.id
+                  ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-600'
+                  }`}
               >
                 <tab.icon className="h-5 w-5" />
                 <span>{tab.name}</span>
@@ -612,6 +714,7 @@ const AdminConsole = () => {
         {selectedTab === 'dashboard' && renderDashboard()}
         {selectedTab === 'practitioners' && renderPractitioners()}
         {selectedTab === 'clinics' && renderClinics()}
+        {selectedTab === 'logs' && renderLogs()}
         {selectedTab === 'settings' && renderSettings()}
       </main>
     </div>

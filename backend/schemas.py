@@ -7,13 +7,11 @@ from typing import Optional, List, Dict, Any
 from datetime import datetime
 from pydantic import BaseModel, EmailStr, Field
 
-# ==================== BASE SCHEMAS ====================
 class BaseSchema(BaseModel):
     class Config:
         orm_mode = True
         from_attributes = True
 
-# ==================== USER SCHEMAS ====================
 class UserShort(BaseModel):
     full_name: str
     email: EmailStr
@@ -43,6 +41,16 @@ class UserCreate(UserBase):
     clinic_address: Optional[str] = None
     consultation_fee: Optional[float] = None
 
+class UserUpdate(BaseModel):
+    full_name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    phone: Optional[str] = None
+    password: Optional[str] = None
+    profile_picture: Optional[str] = None
+    
+    class Config:
+        orm_mode = True
+
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
@@ -66,7 +74,6 @@ class TokenResponse(BaseModel):
     role: str
     full_name: str
 
-# ==================== PATIENT SCHEMAS ====================
 class PatientBase(BaseModel):
     date_of_birth: Optional[datetime] = None
     gender: Optional[str] = None
@@ -97,7 +104,6 @@ class PatientResponse(BaseSchema):
     lifestyle_preferences: Dict[str, Any]
     created_at: datetime
 
-# ==================== PRACTITIONER SCHEMAS ====================
 class PractitionerBase(BaseModel):
     license_number: Optional[str] = None
     specializations: Optional[List[str]] = []
@@ -131,7 +137,6 @@ class PractitionerResponse(BaseSchema):
     user: Optional['UserShort'] = None
     created_at: datetime
 
-# ==================== ADMIN SCHEMAS ====================
 class AdminBase(BaseModel):
     admin_level: Optional[str] = "standard"
     permissions: Optional[List[str]] = []
@@ -148,7 +153,6 @@ class AdminResponse(BaseSchema):
     department: Optional[str]
     created_at: datetime
 
-# ==================== APPOINTMENT SCHEMAS ====================
 class AppointmentBase(BaseModel):
     patient_id: int
     practitioner_id: int
@@ -184,7 +188,6 @@ class AppointmentResponse(BaseSchema):
     created_at: datetime
     updated_at: Optional[datetime]
 
-# ==================== THERAPY SESSION SCHEMAS ====================
 class TherapySessionBase(BaseModel):
     therapy_type: str
     pre_session_notes: Optional[str] = None
@@ -226,7 +229,6 @@ class TherapySessionResponse(BaseSchema):
     report: Optional[str]
     created_at: datetime
 
-# ==================== FEEDBACK SCHEMAS ====================
 class FeedbackBase(BaseModel):
     patient_id: int
     practitioner_id: int
@@ -253,7 +255,6 @@ class FeedbackResponse(BaseSchema):
     suggestions: Optional[str]
     created_at: datetime
 
-# ==================== AI ASSISTANT SCHEMAS ====================
 class AIAssistantRequest(BaseModel):
     query: str
     top_k: Optional[int] = 5
@@ -265,9 +266,7 @@ class AIAssistantResponse(BaseModel):
     confidence: str
     sources: List[Dict[str, Any]]
 
-# ==================== DASHBOARD SCHEMAS ====================
 class DashboardStats(BaseModel):
-    # Patient dashboard
     total_appointments: Optional[int] = 0
     upcoming_appointments: Optional[int] = 0
     completed_sessions: Optional[int] = 0
@@ -287,6 +286,19 @@ class DashboardStats(BaseModel):
     total_practitioners: Optional[int] = 0
     recent_registrations: Optional[int] = 0
     system_health: Optional[float] = 0.0
+
+class PatientListItem(BaseModel):
+    id: int
+    name: str
+    age: Optional[int]
+    gender: Optional[str]
+    phone: Optional[str]
+    email: str
+    current_therapy: Optional[str] = "None"
+    stage: Optional[str] = "N/A"
+    next_appointment: Optional[datetime] = None
+    status: str = "active"
+    prakriti: Optional[str] = "Unknown"
 
 # ==================== NOTIFICATION SCHEMAS ====================
 class NotificationBase(BaseModel):
@@ -346,3 +358,99 @@ class TherapyTemplateResponse(BaseSchema):
     cost_range: Optional[str]
     is_active: bool
     created_at: datetime
+
+# ==================== HEALTH LOG SCHEMAS ====================
+class HealthLogBase(BaseModel):
+    dosha_vata: Optional[int] = 50
+    dosha_pitta: Optional[int] = 50
+    dosha_kapha: Optional[int] = 50
+    sleep_score: Optional[int] = None
+    stress_level: Optional[str] = "Medium"
+    hydration: Optional[float] = 0.0
+    weight: Optional[float] = None
+    blood_pressure: Optional[str] = None
+    notes: Optional[str] = None
+    recommendations: Optional[str] = None
+
+class HealthLogCreate(HealthLogBase):
+    patient_id: int
+
+class HealthLogResponse(HealthLogBase):
+    id: int
+    patient_id: int
+    practitioner_id: int
+    date: datetime
+    created_at: datetime
+    
+    class Config:
+        orm_mode = True
+
+
+# ==================== HEALTH SUPPORT SCHEMAS ====================
+class SymptomCreate(BaseModel):
+    symptom_name: str
+    severity: str  # low, moderate, high, severe
+    notes: Optional[str] = None
+    duration_days: Optional[int] = None
+
+class SymptomResponse(BaseSchema):
+    id: int
+    patient_id: int
+    symptom_name: str
+    severity: str
+    notes: Optional[str] = None
+    duration_days: Optional[int] = None
+    created_at: datetime
+
+class AIHealthRequest(BaseModel):
+    question: str
+    context: Optional[Dict[str, Any]] = None
+
+class AIHealthResponse(BaseModel):
+    answer: str
+    sources: Optional[List[str]] = None
+    conversation_id: str
+
+class HealthRecommendation(BaseModel):
+    category: str  # diet, lifestyle, herbs, therapy
+    suggestion: str
+    reason: str
+    priority: Optional[str] = "normal"  # low, normal, high
+
+class HealthRecommendationsResponse(BaseModel):
+    recommendations: List[HealthRecommendation]
+    dosha_analysis: Optional[Dict[str, Any]] = None
+
+# ==================== CHAT SUPPORT SCHEMAS ====================
+class ChatMessageCreate(BaseModel):
+    recipient_id: int
+    recipient_type: str  # patient or practitioner
+    content: str
+
+class ChatMessageResponse(BaseSchema):
+    id: int
+    sender_id: int
+    sender_type: str
+    recipient_id: int
+    recipient_type: str
+    content: str
+    read: bool
+    created_at: datetime
+
+class PractitionerAvailability(BaseModel):
+    id: int
+    name: str
+    specialization: Optional[str] = None
+    online: bool
+    last_seen: Optional[datetime] = None
+    
+    class Config:
+        orm_mode = True
+
+class AIChatRequest(BaseModel):
+    message: str
+    conversation_id: Optional[str] = None
+
+class AIChatResponse(BaseModel):
+    reply: str
+    conversation_id: str

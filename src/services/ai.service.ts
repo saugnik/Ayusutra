@@ -1,28 +1,26 @@
-import axios from 'axios';
-
-const RAG_API_URL = 'http://localhost:8000';
+import apiClient from './api';
 
 export interface AIResponse {
     query: string;
     answer: {
         text: string;
-        confidence: string;
-        evidence: string[];
+        confidence?: string;
+        evidence?: string[];
         timestamp: string;
     };
-    context: any[];
-    processing_time: number;
+    conversation_id?: string;
+    type?: string;
 }
 
 const aiService = {
     /**
-     * Send a query to the AyurGenius RAG service
+     * Send a query to the AyurGenius AI Health Assistant
      */
-    askQuestion: async (query: string): Promise<AIResponse> => {
+    askQuestion: async (query: string, conversation_id?: string): Promise<AIResponse> => {
         try {
-            const response = await axios.post(`${RAG_API_URL}/ask`, {
+            const response = await apiClient.post('/health/ask-ai', {
                 query,
-                top_k: 3
+                conversation_id
             });
             return response.data;
         } catch (error) {
@@ -32,11 +30,11 @@ const aiService = {
     },
 
     /**
-     * Check if the RAG service is available
+     * Check if the AI Assistant service is available
      */
     checkHealth: async (): Promise<boolean> => {
         try {
-            const response = await axios.get(`${RAG_API_URL}/health`);
+            const response = await apiClient.get('/health/ask-ai/health'); // Assuming there might be a health check
             return response.status === 200;
         } catch (error) {
             return false;
