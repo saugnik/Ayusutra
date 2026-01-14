@@ -4,7 +4,7 @@
  */
 
 import apiClient from './api';
-import { DashboardStats, Appointment, PatientListItem } from '../types/api.types';
+import { DashboardStats, Appointment, PatientListItem, Notification } from '../types/api.types';
 
 class PractitionerService {
     /**
@@ -38,6 +38,21 @@ class PractitionerService {
     async getAnalytics(days: number = 30): Promise<any> {
         const response = await apiClient.get('/reports/treatments', { params: { days } });
         return response.data;
+    }
+
+    /**
+     * Get notifications for current practitioner
+     */
+    async getNotifications(): Promise<Notification[]> {
+        const response = await apiClient.get<Notification[]>('/notifications');
+        return response.data;
+    }
+
+    /**
+     * Mark a notification as read
+     */
+    async markNotificationAsRead(id: number | string): Promise<void> {
+        await apiClient.patch(`/notifications/${id}/read`);
     }
 }
 

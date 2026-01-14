@@ -215,6 +215,22 @@ export interface PatientListItem {
     prakriti?: string;
 }
 
+// ==================== NOTIFICATION TYPES ====================
+export interface Notification {
+    id: number | string;
+    user_id?: number;
+    title: string;
+    message: string;
+    type: 'reminder' | 'alert' | 'info' | 'appointment' | 'system';
+    priority?: 'low' | 'normal' | 'high' | 'urgent';
+    is_read?: boolean;
+    read?: boolean; // For compatibility with local component state
+    action_url?: string;
+    expires_at?: string;
+    created_at?: string;
+    time?: string; // For compatibility with local component state
+}
+
 // ==================== AI ASSISTANT TYPES ====================
 export interface AIAssistantRequest {
     query: string;

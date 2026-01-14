@@ -662,20 +662,29 @@ async def get_treatment_analytics(
     # 6. Monthly Trends (Last 6 months)
     monthly_trends = []
     for i in range(5, -1, -1):
-        month_start = datetime(now.year, now.month, 1) - timedelta(days=30*i) # Approx
-        # Better date logic needed for strict months, but approx is fine for now
-        # Actually let's use simple logic: distinct months from data or just query last 3 months explicitly
-        pass
-
-    # Simplified Monthly Trends (Current Month)
-    current_month_count = db.query(Appointment).filter(
-        func.extract('month', Appointment.scheduled_datetime) == now.month,
-        func.extract('year', Appointment.scheduled_datetime) == now.year
-    ).count()
-    
-    monthly_trends = [
-        {"month": now.strftime("%b"), "sessions": current_month_count}
-    ]
+        # Use a more robust way to get the first day of the month i months ago
+        # current month = now.month, i=0
+        # i=1 -> last month
+        
+        month = now.month - i
+        year = now.year
+        while month <= 0:
+            month += 12
+            year -= 1
+            
+        count = db.query(Appointment).filter(
+            func.extract('month', Appointment.scheduled_datetime) == month,
+            func.extract('year', Appointment.scheduled_datetime) == year,
+            Appointment.status == "completed"
+        ).count()
+        
+        # Get month name
+        month_name = datetime(year, month, 1).strftime("%b")
+        
+        monthly_trends.append({
+            "month": month_name,
+            "sessions": count
+        })
 
     return {
         "total_sessions": total_sessions,
@@ -1279,6 +1288,45 @@ async def chat_with_ai_assistant(
         logger.error(f"AI chat error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to get AI response: {str(e)}")
 
+
+
+# ==================== NOTIFICATIONS ====================
+
+@app.get("/notifications", response_model=List[NotificationResponse])
+async def get_notifications(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    unread_only: bool = False,
+    limit: int = 50
+):
+    """Get notifications for current user"""
+    query = db.query(Notification).filter(Notification.user_id == current_user.id)
+    
+    if unread_only:
+        query = query.filter(Notification.is_read == False)
+    
+    notifications = query.order_by(Notification.created_at.desc()).limit(limit).all()
+    return notifications
+
+@app.patch("/notifications/{notification_id}/read", response_model=NotificationResponse)
+async def mark_notification_as_read(
+    notification_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Mark a notification as read"""
+    notification = db.query(Notification).filter(
+        Notification.id == notification_id,
+        Notification.user_id == current_user.id
+    ).first()
+    
+    if not notification:
+        raise HTTPException(status_code=404, detail="Notification not found")
+    
+    notification.is_read = True
+    db.commit()
+    db.refresh(notification)
+    return notification
 
 
 if __name__ == "__main__":

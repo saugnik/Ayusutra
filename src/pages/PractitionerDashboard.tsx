@@ -27,8 +27,9 @@ import {
 import PractitionerUpdateModal from '../components/PractitionerUpdateModal';
 import practitionerService from '../services/practitioner.service';
 import { useAuth } from '../hooks/useAuth';
-import { Appointment, DashboardStats, PatientListItem } from '../types/api.types';
+import { Appointment, DashboardStats, PatientListItem, Notification as APINotification } from '../types/api.types';
 import NotificationDropdown, { Notification } from '../components/NotificationDropdown';
+import BookAppointmentModal from '../components/BookAppointmentModal';
 
 const PractitionerDashboard = () => {
   const { logout } = useAuth();
@@ -37,12 +38,9 @@ const PractitionerDashboard = () => {
   const [selectedPatient, setSelectedPatient] = useState<{ id: number, name: string } | null>(null);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isBookModalOpen, setIsBookModalOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([
-    { id: 'PN1', type: 'alert', title: 'New Patient Registration', message: 'Rahul Kumar has registered for consultations.', time: '10 mins ago', read: false },
-    { id: 'PN2', type: 'appointment', title: 'Upcoming Session', message: 'You have a Shirodhara session in 15 minutes.', time: '15 mins ago', read: false },
-    { id: 'PN3', type: 'info', title: 'Report Due', message: 'Monthly analysis report for June is ready to view.', time: '1 hour ago', read: true },
-  ]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
 
   // Real Data State
   const [stats, setStats] = useState<DashboardStats>({
@@ -61,24 +59,28 @@ const PractitionerDashboard = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [dashboardStats, myPatients, allAppointments, analyticsData] = await Promise.all([
+        const [dashboardStats, myPatients, allAppointments, analyticsData, apiNotifications] = await Promise.all([
           practitionerService.getDashboardStats(),
           practitionerService.getMyPatients(),
           practitionerService.getAppointments(),
-          practitionerService.getAnalytics()
+          practitionerService.getAnalytics(),
+          practitionerService.getNotifications()
         ]);
 
         setStats(dashboardStats);
         setPatients(myPatients);
         setAnalytics(analyticsData);
 
-        // Filter appointments for today
-        const today = new Date().toDateString();
-        const todays = allAppointments.filter(app =>
-          new Date(app.scheduled_datetime).toDateString() === today
-        ).sort((a, b) => new Date(a.scheduled_datetime).getTime() - new Date(b.scheduled_datetime).getTime());
-
-        setAppointments(todays);
+        // Normalize notifications
+        const normalized: Notification[] = apiNotifications.map(n => ({
+          id: String(n.id),
+          type: n.type as any,
+          title: n.title,
+          message: n.message,
+          time: n.created_at ? new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now',
+          read: n.is_read || n.read || false
+        }));
+        setNotifications(normalized);
       } catch (error) {
         console.error("Failed to fetch dashboard data", error);
       } finally {
@@ -112,8 +114,13 @@ const PractitionerDashboard = () => {
     setIsUpdateModalOpen(true);
   };
 
-  const handleMarkAsRead = (id: string) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  const handleMarkAsRead = async (id: string) => {
+    try {
+      await practitionerService.markNotificationAsRead(id);
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+    } catch (error) {
+      console.error("Failed to mark notification as read", error);
+    }
   };
 
   const handleClearAll = () => {
@@ -187,7 +194,10 @@ const PractitionerDashboard = () => {
         <div className="lg:col-span-2 card">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-semibold text-gray-900">Today's Schedule</h3>
-            <button className="btn-primary text-sm px-4 py-2">
+            <button
+              onClick={() => setIsBookModalOpen(true)}
+              className="btn-primary text-sm px-4 py-2"
+            >
               <Plus className="h-4 w-4 mr-1" /> Add Appointment
             </button>
           </div>
@@ -285,7 +295,10 @@ const PractitionerDashboard = () => {
           <button className="btn-outline px-4 py-2">
             <Filter className="h-4 w-4 mr-2" /> Filter
           </button>
-          <button className="btn-primary px-4 py-2">
+          <button
+            onClick={() => setIsBookModalOpen(true)}
+            className="btn-primary px-4 py-2"
+          >
             <Plus className="h-4 w-4 mr-2" /> New Patient
           </button>
         </div>
@@ -345,10 +358,16 @@ const PractitionerDashboard = () => {
                         >
                           <Activity className="h-4 w-4" />
                         </button>
-                        <button className="p-2 hover:bg-gray-100 rounded-lg">
+                        <button
+                          onClick={() => handleOpenUpdateModal(patient)}
+                          className="p-2 hover:bg-gray-100 rounded-lg"
+                        >
                           <Eye className="h-4 w-4 text-gray-600" />
                         </button>
-                        <button className="p-2 hover:bg-gray-100 rounded-lg">
+                        <button
+                          onClick={() => handleOpenUpdateModal(patient)}
+                          className="p-2 hover:bg-gray-100 rounded-lg"
+                        >
                           <Edit className="h-4 w-4 text-gray-600" />
                         </button>
                       </div>
@@ -583,6 +602,16 @@ const PractitionerDashboard = () => {
           patientName={selectedPatient.name}
         />
       )}
+
+      {/* Book Appointment Modal */}
+      <BookAppointmentModal
+        isOpen={isBookModalOpen}
+        onClose={() => setIsBookModalOpen(false)}
+        onSuccess={() => {
+          setIsBookModalOpen(false);
+          // Refresh data if needed
+        }}
+      />
     </div>
   );
 };
