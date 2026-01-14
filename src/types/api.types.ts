@@ -62,8 +62,24 @@ export interface Patient {
     current_medications: string[];
     allergies: string[];
     prakriti_type?: string;
-    lifestyle_preferences: Record<string, any>;
     created_at: string;
+}
+
+// ==================== AVAILABILITY TYPES ====================
+export interface AvailabilitySlot {
+    start_time: string;
+    end_time: string;
+    location?: string;
+}
+
+export interface AvailabilitySchedule {
+    monday: AvailabilitySlot[];
+    tuesday: AvailabilitySlot[];
+    wednesday: AvailabilitySlot[];
+    thursday: AvailabilitySlot[];
+    friday: AvailabilitySlot[];
+    saturday: AvailabilitySlot[];
+    sunday: AvailabilitySlot[];
 }
 
 // ==================== PRACTITIONER TYPES ====================
@@ -77,6 +93,7 @@ export interface Practitioner {
     clinic_name?: string;
     clinic_address?: string;
     consultation_fee: number;
+    availability_schedule?: AvailabilitySchedule;
     bio?: string;
     rating: number;
     total_reviews: number;

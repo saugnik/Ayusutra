@@ -97,18 +97,18 @@ const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({ isOpen, onC
 
                 <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
-                <div className="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+                <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
                     {/* Header */}
-                    <div className="bg-primary-50 px-6 py-4 border-b border-primary-100 flex justify-between items-center">
+                    <div className="bg-primary-50 dark:bg-gray-700 px-6 py-4 border-b border-primary-100 dark:border-gray-600 flex justify-between items-center">
                         <div>
-                            <h3 className="text-xl font-bold text-gray-900" id="modal-title">
+                            <h3 className="text-xl font-bold text-gray-900 dark:text-white" id="modal-title">
                                 {step === 1 ? 'Choose Your Practitioner' : 'Finalize Booking'}
                             </h3>
-                            <p className="text-sm text-primary-600 mt-1">
+                            <p className="text-sm text-primary-600 dark:text-primary-300 mt-1">
                                 Step {step} of 2: {step === 1 ? 'Select a specialized doctor' : 'Schedule your session'}
                             </p>
                         </div>
-                        <button onClick={onClose} className="text-gray-400 hover:text-gray-500 bg-white rounded-full p-1 hover:bg-gray-100 transition-colors">
+                        <button onClick={onClose} className="text-gray-400 hover:text-gray-500 bg-white dark:bg-gray-600 dark:hover:text-gray-300 rounded-full p-1 hover:bg-gray-100 dark:hover:bg-gray-500 transition-colors">
                             <X className="h-6 w-6" />
                         </button>
                     </div>
@@ -122,41 +122,41 @@ const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({ isOpen, onC
                                         key={p.id}
                                         onClick={() => setSelectedPractitionerId(p.id)}
                                         className={`relative border-2 rounded-xl p-4 cursor-pointer transition-all duration-200 hover:shadow-md ${selectedPractitionerId === p.id
-                                                ? 'border-primary-500 bg-primary-50 ring-2 ring-primary-200'
-                                                : 'border-gray-200 hover:border-primary-300'
+                                            ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 ring-2 ring-primary-200 dark:ring-primary-800'
+                                            : 'border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-500'
                                             }`}
                                     >
                                         <div className="flex items-start space-x-4">
                                             <div className="flex-shrink-0">
-                                                <div className="h-16 w-16 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-bold text-xl border-2 border-white shadow-sm">
-                                                    {p.user?.full_name?.charAt(0) || 'D'}
+                                                <div className="h-16 w-16 rounded-full bg-primary-100 dark:bg-primary-900/50 flex items-center justify-center text-primary-600 dark:text-primary-400 font-bold text-xl border-2 border-white dark:border-gray-600 shadow-sm">
+                                                    {p.user?.full_name?.charAt(0).toUpperCase() || 'D'}
                                                 </div>
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex justify-between items-start">
-                                                    <h4 className="text-lg font-bold text-gray-900 truncate">
+                                                    <h4 className="text-lg font-bold text-gray-900 dark:text-white truncate capitalize">
                                                         {p.user?.full_name || `Doctor #${p.id}`}
                                                     </h4>
                                                     {selectedPractitionerId === p.id && (
-                                                        <Check className="h-6 w-6 text-primary-600" />
+                                                        <Check className="h-6 w-6 text-primary-600 dark:text-primary-400" />
                                                     )}
                                                 </div>
-                                                <p className="text-sm text-primary-600 font-medium mb-2">{p.qualification || 'Certified Practitioner'}</p>
+                                                <p className="text-sm text-primary-600 dark:text-primary-400 font-medium mb-2">{p.qualification || 'Certified Practitioner'}</p>
 
                                                 <div className="flex flex-wrap gap-2 mb-3">
                                                     {p.specializations.map((spec, i) => (
-                                                        <span key={i} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-white border border-gray-200 text-gray-800">
+                                                        <span key={i} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-200">
                                                             {spec}
                                                         </span>
                                                     ))}
                                                 </div>
 
-                                                <div className="flex items-center justify-between text-sm text-gray-500 mt-2">
+                                                <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mt-2">
                                                     <div className="flex items-center">
                                                         <Award className="h-4 w-4 mr-1 text-yellow-500" />
                                                         <span>{p.experience_years} Years Exp.</span>
                                                     </div>
-                                                    <div className="flex items-center font-semibold text-gray-900">
+                                                    <div className="flex items-center font-semibold text-gray-900 dark:text-white">
                                                         <DollarSign className="h-4 w-4 mr-1 text-green-500" />
                                                         <span>₹{p.consultation_fee}</span>
                                                     </div>
@@ -195,8 +195,8 @@ const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({ isOpen, onC
                                                     key={type}
                                                     onClick={() => setTherapyType(type)}
                                                     className={`cursor-pointer text-center px-4 py-3 rounded-lg border font-medium transition-all ${therapyType === type
-                                                            ? 'bg-primary-600 text-white border-primary-600 shadow-sm'
-                                                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                                                        ? 'bg-primary-600 text-white border-primary-600 shadow-sm'
+                                                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
                                                         }`}
                                                 >
                                                     {type}
@@ -285,8 +285,8 @@ const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({ isOpen, onC
                                     onClick={handleNextStep}
                                     disabled={!selectedPractitionerId}
                                     className={`inline-flex items-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-white ${selectedPractitionerId
-                                            ? 'bg-primary-600 hover:bg-primary-700 focus:ring-2 focus:ring-offset-2 focus:ring-primary-500'
-                                            : 'bg-gray-300 cursor-not-allowed'
+                                        ? 'bg-primary-600 hover:bg-primary-700 focus:ring-2 focus:ring-offset-2 focus:ring-primary-500'
+                                        : 'bg-gray-300 cursor-not-allowed'
                                         }`}
                                 >
                                     Next Step

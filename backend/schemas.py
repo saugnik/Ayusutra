@@ -104,21 +104,43 @@ class PatientResponse(BaseSchema):
     lifestyle_preferences: Dict[str, Any]
     created_at: datetime
 
+class AvailabilitySlot(BaseModel):
+    start_time: str
+    end_time: str
+    location: Optional[str] = "Main Clinic"
+
+class AvailabilitySchedule(BaseModel):
+    monday: List[AvailabilitySlot] = []
+    tuesday: List[AvailabilitySlot] = []
+    wednesday: List[AvailabilitySlot] = []
+    thursday: List[AvailabilitySlot] = []
+    friday: List[AvailabilitySlot] = []
+    saturday: List[AvailabilitySlot] = []
+    sunday: List[AvailabilitySlot] = []
+
 class PractitionerBase(BaseModel):
-    license_number: Optional[str] = None
-    specializations: Optional[List[str]] = []
-    experience_years: Optional[int] = 0
+    license_number: str
+    specializations: List[str] = []
+    experience_years: int = 0
     qualification: Optional[str] = None
     clinic_name: Optional[str] = None
     clinic_address: Optional[str] = None
-    consultation_fee: Optional[float] = 0.0
+    consultation_fee: float = 0.0
+    availability_schedule: Dict[str, Any] = {} # Can strictly use AvailabilitySchedule but Dict is safer for DB JSON compatibility initially
     bio: Optional[str] = None
 
 class PractitionerCreate(PractitionerBase):
     pass
 
-class PractitionerUpdate(PractitionerBase):
-    availability_schedule: Optional[Dict[str, Any]] = {}
+class PractitionerUpdate(BaseModel):
+    specializations: Optional[List[str]] = None
+    experience_years: Optional[int] = None
+    qualification: Optional[str] = None
+    clinic_name: Optional[str] = None
+    clinic_address: Optional[str] = None
+    consultation_fee: Optional[float] = None
+    availability_schedule: Optional[AvailabilitySchedule] = None # Updated to be consistent
+    bio: Optional[str] = None
 
 class PractitionerResponse(BaseSchema):
     id: int
@@ -130,6 +152,7 @@ class PractitionerResponse(BaseSchema):
     clinic_name: Optional[str]
     clinic_address: Optional[str]
     consultation_fee: float
+    availability_schedule: AvailabilitySchedule
     bio: Optional[str]
     rating: float
     total_reviews: int

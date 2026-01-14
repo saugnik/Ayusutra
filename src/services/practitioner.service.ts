@@ -54,6 +54,22 @@ class PractitionerService {
     async markNotificationAsRead(id: number | string): Promise<void> {
         await apiClient.patch(`/notifications/${id}/read`);
     }
+
+    /**
+     * Get practitioner profile
+     */
+    async getProfile(): Promise<any> {
+        const response = await apiClient.get('/practitioner/profile');
+        return response.data;
+    }
+
+    /**
+     * Update practitioner profile
+     */
+    async updateProfile(data: any): Promise<any> {
+        const response = await apiClient.patch('/practitioner/profile', data);
+        return response.data;
+    }
 }
 
 export default new PractitionerService();

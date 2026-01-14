@@ -473,6 +473,28 @@ async def get_practitioner_dashboard(
     )
 
 
+@app.get("/practitioner/profile", response_model=PractitionerResponse)
+async def get_practitioner_profile_data(
+    current_practitioner: Practitioner = Depends(get_current_practitioner),
+    db: Session = Depends(get_db)
+):
+    """Get current practitioner's profile"""
+    return current_practitioner
+
+@app.patch("/practitioner/profile", response_model=PractitionerResponse)
+async def update_practitioner_profile(
+    profile_update: PractitionerUpdate,
+    current_practitioner: Practitioner = Depends(get_current_practitioner),
+    db: Session = Depends(get_db)
+):
+    """Update current practitioner's profile"""
+    for field, value in profile_update.dict(exclude_unset=True).items():
+        setattr(current_practitioner, field, value)
+    
+    db.commit()
+    db.refresh(current_practitioner)
+    return current_practitioner
+
 @app.get("/practitioner/patients", response_model=List[PatientListItem])
 async def get_my_patients(
     current_practitioner: Practitioner = Depends(get_current_practitioner),

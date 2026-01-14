@@ -30,25 +30,21 @@ import { useAuth } from '../hooks/useAuth';
 import { Appointment, DashboardStats, PatientListItem, Notification as APINotification } from '../types/api.types';
 import NotificationDropdown, { Notification } from '../components/NotificationDropdown';
 import BookAppointmentModal from '../components/BookAppointmentModal';
+import AvailabilityManager from '../components/AvailabilityManager';
 
 const PractitionerDashboard = () => {
   const { logout } = useAuth();
   const navigate = useNavigate();
-  const [selectedTab, setSelectedTab] = useState('overview');
   const [selectedPatient, setSelectedPatient] = useState<{ id: number, name: string } | null>(null);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isBookModalOpen, setIsBookModalOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [activeTab, setActiveTab] = useState<'overview' | 'patients' | 'reports' | 'activities' | 'schedule'>('overview');
 
   // Real Data State
-  const [stats, setStats] = useState<DashboardStats>({
-    total_patients: 0,
-    today_appointments: 0,
-    active_treatments: 0,
-    pending_reports: 0
-  });
+  const [stats, setStats] = useState<DashboardStats | null>(null);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [patients, setPatients] = useState<PatientListItem[]>([]);
 
@@ -130,7 +126,7 @@ const PractitionerDashboard = () => {
 
   const handleViewAllActivities = () => {
     setIsNotificationOpen(false);
-    setSelectedTab('activities');
+    setActiveTab('activities');
   };
 
   // Mock Alerts (Leave as mock for now or clear)
@@ -147,7 +143,7 @@ const PractitionerDashboard = () => {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Total Patients</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.total_patients || 0}</p>
+              <p className="text-2xl font-bold text-gray-900">{stats?.total_patients || 0}</p>
             </div>
           </div>
         </div>
@@ -159,7 +155,7 @@ const PractitionerDashboard = () => {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Today's Appointments</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.today_appointments || 0}</p>
+              <p className="text-2xl font-bold text-gray-900">{stats?.today_appointments || 0}</p>
             </div>
           </div>
         </div>
@@ -171,7 +167,7 @@ const PractitionerDashboard = () => {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Active Therapies</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.active_treatments || 0}</p>
+              <p className="text-2xl font-bold text-gray-900">{stats?.active_treatments || 0}</p>
             </div>
           </div>
         </div>
@@ -183,7 +179,7 @@ const PractitionerDashboard = () => {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Pending Reports</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.pending_reports || 0}</p>
+              <p className="text-2xl font-bold text-gray-900">{stats?.pending_reports || 0}</p>
             </div>
           </div>
         </div>
@@ -194,12 +190,7 @@ const PractitionerDashboard = () => {
         <div className="lg:col-span-2 card">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-semibold text-gray-900">Today's Schedule</h3>
-            <button
-              onClick={() => setIsBookModalOpen(true)}
-              className="btn-primary text-sm px-4 py-2"
-            >
-              <Plus className="h-4 w-4 mr-1" /> Add Appointment
-            </button>
+            {/* Removed Add Appointment button */}
           </div>
 
           <div className="space-y-4">
@@ -217,8 +208,8 @@ const PractitionerDashboard = () => {
                     </div>
                     <div>
                       {/* Assuming we might not have patient name populated in Appointment list yet without join, checking API response */}
-                      {/* The AppointmentResponse doesn't technically have patient name, but in a real app we'd fetch it or include it. 
-                            For now, since appointment creation might be bare bones, I'll fallback or use ID if name missing. 
+                      {/* The AppointmentResponse doesn't technically have patient name, but in a real app we'd fetch it or include it.
+                            For now, since appointment creation might be bare bones, I'll fallback or use ID if name missing.
                             Wait, AppointmentResponse has patient_id. I can look up the patient name from `patients` list.
                         */}
                       <p className="font-medium text-gray-900">
@@ -567,12 +558,13 @@ const PractitionerDashboard = () => {
               { id: 'overview', name: 'Overview', icon: TrendingUp },
               { id: 'patients', name: 'Patients', icon: Users },
               { id: 'reports', name: 'Reports', icon: FileText },
-              { id: 'activities', name: 'Activities', icon: Bell }
+              { id: 'activities', name: 'Activities', icon: Bell },
+              { id: 'schedule', name: 'Schedule', icon: Clock }
             ].map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setSelectedTab(tab.id)}
-                className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm transition-all ${selectedTab === tab.id
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm transition-all ${activeTab === tab.id
                   ? 'border-primary-500 text-primary-600 dark:text-primary-400'
                   : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-600'
                   }`}
@@ -587,10 +579,11 @@ const PractitionerDashboard = () => {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {selectedTab === 'overview' && renderOverview()}
-        {selectedTab === 'patients' && renderPatients()}
-        {selectedTab === 'reports' && renderReports()}
-        {selectedTab === 'activities' && renderActivities()}
+        {activeTab === 'overview' && renderOverview()}
+        {activeTab === 'patients' && renderPatients()}
+        {activeTab === 'reports' && renderReports()}
+        {activeTab === 'activities' && renderActivities()}
+        {activeTab === 'schedule' && <AvailabilityManager />}
       </main>
 
       {/* Update Modal */}
