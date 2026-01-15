@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import {
   Calendar,
   Users,
@@ -367,6 +367,16 @@ const PractitionerDashboard = () => {
                         >
                           <Edit className="h-4 w-4 text-gray-600" />
                         </button>
+                        <button
+                          onClick={() => {
+                            setSelectedPatient(patient);
+                            setIsReportModalOpen(true);
+                          }}
+                          className="p-2 hover:bg-blue-100 text-blue-600 rounded-lg"
+                          title="Generate Report"
+                        >
+                          <FileText className="h-4 w-4" />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -506,12 +516,12 @@ const PractitionerDashboard = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
-              <div className="flex-shrink-0 flex items-center">
+              <Link to="/practitioner" className="flex-shrink-0 flex items-center">
                 <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-xl">आ</span>
                 </div>
                 <span className="ml-3 text-xl font-bold text-gray-900 dark:text-white">AyurSutra</span>
-              </div>
+              </Link>
             </div>
 
             <div className="flex items-center space-x-4">
@@ -552,7 +562,10 @@ const PractitionerDashboard = () => {
                 </div>
               </div>
 
-              <button className="p-2 hover:bg-gray-100 rounded-lg">
+              <button
+                onClick={() => navigate('/settings')}
+                className="p-2 hover:bg-gray-100 rounded-lg"
+              >
                 <Settings className="h-5 w-5 text-gray-600 dark:text-gray-400" />
               </button>
 
@@ -626,18 +639,24 @@ const PractitionerDashboard = () => {
 
       <PatientReportModal
         isOpen={isReportModalOpen}
-        onClose={() => setIsReportModalOpen(false)}
+        onClose={() => {
+          setIsReportModalOpen(false);
+          setSelectedPatient(null); // Optional: clear selection on close
+        }}
         patients={patients}
+        initialPatientId={selectedPatient?.id}
       />
 
       <TreatmentAnalyticsModal
         isOpen={isAnalyticsModalOpen}
         onClose={() => setIsAnalyticsModalOpen(false)}
+        patients={patients}
       />
 
       <MonthlySummaryModal
         isOpen={isSummaryModalOpen}
         onClose={() => setIsSummaryModalOpen(false)}
+        patients={patients}
       />
 
       <FeedbackReportModal

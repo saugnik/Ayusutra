@@ -545,13 +545,28 @@ const Settings = () => {
   );
 
   // Sidebar navigation items
-  const sidebarItems = [
-    { icon: Home, label: 'Dashboard', path: '/patient' },
-    { icon: Calendar, label: 'My Sessions', path: '/my-sessions' },
-    { icon: Activity, label: 'My Progress', path: '/progress' },
-    { icon: MessageCircle, label: 'Health Support', path: '/health-support' },
-    { icon: SettingsIcon, label: 'Settings', path: '/settings' }
-  ];
+  const sidebarItems = React.useMemo(() => {
+    if (user?.role === 'practitioner') {
+      return [
+        { icon: Home, label: 'Dashboard', path: '/practitioner' },
+        { icon: SettingsIcon, label: 'Settings', path: '/settings' }
+      ];
+    } else if (user?.role === 'admin') {
+      return [
+        { icon: Home, label: 'Dashboard', path: '/admin' },
+        { icon: SettingsIcon, label: 'Settings', path: '/settings' }
+      ];
+    } else {
+      // Default to Patient
+      return [
+        { icon: Home, label: 'Dashboard', path: '/patient' },
+        { icon: Calendar, label: 'My Sessions', path: '/my-sessions' },
+        { icon: Activity, label: 'My Progress', path: '/progress' },
+        { icon: MessageCircle, label: 'Health Support', path: '/health-support' },
+        { icon: SettingsIcon, label: 'Settings', path: '/settings' }
+      ];
+    }
+  }, [user]);
 
   return (
     <div className="flex h-screen bg-dashboard">

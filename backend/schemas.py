@@ -125,6 +125,8 @@ class PractitionerBase(BaseModel):
     qualification: Optional[str] = None
     clinic_name: Optional[str] = None
     clinic_address: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
     consultation_fee: float = 0.0
     availability_schedule: Dict[str, Any] = {} # Can strictly use AvailabilitySchedule but Dict is safer for DB JSON compatibility initially
     bio: Optional[str] = None
@@ -138,6 +140,8 @@ class PractitionerUpdate(BaseModel):
     qualification: Optional[str] = None
     clinic_name: Optional[str] = None
     clinic_address: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
     consultation_fee: Optional[float] = None
     availability_schedule: Optional[AvailabilitySchedule] = None # Updated to be consistent
     bio: Optional[str] = None
@@ -151,6 +155,8 @@ class PractitionerResponse(BaseSchema):
     qualification: Optional[str]
     clinic_name: Optional[str]
     clinic_address: Optional[str]
+    latitude: Optional[float]
+    longitude: Optional[float]
     consultation_fee: float
     availability_schedule: AvailabilitySchedule
     bio: Optional[str]

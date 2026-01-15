@@ -13,7 +13,8 @@ import {
   FileText,
   Menu,
   X,
-  CheckCircle
+  CheckCircle,
+  MapPin
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import appointmentService from '../services/appointment.service';
@@ -94,7 +95,8 @@ const PatientDashboard = () => {
     { icon: Calendar, label: 'My Sessions', path: '/my-sessions' },
     { icon: TrendingUp, label: 'Progress', path: '/progress' },
     { icon: FileText, label: 'Health Records', path: '/health-support' },
-    { icon: MessageCircle, label: 'Chat Support', path: '/chat-support' }, // Placeholder
+    { icon: MapPin, label: 'Find Clinics', path: '/map' },
+    { icon: MessageCircle, label: 'Chat Support', path: '/chat-support' },
     { icon: Settings, label: 'Settings', path: '/settings' }
   ];
 

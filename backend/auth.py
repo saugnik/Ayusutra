@@ -114,19 +114,24 @@ def get_current_patient(current_user: User = Depends(get_current_user), db: Sess
 
 def get_current_practitioner(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Get current user as practitioner (role check)"""
+    print(f"DEBUG AUTH: Checking practitioner access for {current_user.email} (Role: {current_user.role.value})")
+    
     if current_user.role.value != "practitioner":
+        print(f"DEBUG AUTH: DENIED. Role mismatch: {current_user.role.value} != practitioner")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Access denied. Practitioner role required."
+            detail=f"Access denied. Practitioner role required. Current role: {current_user.role.value}"
         )
     
     practitioner = db.query(Practitioner).filter(Practitioner.user_id == current_user.id).first()
     if not practitioner:
+        print("DEBUG AUTH: DENIED. Practitioner profile not found.")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Practitioner profile not found"
         )
     
+    print("DEBUG AUTH: SUCCESS. Practitioner access granted.")
     return practitioner
 
 def get_current_admin(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):

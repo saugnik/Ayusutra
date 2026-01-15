@@ -16,6 +16,7 @@ import Settings from './pages/Settings';
 import HealthSupport from './pages/HealthSupport';
 import ChatSupport from './pages/ChatSupport';
 import DebugAuth from './components/DebugAuth';
+import ClinicMap from './pages/ClinicMap';
 import AIAssistant from './components/AIAssistant';
 import './App.css';
 
@@ -39,6 +40,7 @@ function App() {
               <Route path="/settings" element={<Settings />} />
               <Route path="/health-support" element={<HealthSupport />} />
               <Route path="/chat-support" element={<ChatSupport />} />
+              <Route path="/map" element={<ClinicMap />} />
               <Route path="/debug" element={<DebugAuth />} />
 
               {/* Redirects for legacy or missing routes */}

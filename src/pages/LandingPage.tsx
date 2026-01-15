@@ -163,19 +163,20 @@ const LandingPage = () => {
       <nav className="bg-white dark:bg-gray-900 shadow-sm border-b border-gray-100 dark:border-gray-800 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
+            <Link to="/" className="flex items-center">
               <div className="flex-shrink-0 flex items-center">
                 <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-xl">आ</span>
                 </div>
                 <span className="ml-3 text-2xl font-bold text-gray-900 dark:text-white">AyurSutra</span>
               </div>
-            </div>
+            </Link>
 
             <div className="hidden md:block">
               <div className="ml-10 flex items-baseline space-x-8">
                 <a href="#features" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 px-3 py-2 text-sm font-medium">Features</a>
                 <a href="#how-it-works" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 px-3 py-2 text-sm font-medium">How It Works</a>
+                <Link to="/map" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 px-3 py-2 text-sm font-medium">Find Clinics</Link>
                 <a href="#testimonials" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 px-3 py-2 text-sm font-medium">Testimonials</a>
                 <a href="#agents" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 px-3 py-2 text-sm font-medium">AI Agents</a>
                 <a href="#faq" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 px-3 py-2 text-sm font-medium">FAQ</a>
@@ -555,12 +556,12 @@ const LandingPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="md:col-span-2">
-              <div className="flex items-center mb-4">
+              <Link to="/" className="flex items-center mb-4">
                 <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-xl">आ</span>
                 </div>
                 <span className="ml-3 text-2xl font-bold">AyurSutra</span>
-              </div>
+              </Link>
               <p className="text-gray-400 mb-6 max-w-md">
                 Bridging traditional Ayurvedic wisdom with modern digital healthcare technology
                 for better patient outcomes and streamlined practice management.

@@ -82,16 +82,19 @@ class PractitionerService {
     /**
      * Get treatment analytics
      */
-    async getTreatmentAnalytics(days: number = 30): Promise<TreatmentAnalyticsResponse> {
-        const response = await apiClient.get<TreatmentAnalyticsResponse>('/reports/treatments', { params: { days } });
+    async getTreatmentAnalytics(days: number = 30, patientId?: number): Promise<TreatmentAnalyticsResponse> {
+        const params: any = { days };
+        if (patientId) params.patient_id = patientId;
+        const response = await apiClient.get<TreatmentAnalyticsResponse>('/reports/treatments', { params });
         return response.data;
     }
 
     /**
      * Get monthly summary
      */
-    async getMonthlySummary(): Promise<MonthlySummaryResponse> {
-        const response = await apiClient.get<MonthlySummaryResponse>('/reports/monthly-summary');
+    async getMonthlySummary(patientId?: number): Promise<MonthlySummaryResponse> {
+        const params = patientId ? { patient_id: patientId } : {};
+        const response = await apiClient.get<MonthlySummaryResponse>('/reports/monthly-summary', { params });
         return response.data;
     }
 

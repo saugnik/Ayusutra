@@ -23,6 +23,14 @@ class PatientService {
         const response = await apiClient.get<Appointment[]>('/appointments', { params });
         return response.data;
     }
+
+    /**
+     * Get all practitioners (for map)
+     */
+    async getAllPractitioners(): Promise<any[]> {
+        const response = await apiClient.get<any[]>('/practitioners');
+        return response.data;
+    }
 }
 
 export default new PatientService();

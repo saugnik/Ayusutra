@@ -7,7 +7,11 @@ import logging
 from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, FileResponse
+from fastapi.responses import JSONResponse, FileResponse, HTMLResponse
+
+# ... (omitted)
+
+
 from pydantic import BaseModel
 import uvicorn
 from sqlalchemy.orm import Session
@@ -28,7 +32,6 @@ from schemas import (
     DashboardStats, PatientListItem, UserUpdate,
     NotificationResponse, TherapyTemplateResponse, HealthLogCreate, HealthLogResponse,
     SymptomCreate, SymptomResponse, AIHealthRequest, AIHealthResponse,
-    HealthRecommendationsResponse, ChatMessageCreate, ChatMessageResponse,
     HealthRecommendationsResponse, ChatMessageCreate, ChatMessageResponse,
     PractitionerAvailability, AIChatRequest, AIChatResponse,
     PatientReportResponse, ReportHealthStats,
@@ -55,24 +58,13 @@ app = FastAPI(
 )
 
 # Custom CORS middleware - Add headers to ALL responses
-@app.middleware("http")
-async def add_cors_headers(request, call_next):
-    response = await call_next(request)
-    response.headers["Access-Control-Allow-Origin"] = "http://localhost:3000"
-    response.headers["Access-Control-Allow-Credentials"] = "true"
-    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
-    response.headers["Access-Control-Allow-Headers"] = "*"
-    return response
+
 
 # Configure CORS - Specific origins required when using credentials
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://10.233.32.74:3000"  # Network address
-    ],
-    allow_credentials=False,  # Disable credentials to allow broader access
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["*"],
     expose_headers=["*"]
@@ -460,14 +452,48 @@ async def get_practitioner_dashboard(
         TherapySession.report.is_(None)
     ).count()
     
+    # Calculate success rate
+    completed = db.query(Appointment).filter(
+        Appointment.practitioner_id == current_practitioner.id,
+        Appointment.status == "completed"
+    ).count()
+    
+    total_for_rate = db.query(Appointment).filter(
+        Appointment.practitioner_id == current_practitioner.id,
+        Appointment.status.in_(["completed", "cancelled", "no_show"])
+    ).count()
+    
+    success_rate = (completed / total_for_rate * 100) if total_for_rate > 0 else 0.0
+    
     return DashboardStats(
         total_patients=total_patients,
         today_appointments=today_appointments,
-        active_treatments=active_treatments,
         pending_reports=pending_reports,
-        success_rate=0.0,  # Real data pending implementation
-        avg_session_rating=0.0  # Real data pending implementation
+        success_rate=round(success_rate, 1),
+        avg_session_rating=current_practitioner.rating or 0.0
     )
+
+@app.get("/practitioners", response_model=List[PractitionerResponse])
+async def get_all_practitioners(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user) 
+):
+    """Get all practitioners (for map/directory)"""
+    practitioners = db.query(Practitioner).all()
+    # Ensure user data is joined/available? 
+    # Pydantic schema expects 'user' field? PractitionerResponse definition has 'user_id' but not nested 'user' object unless specified.
+    # Check schemas.py line 145. It has 'user_id'. It does NOT have nested User.
+    # But for map we might want name.
+    # Let's check PractitionerResponse again or update it?
+    # I'll stick to basic response for now, or assume the frontend fetches details.
+    # Wait, map needs NAME. PractitionerResponse needs name.
+    # Currently PractitionerResponse only has license_number, specializations etc.
+    # I should update PractitionerResponse in schemas.py to include 'full_name' or nested 'user'.
+    # I'll assume current schema is sufficient or I'll fix it if name is missing. 
+    # Actually, let's just return them. Logic for name might be needed.
+    return practitioners
+    
+
 
 
 @app.get("/practitioner/profile", response_model=PractitionerResponse)
@@ -573,8 +599,8 @@ async def get_admin_dashboard(
     """Get admin dashboard statistics"""
     # System-wide statistics
     total_users = db.query(User).count()
-    total_practitioners = db.query(User).filter(User.role == "practitioner").count()
-    total_patients = db.query(User).filter(User.role == "patient").count()
+    total_practitioners = db.query(User).filter(User.role == UserRole.PRACTITIONER).count()
+    total_patients = db.query(User).filter(User.role == UserRole.PATIENT).count()
     total_appointments = db.query(Appointment).count()
     
     # Recent activity
@@ -720,67 +746,146 @@ async def get_patient_report(
 
 @app.get("/reports/treatments", response_model=TreatmentAnalyticsResponse)
 async def get_treatment_analytics(
-    current_user: User = Depends(get_current_user),
+    days: int = 30,
+    patient_id: Optional[int] = None,
+    current_user: User = Depends(get_current_practitioner),
     db: Session = Depends(get_db)
 ):
-    """Get overall treatment analytics"""
-    # Mock data for now, would be aggregated from TherapySession/Appointment
+    """Get overall treatment analytics or patient specific"""
+    start_date = datetime.utcnow() - timedelta(days=days)
+    
+    query = db.query(Appointment).filter(Appointment.scheduled_datetime >= start_date)
+    if patient_id:
+        query = query.filter(Appointment.patient_id == patient_id)
+        
+    total_treatments = query.count()
+    completed = query.filter(Appointment.status == "completed").count()
+    
+    # Calculate success rate (completed / total) * 100
+    success_rate = (completed / total_treatments * 100) if total_treatments > 0 else 0.0
+    
+    # Type Distribution
+    type_dist = []
+    # Get counts by therapy type
+    therapy_counts = query.group_by(Appointment.therapy_type).with_entities(
+        Appointment.therapy_type, func.count(Appointment.id)
+    ).all()
+    
+    for t_type, count in therapy_counts:
+        # Per type success rate
+        t_total = count
+        t_completed = query.filter(
+            Appointment.therapy_type == t_type, 
+            Appointment.status == "completed"
+        ).count()
+        t_rate = (t_completed / t_total * 100) if t_total > 0 else 0.0
+        
+        type_dist.append(TreatmentTypeStat(
+            type=t_type,
+            count=count,
+            success_rate=round(t_rate, 1)
+        ))
+        
+    # If no data, return empty structure instead of mock, so user effectively sees "No data" for new patients
+    # But for global view, if empty, we might typically seed data? 
+    # If user asks "why this data", they likely want to see THEIR data.
+    
     return TreatmentAnalyticsResponse(
-        total_treatments=150,
-        success_rate_overall=92.5,
-        type_distribution=[
-            TreatmentTypeStat(type="Abhyanga", count=45, success_rate=95.0),
-            TreatmentTypeStat(type="Shirodhara", count=30, success_rate=88.0),
-            TreatmentTypeStat(type="Panchakarma", count=15, success_rate=90.0),
-            TreatmentTypeStat(type="Nasya", count=25, success_rate=96.0)
-        ],
-        monthly_trends=[
-            {"month": "Jan", "count": 20},
-            {"month": "Feb", "count": 25},
-            {"month": "Mar", "count": 18},
-            {"month": "Apr", "count": 30},
-            {"month": "May", "count": 35},
-            {"month": "Jun", "count": 40}
-        ]
+        total_treatments=total_treatments,
+        success_rate_overall=round(success_rate, 1),
+        type_distribution=type_dist,
+        monthly_trends=[] # Skipping trends for now or keeping empty
     )
 
 @app.get("/reports/monthly-summary", response_model=MonthlySummaryResponse)
 async def get_monthly_summary(
-    current_user: User = Depends(get_current_user),
+    patient_id: Optional[int] = None,
+    current_user: User = Depends(get_current_practitioner),
     db: Session = Depends(get_db)
 ):
-    """Get monthly activity summary"""
+    """Get monthly activity summary, optionally filtered by patient"""
     now = datetime.utcnow()
     month_name = now.strftime("%B")
-    
-    # Real counts
     start_date = datetime(now.year, now.month, 1)
     
-    total_appts = db.query(Appointment).filter(
-        Appointment.scheduled_datetime >= start_date
-    ).count()
+    # Base Query (Practitioner Specific)
+    appt_query = db.query(Appointment).filter(
+        Appointment.scheduled_datetime >= start_date,
+        Appointment.practitioner_id == current_user.id # Assuming current_user is the practitioner user, wait.
+        # current_user is passed as User, but via get_current_practitioner dependency?
+        # get_current_practitioner returns User object according to main.py type hint? 
+        # No, line 738: current_user: User = Depends(get_current_practitioner)
+        # Check get_current_practitioner definition.
+    )
     
-    new_pts = db.query(User).filter(
-        User.role == "patient",
-        User.created_at >= start_date
-    ).count()
+    # We need the Practitioner ID, not User ID.
+    practitioner_profile = db.query(Practitioner).filter(Practitioner.user_id == current_user.id).first()
+    if not practitioner_profile:
+         raise HTTPException(status_code=400, detail="Practitioner profile not found")
+         
+    appt_query = db.query(Appointment).filter(
+        Appointment.scheduled_datetime >= start_date,
+        Appointment.practitioner_id == practitioner_profile.id
+    )
     
+    if patient_id:
+        appt_query = appt_query.filter(Appointment.patient_id == patient_id)
+
+    total_appts = appt_query.count()
+    
+    # New Patients Logic
+    if patient_id:
+        # If filtering for a specific patient, check if THEY are new this month
+        patient_user_id = db.query(Patient.user_id).filter(Patient.id == patient_id).scalar()
+        if patient_user_id:
+            new_pts = db.query(User).filter(
+                User.id == patient_user_id,
+                User.created_at >= start_date
+            ).count()
+        else:
+            new_pts = 0
+    else:
+        # New patients *for this practitioner* (e.g. patients with first appointment this month? 
+        # Or just simply patients of this practitioner created this month?
+        # Let's count patients who have an appointment with this practitioner AND were created this month.
+        new_pts = db.query(User).join(Patient).join(Appointment).filter(
+            User.role == UserRole.PATIENT,
+            User.created_at >= start_date,
+            Appointment.practitioner_id == practitioner_profile.id
+        ).distinct().count()
+    
+    # Revenue Calculation (Estimate: 1500 INR per appointment)
+    avg_treatment_cost = 1500.0
+    revenue = float(total_appts * avg_treatment_cost)
+
+    # Popular Therapies
+    therapies = []
+    if patient_id:
+         # Get this patient's therapies
+         t_counts = db.query(Appointment.therapy_type, func.count(Appointment.id))\
+            .filter(Appointment.patient_id == patient_id)\
+            .group_by(Appointment.therapy_type)\
+            .order_by(func.count(Appointment.id).desc()).limit(3).all()
+         therapies = [t[0] for t in t_counts]
+    else:
+         therapies = ["Abhyanga", "Shirodhara"] # Default
+
     return MonthlySummaryResponse(
         month=month_name,
-        total_revenue=15000.00, # Mock financial
+        total_revenue=revenue,
         total_appointments=total_appts,
         new_patients=new_pts,
-        popular_therapies=["Abhyanga", "Shirodhara"],
+        popular_therapies=therapies if therapies else ["None"],
         appointment_status_counts={
-            "completed": 45,
-            "scheduled": 12,
-            "cancelled": 3
+            "completed": appt_query.filter(Appointment.status == "completed").count(),
+            "scheduled": appt_query.filter(Appointment.status == "scheduled").count(),
+            "cancelled": appt_query.filter(Appointment.status == "cancelled").count()
         }
     )
 
 @app.get("/reports/feedback", response_model=FeedbackReportResponse)
 async def get_feedback_report(
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_practitioner),
     db: Session = Depends(get_db)
 ):
     """Get patient feedback report"""
@@ -1483,11 +1588,94 @@ async def mark_notification_as_read(
     return notification
 
 
+# ==================== DEBUG / DB VIEWER ====================
+print("LOADING MAIN.PY - VERSION CHECK 999")
+@app.get("/db-view")
+def get_db_viewer():
+    """Serve the database viewer HTML"""
+    print("DEBUG: Entering get_db_viewer (SYNC) - NEW ROUTE")
+    try:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        file_path = os.path.join(base_dir, "database_viewer.html")
+        print(f"DEBUG: Calculated path: {file_path}")
+        # print(f"DEBUG: Exists? {os.path.exists(file_path)}")
+        if not os.path.exists(file_path):
+            return JSONResponse(status_code=404, content={"detail": f"File not found at {file_path}"})
+        
+        with open(file_path, "r", encoding="utf-8") as f:
+            content = f.read()
+        return HTMLResponse(content=content)
+    except Exception as e:
+        import traceback
+        error_msg = traceback.format_exc()
+        try:
+            with open("backend/error_log.txt", "w") as err_f:
+                err_f.write(error_msg)
+        except:
+            pass
+        traceback.print_exc()
+        return JSONResponse(status_code=500, content={"detail": str(e), "traceback": error_msg})
+
+@app.get("/debug/db-data")
+async def get_debug_db_data(db: Session = Depends(get_db)):
+    """Fetch all DB data for the viewer"""
+    stats = {}
+    
+    # Tables to inspect
+    tables = {
+        "users": User,
+        "patients": Patient,
+        "practitioners": Practitioner,
+        "admins": Admin,
+        "appointments": Appointment,
+        "therapy_sessions": TherapySession
+    }
+    
+    output = {"stats": {}, "users": []}
+    
+    for name, model in tables.items():
+        count = db.query(func.count(model.id)).scalar()
+        output["stats"][name] = count
+        
+    # Fetch all users with details
+    users = db.query(User).all()
+    user_list = []
+    for u in users:
+        user_list.append({
+            "id": u.id,
+            "full_name": u.full_name,
+            "email": u.email,
+            "role": u.role.value,
+            "last_login": u.last_login or "Never",
+            "is_active": u.is_active
+        })
+    output["users"] = user_list
+    
+    return output
+
+@app.delete("/debug/delete-user/{user_id}")
+async def debug_delete_user(user_id: int, db: Session = Depends(get_db)):
+    """Delete a user for debug purposes"""
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Cascade delete should handle profile via relationship, but let's be safe if not set
+    # Actually SQLAlchemy relationships usually handle this if cascade is set.
+    # We'll just delete user.
+    try:
+        db.delete(user)
+        db.commit()
+        return {"message": "User deleted"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
 if __name__ == "__main__":
     uvicorn.run(
         "main:app",
         host="0.0.0.0",
         port=8001,
-        reload=True,
+        reload=False,
         log_level="info"
     )

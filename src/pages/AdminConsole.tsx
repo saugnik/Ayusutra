@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import {
   Users,
@@ -626,12 +626,12 @@ const AdminConsole = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
-              <div className="flex-shrink-0 flex items-center">
+              <Link to="/admin" className="flex-shrink-0 flex items-center">
                 <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-xl">आ</span>
                 </div>
                 <span className="ml-3 text-xl font-bold text-gray-900 dark:text-white">AyurSutra Admin</span>
-              </div>
+              </Link>
             </div>
 
             <div className="flex items-center space-x-4 relative">

@@ -20,12 +20,15 @@ const Sidebar = ({ items, user, onLogout }: SidebarProps) => {
     return (
         <div className="flex flex-col h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800">
             {/* Logo */}
-            <div className="flex items-center h-16 flex-shrink-0 px-6 bg-primary-600">
+            <Link
+                to={user?.role === 'practitioner' ? '/practitioner' : user?.role === 'admin' ? '/admin' : '/patient'}
+                className="flex items-center h-16 flex-shrink-0 px-6 bg-primary-600 hover:bg-primary-700 transition-colors"
+            >
                 <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
                     <span className="text-primary-600 font-bold text-lg">आ</span>
                 </div>
                 <span className="ml-3 text-xl font-bold text-white">AyurSutra</span>
-            </div>
+            </Link>
 
             {/* Patient Info */}
             <div className="p-6 border-b border-gray-200 dark:border-gray-800">

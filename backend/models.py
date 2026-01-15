@@ -80,6 +80,8 @@ class Practitioner(Base):
     qualification = Column(String(255), nullable=True)
     clinic_name = Column(String(255), nullable=True)
     clinic_address = Column(Text, nullable=True)
+    latitude = Column(Float, nullable=True)
+    longitude = Column(Float, nullable=True)
     consultation_fee = Column(Float, default=0.0)
     availability_schedule = Column(JSON, default=dict)  # Weekly schedule
     bio = Column(Text, nullable=True)

@@ -83,6 +83,13 @@ export interface AvailabilitySchedule {
 }
 
 // ==================== PRACTITIONER TYPES ====================
+export interface PractitionerUser {
+    full_name: string;
+    email: string;
+    phone?: string;
+    profile_picture?: string;
+}
+
 export interface Practitioner {
     id: number;
     user_id: number;
@@ -92,6 +99,8 @@ export interface Practitioner {
     qualification?: string;
     clinic_name?: string;
     clinic_address?: string;
+    latitude?: number;
+    longitude?: number;
     consultation_fee: number;
     availability_schedule?: AvailabilitySchedule;
     bio?: string;
@@ -99,11 +108,7 @@ export interface Practitioner {
     total_reviews: number;
     is_verified: boolean;
     created_at: string;
-    user?: {
-        full_name: string;
-        email: string;
-        profile_picture?: string;
-    };
+    user?: PractitionerUser;
 }
 
 // ==================== APPOINTMENT TYPES ====================
