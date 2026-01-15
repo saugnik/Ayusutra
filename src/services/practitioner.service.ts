@@ -4,7 +4,7 @@
  */
 
 import apiClient from './api';
-import { DashboardStats, Appointment, PatientListItem, Notification } from '../types/api.types';
+import { DashboardStats, Appointment, PatientListItem, Notification, PatientReportResponse, TreatmentAnalyticsResponse, MonthlySummaryResponse, FeedbackReportResponse } from '../types/api.types';
 
 class PractitionerService {
     /**
@@ -68,6 +68,38 @@ class PractitionerService {
      */
     async updateProfile(data: any): Promise<any> {
         const response = await apiClient.patch('/practitioner/profile', data);
+        return response.data;
+    }
+
+    /**
+     * Get patient progress report
+     */
+    async getPatientReport(patientId: number): Promise<PatientReportResponse> {
+        const response = await apiClient.get<PatientReportResponse>(`/reports/patient/${patientId}`);
+        return response.data;
+    }
+
+    /**
+     * Get treatment analytics
+     */
+    async getTreatmentAnalytics(days: number = 30): Promise<TreatmentAnalyticsResponse> {
+        const response = await apiClient.get<TreatmentAnalyticsResponse>('/reports/treatments', { params: { days } });
+        return response.data;
+    }
+
+    /**
+     * Get monthly summary
+     */
+    async getMonthlySummary(): Promise<MonthlySummaryResponse> {
+        const response = await apiClient.get<MonthlySummaryResponse>('/reports/monthly-summary');
+        return response.data;
+    }
+
+    /**
+     * Get feedback report
+     */
+    async getFeedbackReport(): Promise<FeedbackReportResponse> {
+        const response = await apiClient.get<FeedbackReportResponse>('/reports/feedback');
         return response.data;
     }
 }

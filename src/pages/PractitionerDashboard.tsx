@@ -31,6 +31,8 @@ import { Appointment, DashboardStats, PatientListItem, Notification as APINotifi
 import NotificationDropdown, { Notification } from '../components/NotificationDropdown';
 import BookAppointmentModal from '../components/BookAppointmentModal';
 import AvailabilityManager from '../components/AvailabilityManager';
+import PatientReportModal from '../components/PatientReportModal';
+import { TreatmentAnalyticsModal, MonthlySummaryModal, FeedbackReportModal } from '../components/ReportModals';
 
 const PractitionerDashboard = () => {
   const { logout } = useAuth();
@@ -41,6 +43,10 @@ const PractitionerDashboard = () => {
   const [isBookModalOpen, setIsBookModalOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [isAnalyticsModalOpen, setIsAnalyticsModalOpen] = useState(false);
+  const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
+  const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'patients' | 'reports' | 'activities' | 'schedule'>('overview');
 
   // Real Data State
@@ -453,25 +459,37 @@ const PractitionerDashboard = () => {
       <div className="card">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Generate Reports</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <button className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow text-left">
+          <button
+            onClick={() => setIsReportModalOpen(true)}
+            className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow text-left"
+          >
             <FileText className="h-6 w-6 text-primary-600 mb-2" />
             <h4 className="font-medium text-gray-900">Patient Progress Report</h4>
             <p className="text-sm text-gray-600">Detailed progress for individual patients</p>
           </button>
 
-          <button className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow text-left">
+          <button
+            onClick={() => setIsAnalyticsModalOpen(true)}
+            className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow text-left"
+          >
             <TrendingUp className="h-6 w-6 text-green-600 mb-2" />
             <h4 className="font-medium text-gray-900">Treatment Analytics</h4>
             <p className="text-sm text-gray-600">Success rates and outcomes analysis</p>
           </button>
 
-          <button className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow text-left">
+          <button
+            onClick={() => setIsSummaryModalOpen(true)}
+            className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow text-left"
+          >
             <Calendar className="h-6 w-6 text-blue-600 mb-2" />
             <h4 className="font-medium text-gray-900">Monthly Summary</h4>
             <p className="text-sm text-gray-600">Complete monthly activity report</p>
           </button>
 
-          <button className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow text-left">
+          <button
+            onClick={() => setIsFeedbackModalOpen(true)}
+            className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow text-left"
+          >
             <Users className="h-6 w-6 text-purple-600 mb-2" />
             <h4 className="font-medium text-gray-900">Patient Feedback</h4>
             <p className="text-sm text-gray-600">Compiled feedback and ratings</p>
@@ -604,6 +622,27 @@ const PractitionerDashboard = () => {
           setIsBookModalOpen(false);
           // Refresh data if needed
         }}
+      />
+
+      <PatientReportModal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        patients={patients}
+      />
+
+      <TreatmentAnalyticsModal
+        isOpen={isAnalyticsModalOpen}
+        onClose={() => setIsAnalyticsModalOpen(false)}
+      />
+
+      <MonthlySummaryModal
+        isOpen={isSummaryModalOpen}
+        onClose={() => setIsSummaryModalOpen(false)}
+      />
+
+      <FeedbackReportModal
+        isOpen={isFeedbackModalOpen}
+        onClose={() => setIsFeedbackModalOpen(false)}
       />
     </div>
   );

@@ -13,7 +13,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 
-from database import SessionLocal
+from database import SessionLocal, get_db
 from models import User, Patient, Practitioner, Admin
 
 # Security configuration
@@ -71,13 +71,6 @@ def verify_token(token: str):
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-def get_db():
-    """Database session dependency"""
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),

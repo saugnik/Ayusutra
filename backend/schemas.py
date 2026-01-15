@@ -477,3 +477,54 @@ class AIChatRequest(BaseModel):
 class AIChatResponse(BaseModel):
     reply: str
     conversation_id: str
+
+
+# ==================== PATIENT REPORT SCHEMAS ====================
+class ReportHealthStats(BaseModel):
+    average_sleep: Optional[float] = 0.0
+    average_hydration: Optional[float] = 0.0
+    stress_trend: Optional[str] = "Stable"
+    dominant_dosha: Optional[str] = "Mixed"
+
+class PatientReportResponse(BaseModel):
+    generated_at: datetime
+    patient_name: str
+    patient_age: Optional[int]
+    patient_gender: Optional[str]
+    prakriti_type: Optional[str]
+    
+    # Sections
+    health_stats: ReportHealthStats
+    recent_appointments: List[AppointmentResponse]
+    recent_health_logs: List[HealthLogResponse]
+    recent_symptoms: List[SymptomResponse]
+    doctor_notes: Optional[str] = None
+
+class TreatmentTypeStat(BaseModel):
+    type: str
+    count: int
+    success_rate: float
+
+class TreatmentAnalyticsResponse(BaseModel):
+    total_treatments: int
+    success_rate_overall: float
+    type_distribution: List[TreatmentTypeStat]
+    monthly_trends: List[Dict[str, Any]] # e.g., [{"month": "Jan", "count": 10}]
+
+class MonthlySummaryResponse(BaseModel):
+    month: str
+    total_revenue: float
+    total_appointments: int
+    new_patients: int
+    popular_therapies: List[str]
+    appointment_status_counts: Dict[str, int]
+
+class FeedbackSummary(BaseModel):
+    average_rating: float
+    total_reviews: int
+    rating_distribution: Dict[int, int] # 5 stars: 10, 4 stars: 5...
+    recent_feedback: List[FeedbackResponse]
+
+class FeedbackReportResponse(BaseModel):
+    summary: FeedbackSummary
+    improvement_areas: List[str]

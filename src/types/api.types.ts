@@ -262,6 +262,60 @@ export interface AIAssistantResponse {
     sources: Array<Record<string, any>>;
 }
 
+// ==================== REPORT TYPES ====================
+export interface ReportHealthStats {
+    average_sleep?: number;
+    average_hydration?: number;
+    stress_trend?: string;
+    dominant_dosha?: string;
+}
+
+export interface PatientReportResponse {
+    generated_at: string;
+    patient_name: string;
+    patient_age?: number;
+    patient_gender?: string;
+    prakriti_type?: string;
+    health_stats: ReportHealthStats;
+    recent_appointments: AppointmentResponse[];
+    recent_health_logs: HealthLog[];
+    doctor_notes?: string;
+}
+
+export interface TreatmentTypeStat {
+    type: string;
+    count: number;
+    success_rate: number;
+}
+
+export interface TreatmentAnalyticsResponse {
+    total_treatments: number;
+    success_rate_overall: number;
+    type_distribution: TreatmentTypeStat[];
+    monthly_trends: Array<{ month: string; count: number }>;
+}
+
+export interface MonthlySummaryResponse {
+    month: string;
+    total_revenue: number;
+    total_appointments: number;
+    new_patients: number;
+    popular_therapies: string[];
+    appointment_status_counts: Record<string, number>;
+}
+
+export interface FeedbackSummary {
+    average_rating: number;
+    total_reviews: number;
+    rating_distribution: Record<number, number>;
+    recent_feedback: Feedback[];
+}
+
+export interface FeedbackReportResponse {
+    summary: FeedbackSummary;
+    improvement_areas: string[];
+}
+
 // ==================== API ERROR TYPES ====================
 export interface APIError {
     detail: string;
