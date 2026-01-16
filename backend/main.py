@@ -19,7 +19,7 @@ from sqlalchemy import func
 import requests
 
 from database import engine, SessionLocal, get_db
-from models import User, Patient, Practitioner, Admin, Appointment, TherapySession, Feedback, UserRole, Base, Notification, SystemSettings, AuditLog, PatientHealthLog, Symptom, AIConversation, ChatMessage
+from models import User, Patient, Practitioner, Admin, Appointment, TherapySession, Feedback, UserRole, Base, Notification, SystemSettings, AuditLog, PatientHealthLog, Symptom, AIConversation, ChatMessage, Reminder
 from schemas import (
     UserCreate, UserResponse, TokenResponse, UserLogin,
     PatientCreate, PatientResponse, PatientUpdate,
@@ -36,8 +36,9 @@ from schemas import (
     PractitionerAvailability, AIChatRequest, AIChatResponse,
     PatientReportResponse, ReportHealthStats,
     TreatmentAnalyticsResponse, MonthlySummaryResponse, FeedbackReportResponse,
-    TreatmentTypeStat, FeedbackSummary
+    TreatmentTypeStat, FeedbackSummary, ReminderCreate, ReminderResponse, AgentAction, AIChatResponse, AIChatRequest
 )
+from enhanced_health_assistant import health_assistant
 from auth import (
     create_access_token, verify_token, get_password_hash, verify_password,
     get_current_user, get_current_patient, get_current_practitioner, get_current_admin
@@ -305,6 +306,88 @@ async def ai_assistant(
             status_code=500,
             detail="AI service error"
         )
+
+# ==================== AGENT ENDPOINTS ====================
+@app.post("/agent/chat", response_model=AIChatResponse)
+async def agent_chat(
+    request: AIChatRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Chat with the Health Agent"""
+    # 1. Get user profile
+    user_profile = {}
+    dosha_analysis = {"vata": 33, "pitta": 33, "kapha": 34} # Default
+    
+    if current_user.role == UserRole.PATIENT:
+        patient = db.query(Patient).filter(Patient.user_id == current_user.id).first()
+        if patient:
+            # Populate profile from patient data
+            user_profile = {
+                "name": current_user.full_name,
+                "age": (datetime.utcnow().year - patient.date_of_birth.year) if patient.date_of_birth else 30,
+                # Add more fields if available
+            }
+            if patient.prakriti_type:
+                # Mock parsing prakriti
+                dosha_analysis = {"vata": 40, "pitta": 30, "kapha": 30} 
+
+    # 2. Get AI Response
+    response = await health_assistant.generate_conversational_response(
+        query=request.message,
+        user_profile=user_profile,
+        conversation_history=[], # TODO: Fetch history
+        dosha_analysis=dosha_analysis
+    )
+    
+    return AIChatResponse(
+        reply=response["reply"],
+        conversation_id=response["conversation_id"] or "new",
+        actions=response["actions"]
+    )
+
+@app.post("/agent/confirm-actions")
+async def confirm_agent_actions(
+    actions: List[AgentAction],
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Execute confirmed agent actions"""
+    results = []
+    for action in actions:
+        if action.type == "create_reminder":
+            data = action.data
+            # Handle comma separated times
+            times = data["time"].split(",")
+            for t in times:
+                reminder = Reminder(
+                    user_id=current_user.id,
+                    title=data["title"],
+                    message=data.get("message"),
+                    frequency=data["frequency"],
+                    time=t.strip(),
+                    is_active=True
+                )
+                db.add(reminder)
+            results.append(f"Created reminder: {data['title']}")
+            
+        elif action.type == "find_practitioner":
+            # Just acknowledgement, frontend handles navigation
+            results.append("Practitioner search initiated")
+            
+    db.commit()
+    return {"status": "success", "results": results}
+
+@app.get("/reminders", response_model=List[ReminderResponse])
+async def get_reminders(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get active reminders for user"""
+    return db.query(Reminder).filter(
+        Reminder.user_id == current_user.id,
+        Reminder.is_active == True
+    ).all()
 
 
 # ==================== APPOINTMENT MANAGEMENT ====================

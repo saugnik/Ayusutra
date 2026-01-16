@@ -343,106 +343,84 @@ class ConversationalHealthAssistant:
         dosha_analysis: Dict[str, int]
     ) -> Dict[str, Any]:
         """
-        Generate intelligent conversational response with clarifying questions if needed
+        Generate intelligent conversational response with Actions
         """
-        # Check if clarification is needed
-        clarifying_questions = self.needs_clarification(query, user_profile)
-        
-        if clarifying_questions:
-            # Format questions in organized sections
-            formatted_message = "To provide you with the most personalized recommendations, I need a bit more information:\n\n"
-            
-            question_num = 1
-            if clarifying_questions.get('basic_info'):
-                formatted_message += "📋 **Basic Information:**\n"
-                for q in clarifying_questions['basic_info']:
-                    formatted_message += f"{question_num}. {q}\n"
-                    question_num += 1
-                formatted_message += "\n"
-            
-            if clarifying_questions.get('diet_info'):
-                formatted_message += "🥗 **Diet & Nutrition:**\n"
-                for q in clarifying_questions['diet_info']:
-                    formatted_message += f"{question_num}. {q}\n"
-                    question_num += 1
-                formatted_message += "\n"
-            
-            if clarifying_questions.get('fitness_info'):
-                formatted_message += "💪 **Fitness & Exercise:**\n"
-                for q in clarifying_questions['fitness_info']:
-                    formatted_message += f"{question_num}. {q}\n"
-                    question_num += 1
-            
-            # Flatten all questions for return
-            all_questions = []
-            for category in clarifying_questions.values():
-                all_questions.extend(category)
-            
-            return {
-                'type': 'clarification',
-                'questions': all_questions,
-                'message': formatted_message.strip()
-            }
-        
-        # Determine response type
         query_lower = query.lower()
+        actions = []
         
-        if any(word in query_lower for word in ['diet', 'food', 'eat', 'nutrition', 'meal']):
-            diet_plan = self.generate_diet_plan(user_profile, dosha_analysis)
-            return {
-                'type': 'diet_plan',
-                'data': diet_plan,
-                'message': 'Based on your profile and dosha balance, here\'s your personalized diet plan:'
-            }
+        # 1. Intent: Water / Hydration
+        if any(w in query_lower for w in ['water', 'hydrate', 'drink']):
+             # Suggest setting water reminders
+             actions.append({
+                 "type": "create_reminder",
+                 "label": "Set Water Reminders (Every 2 hours)",
+                 "data": {
+                     "title": "Drink Water",
+                     "message": "Time to hydrate! Drink a glass of water.",
+                     "frequency": "daily",
+                     "time": "09:00,11:00,13:00,15:00,17:00,19:00" # Frontend handle split or backend loop
+                 }
+             })
+
+        # 2. Intent: Weight Loss / Exercise
+        if any(w in query_lower for w in ['weight', 'fat', 'lose', 'slim', 'exercise', 'workout']):
+             # Calculate generic schedule based on profile (or default)
+             actions.append({
+                 "type": "create_reminder",
+                 "label": "Set Daily Morning Workout (7:00 AM)",
+                 "data": {
+                     "title": "Morning Workout",
+                     "message": "Time for your weight loss exercises!",
+                     "frequency": "daily",
+                     "time": "07:00"
+                 }
+             })
+             
+             # Also suggest generating a full plan (existing logic reused)
+             workout_plan = self.generate_workout_plan(user_profile, dosha_analysis)
+             # We could embed or just talk about it.
+
+        # 3. Intent: Medical Help / Doctor
+        if any(w in query_lower for w in ['doctor', 'pain', 'sick', 'ill', 'fever', 'appointment', 'consult']):
+             # Suggest finding a doctor
+             actions.append({
+                 "type": "find_practitioner",
+                 "label": "Find a Practitioner",
+                 "data": {
+                     "specialization": "General" if "pain" not in query_lower else "Specialist"
+                 }
+             })
+
+        # Generate text response using Gemini or Templates
+        conversation_context = f"""
+        User Profile: {user_profile}
+        Dosha: {dosha_analysis}
+        Query: {query}
+        Actions Proposed: {[a['label'] for a in actions]}
+        """
         
-        elif any(word in query_lower for word in ['workout', 'exercise', 'gym', 'fitness', 'yoga']):
-            workout_plan = self.generate_workout_plan(user_profile, dosha_analysis)
-            return {
-                'type': 'workout_plan',
-                'data': workout_plan,
-                'message': 'Here\'s your personalized workout plan based on your dosha and fitness goals:'
-            }
-        
+        reply_text = ""
+        if model:
+            try:
+                base_prompt = "You are a helpful AyurSutra Health Agent. The user asked: " + query + ". "
+                if actions:
+                    base_prompt += f"You have proposed these actions: {[a['label'] for a in actions]}. Explain why they are good."
+                else:
+                    base_prompt += "Provide helpful health advice."
+                
+                resp = model.generate_content(base_prompt)
+                reply_text = resp.text
+            except Exception as e:
+                logger.error(f"Gemini Error: {e}")
+                reply_text = "I can help you with that. I've also suggested some actions for you below."
         else:
-            # General health query - use AI with context
-            if model:
-                try:
-                    # Build context
-                    context = f"""
-                    User Profile:
-                    - Dosha Balance: Vata {dosha_analysis.get('vata', 33)}%, Pitta {dosha_analysis.get('pitta', 33)}%, Kapha {dosha_analysis.get('kapha', 34)}%
-                    - Weight: {user_profile.get('weight', 'Not provided')} kg
-                    - Height: {user_profile.get('height', 'Not provided')} cm
-                    - Activity Level: {user_profile.get('activity_level', 'Not provided')}
-                    
-                    Conversation History:
-                    {json.dumps(conversation_history[-5:], indent=2)}
-                    
-                    Current Question: {query}
-                    
-                    Provide a helpful, personalized Ayurvedic health response. Be conversational and empathetic.
-                    """
-                    
-                    response = model.generate_content(context)
-                    
-                    return {
-                        'type': 'general',
-                        'message': response.text,
-                        'sources': ['Ayurvedic Knowledge Base', 'AI Analysis']
-                    }
-                except Exception as e:
-                    logger.error(f"AI error: {e}")
-                    return {
-                        'type': 'general',
-                        'message': 'I can help you with diet plans, workout recommendations, and general Ayurvedic health guidance. What would you like to know more about?',
-                        'sources': ['Health Assistant']
-                    }
-            else:
-                return {
-                    'type': 'general',
-                    'message': 'I can help you with personalized diet plans and workout recommendations. Just ask about your nutrition or fitness goals!',
-                    'sources': ['Health Assistant']
-                }
+             reply_text = "I've analyzed your request. Please check the suggested actions below."
+
+        return {
+            'reply': reply_text,
+            'actions': actions,
+            'conversation_id': "new" # Maintain ID in caller
+        }
 
 
 # Singleton instance

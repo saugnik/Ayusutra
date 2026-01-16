@@ -485,6 +485,36 @@ class AIChatResponse(BaseModel):
     conversation_id: str
 
 
+# ==================== REMINDER SCHEMAS ====================
+class ReminderBase(BaseModel):
+    title: str
+    message: Optional[str] = None
+    frequency: str = "daily"
+    time: str
+
+class ReminderCreate(ReminderBase):
+    pass
+
+class ReminderResponse(ReminderBase):
+    id: int
+    user_id: int
+    is_active: bool
+    created_at: datetime
+    
+    class Config:
+        orm_mode = True
+
+# ==================== AGENT SCHEMAS ====================
+class AgentAction(BaseModel):
+    type: str # "create_reminder", "book_appointment", "show_resource"
+    data: Dict[str, Any]
+    label: str # "Set Reminder for 8 AM"
+
+class AIChatResponse(BaseModel):
+    reply: str
+    conversation_id: str
+    actions: Optional[List[AgentAction]] = []
+
 # ==================== PATIENT REPORT SCHEMAS ====================
 class ReportHealthStats(BaseModel):
     average_sleep: Optional[float] = 0.0

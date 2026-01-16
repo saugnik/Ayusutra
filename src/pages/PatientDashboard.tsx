@@ -24,6 +24,7 @@ import toast from 'react-hot-toast';
 import DailyWisdom from '../components/DailyWisdom';
 import Sidebar, { SidebarItem } from '../components/Sidebar';
 import NotificationDropdown, { Notification } from '../components/NotificationDropdown';
+import HealthAgentChat from '../components/HealthAgentChat';
 
 const PatientDashboard = () => {
   const { user, logout } = useAuth();
@@ -330,6 +331,7 @@ const PatientDashboard = () => {
           </div>
         </main>
       </div>
+      <HealthAgentChat />
     </div>
   );
 };

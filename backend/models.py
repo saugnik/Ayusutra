@@ -320,3 +320,19 @@ class ChatMessage(Base):
     content = Column(Text, nullable=False)
     read = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class Reminder(Base):
+    """User reminders for health tasks"""
+    __tablename__ = "reminders"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    title = Column(String(255), nullable=False)
+    message = Column(String(500), nullable=True)
+    frequency = Column(String(50), default="daily") # daily, weekly, once
+    time = Column(String(20), nullable=False) # "08:00"
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Relationship
+    user = relationship("User", backref="reminders")
