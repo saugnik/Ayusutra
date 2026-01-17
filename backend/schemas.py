@@ -182,6 +182,50 @@ class AdminResponse(BaseSchema):
     department: Optional[str]
     created_at: datetime
 
+class AdminUserResponse(BaseSchema):
+    id: int
+    email: str
+    full_name: str
+    role: str
+    phone: Optional[str]
+    is_active: bool
+    last_login: Optional[datetime]
+    created_at: datetime
+    
+class AuditLogResponse(BaseSchema):
+    id: int
+    user_id: Optional[int]
+    action: str
+    resource_type: str
+    resource_id: Optional[int]
+    ip_address: Optional[str]
+    created_at: datetime
+
+class SystemSettingsResponse(BaseSchema):
+    key: str
+    value: Dict[str, Any]
+    description: Optional[str]
+    category: Optional[str]
+    updated_at: Optional[datetime]
+
+class SystemSettingsUpdate(BaseModel):
+    value: Dict[str, Any]
+
+class UserHistoryResponse(BaseModel):
+    user: AdminUserResponse
+    appointments: List['AppointmentResponse']
+    audit_logs: List[AuditLogResponse]
+
+class ClinicResponse(BaseModel):
+    id: str
+    name: str
+    location: Optional[str]
+    practitioners: int
+    patients: int
+    subscription: str
+    monthly_revenue: float
+    status: str
+
 class AppointmentBase(BaseModel):
     patient_id: int
     practitioner_id: int
@@ -564,3 +608,6 @@ class FeedbackSummary(BaseModel):
 class FeedbackReportResponse(BaseModel):
     summary: FeedbackSummary
     improvement_areas: List[str]
+
+# Resolve forward references
+UserHistoryResponse.update_forward_refs()

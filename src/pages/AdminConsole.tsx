@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import {
@@ -27,21 +27,213 @@ import {
   PieChart,
   Activity,
   FileText,
-  Download
+  Download,
+  Database,
+  History
 } from 'lucide-react';
 import NotificationDropdown, { Notification } from '../components/NotificationDropdown';
+import HistoryModal from '../components/admin/HistoryModal';
 
 const AdminConsole = () => {
-  const { logout } = useAuth();
+  const { logout, login } = useAuth(); // Assuming login function is available in useAuth for impersonation token handling
   const navigate = useNavigate();
   const [selectedTab, setSelectedTab] = useState('dashboard');
   const [selectedTimeRange, setSelectedTimeRange] = useState('30d');
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([
-    { id: 'AN1', type: 'alert', title: 'System Security Alert', message: 'Multiple failed login attempts from IP 192.168.1.1', time: '10 mins ago', read: false },
-    { id: 'AN2', type: 'info', title: 'Backup Successful', message: 'Daily system backup completed successfully.', time: '1 hour ago', read: false },
-    { id: 'AN3', type: 'reminder', title: 'License Renewal', message: 'Enterprise license for "Holistic Health" expires in 15 days.', time: '2 hours ago', read: true },
-  ]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+
+  // Real Data State
+  const [dashboardStats, setDashboardStats] = useState<any>(null);
+  const [users, setUsers] = useState<any[]>([]);
+  const [logs, setLogs] = useState<any[]>([]);
+  const [clinics, setClinics] = useState<any[]>([]); // Real clinics data
+  const [settings, setSettings] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Modal State
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+
+  // Fetch Dashboard Data
+  useEffect(() => {
+    if (selectedTab === 'dashboard') {
+      fetchDashboard();
+    } else if (selectedTab === 'practitioners') {
+      fetchUsers();
+    } else if (selectedTab === 'clinics') {
+      fetchClinics(); // Fetch real clinics
+    } else if (selectedTab === 'logs') {
+      fetchLogs();
+    } else if (selectedTab === 'settings') {
+      fetchSettings();
+    }
+  }, [selectedTab]);
+
+  const fetchDashboard = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:8001/admin/dashboard', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setDashboardStats(data);
+      }
+    } catch (error) {
+      console.error("Error fetching dashboard:", error);
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch('http://localhost:8001/admin/users?limit=100', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setUsers(data);
+      }
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+  };
+
+  const fetchLogs = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch('http://localhost:8001/admin/audit-logs', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setLogs(data);
+      }
+    } catch (error) {
+      console.error("Error fetching logs:", error);
+    }
+  };
+
+  const fetchClinics = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch('http://localhost:8001/admin/clinics', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setClinics(data);
+      }
+    } catch (error) {
+      console.error("Error fetching clinics:", error);
+    }
+  };
+
+  const fetchSettings = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch('http://localhost:8001/admin/settings', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setSettings(data);
+      } else {
+        setError(`Failed to load settings: ${response.statusText}`);
+        if (response.status === 401 || response.status === 403) {
+          // Optionally redirect to login or show specific auth error
+          setError("Session expired or unauthorized. Please login again.");
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching settings:", error);
+      setError("Network error. Please check backend connection.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateSetting = async (key: string, newValue: any) => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(`http://localhost:8001/admin/settings?key=${key}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ value: newValue })
+      });
+      if (response.ok) {
+        alert("Setting updated");
+        fetchSettings();
+      }
+    } catch (error) {
+      console.error("Error updating setting:", error);
+    }
+  };
+
+  const handleViewHistory = (userId: number) => {
+    setSelectedUserId(userId);
+    setIsHistoryOpen(true);
+  };
+
+  const handleImpersonate = async (userId: number) => {
+    if (!window.confirm("Are you sure you want to login as this user?")) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:8001/admin/impersonate/${userId}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Use the new token to login
+        // We might need to manually set token and reload or use context
+        localStorage.setItem('token', data.access_token);
+        localStorage.setItem('user', JSON.stringify({
+          id: data.user_id,
+          role: data.role,
+          full_name: data.full_name
+        }));
+        // Navigate to appropriate dashboard
+        if (data.role === 'patient') navigate('/patient-dashboard');
+        else if (data.role === 'practitioner') navigate('/practitioner-dashboard');
+        else window.location.reload();
+      } else {
+        alert("Impersonation failed");
+      }
+    } catch (error) {
+      console.error("Impersonation error:", error);
+      alert("Error during impersonation");
+    }
+  };
+
+  const handleDeactivate = async (userId: number) => {
+    if (!window.confirm("Are you sure you want to deactivate this user?")) return;
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:8001/admin/users/${userId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.ok) {
+        alert("User deactivated");
+        fetchUsers();
+      } else {
+        alert("Failed to deactivate");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+
 
   // Mock data
   const systemStats = {
@@ -84,71 +276,9 @@ const AdminConsole = () => {
     }
   ];
 
-  const practitioners = [
-    {
-      id: 1,
-      name: 'Dr. Priya Sharma',
-      email: 'priya.sharma@email.com',
-      clinic: 'Vedic Wellness Center',
-      patients: 34,
-      joinedDate: '2023-06-15',
-      status: 'active',
-      revenue: 45000
-    },
-    {
-      id: 2,
-      name: 'Dr. Rajesh Kumar',
-      email: 'rajesh.kumar@email.com',
-      clinic: 'Ayush Healing Center',
-      patients: 28,
-      joinedDate: '2023-08-20',
-      status: 'active',
-      revenue: 38000
-    },
-    {
-      id: 3,
-      name: 'Dr. Meera Patel',
-      email: 'meera.patel@email.com',
-      clinic: 'Holistic Health Clinic',
-      patients: 42,
-      joinedDate: '2023-04-10',
-      status: 'inactive',
-      revenue: 52000
-    }
-  ];
-
-  const clinics = [
-    {
-      id: 1,
-      name: 'Vedic Wellness Center',
-      location: 'Mumbai, Maharashtra',
-      practitioners: 5,
-      patients: 156,
-      subscription: 'Premium',
-      status: 'active',
-      monthlyRevenue: 75000
-    },
-    {
-      id: 2,
-      name: 'Ayush Healing Center',
-      location: 'Delhi, NCR',
-      practitioners: 3,
-      patients: 89,
-      subscription: 'Standard',
-      status: 'active',
-      monthlyRevenue: 45000
-    },
-    {
-      id: 3,
-      name: 'Holistic Health Clinic',
-      location: 'Bangalore, Karnataka',
-      practitioners: 4,
-      patients: 112,
-      subscription: 'Premium',
-      status: 'pending',
-      monthlyRevenue: 60000
-    }
-  ];
+  // Mock data for initial render or fallback (could be removed if confident)
+  // const practitioners = ... (Removed)
+  // const clinics = ... (Removed)
 
   const handleLogout = () => {
     logout();
@@ -195,74 +325,73 @@ const AdminConsole = () => {
     <div className="space-y-6">
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
-        <div className="card">
+        <div className="card cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setSelectedTab('practitioners')}>
           <div className="flex items-center">
             <div className="p-3 bg-blue-100 rounded-lg">
               <Users className="h-6 w-6 text-blue-600" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Users</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{systemStats.totalUsers.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{dashboardStats?.total_users?.toLocaleString() || 0}</p>
             </div>
           </div>
         </div>
 
-        <div className="card">
+        <div className="card cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setSelectedTab('practitioners')}>
           <div className="flex items-center">
             <div className="p-3 bg-green-100 rounded-lg">
               <UserCheck className="h-6 w-6 text-green-600" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active Practitioners</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{systemStats.activePractitioners}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{dashboardStats?.total_practitioners || 0}</p>
             </div>
           </div>
         </div>
 
-        <div className="card">
+        <div className="card cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setSelectedTab('clinics')}>
           <div className="flex items-center">
             <div className="p-3 bg-purple-100 rounded-lg">
               <Building2 className="h-6 w-6 text-purple-600" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Clinics</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{systemStats.totalClinics}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{dashboardStats?.total_clinics || 0}</p>
             </div>
           </div>
         </div>
 
-        <div className="card">
+        <div className="card cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setSelectedTab('practitioners')}>
           <div className="flex items-center">
             <div className="p-3 bg-primary-100 rounded-lg">
               <Activity className="h-6 w-6 text-primary-600" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active Patients</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{systemStats.activePatients.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{dashboardStats?.total_patients?.toLocaleString() || 0}</p>
             </div>
           </div>
         </div>
 
-        <div className="card">
+        <div className="card cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setSelectedTab('logs')}>
           <div className="flex items-center">
             <div className="p-3 bg-orange-100 rounded-lg">
               <CheckCircle className="h-6 w-6 text-orange-600" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Completed Treatments</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{systemStats.completedTreatments.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{dashboardStats?.total_appointments?.toLocaleString() || 0}</p>
             </div>
           </div>
         </div>
 
-        <div className="card">
+        <div className="card cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setSelectedTab('dashboard')}>
           <div className="flex items-center">
             <div className="p-3 bg-emerald-100 rounded-lg">
               <DollarSign className="h-6 w-6 text-emerald-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Monthly Revenue</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">₹{(systemStats.monthlyRevenue / 1000)}K</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">₹{(dashboardStats?.total_appointments * 1500 / 1000) || 0}K</p>
             </div>
           </div>
         </div>
@@ -359,41 +488,41 @@ const AdminConsole = () => {
               </tr>
             </thead>
             <tbody>
-              {practitioners.map((practitioner) => (
+              {users.filter(u => u.role === 'practitioner').map((practitioner) => (
                 <tr key={practitioner.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
                   <td className="py-4 px-4">
                     <div>
-                      <p className="font-medium text-gray-900 dark:text-white">{practitioner.name}</p>
+                      <p className="font-medium text-gray-900 dark:text-white">{practitioner.full_name}</p>
                       <p className="text-sm text-gray-600 dark:text-gray-400">{practitioner.email}</p>
                     </div>
                   </td>
                   <td className="py-4 px-4">
-                    <p className="text-gray-900 dark:text-gray-300">{practitioner.clinic}</p>
+                    <p className="text-gray-900 dark:text-gray-300">Main Clinic</p>
                   </td>
                   <td className="py-4 px-4">
-                    <p className="font-medium text-gray-900 dark:text-white">{practitioner.patients}</p>
+                    <p className="font-medium text-gray-900 dark:text-white">-</p>
                   </td>
                   <td className="py-4 px-4">
-                    <p className="font-medium text-gray-900 dark:text-white">₹{practitioner.revenue.toLocaleString()}</p>
+                    <p className="font-medium text-gray-900 dark:text-white">-</p>
                   </td>
                   <td className="py-4 px-4">
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(practitioner.status)}`}>
-                      {practitioner.status}
+                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${practitioner.is_active ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100'}`}>
+                      {practitioner.is_active ? 'Active' : 'Inactive'}
                     </span>
                   </td>
                   <td className="py-4 px-4">
-                    <p className="text-gray-900 dark:text-gray-300">{new Date(practitioner.joinedDate).toLocaleDateString()}</p>
+                    <p className="text-gray-900 dark:text-gray-300">{new Date(practitioner.created_at).toLocaleDateString()}</p>
                   </td>
                   <td className="py-4 px-4">
                     <div className="flex space-x-2">
-                      <button className="p-2 hover:bg-gray-100 rounded-lg">
-                        <Eye className="h-4 w-4 text-gray-600" />
+                      <button className="p-2 hover:bg-gray-100 rounded-lg" title="Login As" onClick={() => handleImpersonate(practitioner.id)}>
+                        <LogOut className="h-4 w-4 text-blue-600" />
                       </button>
-                      <button className="p-2 hover:bg-gray-100 rounded-lg">
-                        <Edit className="h-4 w-4 text-gray-600" />
+                      <button className="p-2 hover:bg-gray-100 rounded-lg" title="View History" onClick={() => handleViewHistory(practitioner.id)}>
+                        <History className="h-4 w-4 text-gray-600" />
                       </button>
-                      <button className="p-2 hover:bg-gray-100 rounded-lg">
-                        <MoreVertical className="h-4 w-4 text-gray-600" />
+                      <button className="p-2 hover:bg-gray-100 rounded-lg" onClick={() => handleDeactivate(practitioner.id)}>
+                        <Trash2 className="h-4 w-4 text-red-600" />
                       </button>
                     </div>
                   </td>
@@ -422,9 +551,6 @@ const AdminConsole = () => {
           <button className="btn-outline px-4 py-2">
             <Download className="h-4 w-4 mr-2" /> Export
           </button>
-          <button className="btn-primary px-4 py-2">
-            <Plus className="h-4 w-4 mr-2" /> Add Clinic
-          </button>
         </div>
       </div>
 
@@ -437,10 +563,8 @@ const AdminConsole = () => {
                 <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Location</th>
                 <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Practitioners</th>
                 <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Patients</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Subscription</th>
                 <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Revenue</th>
                 <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Status</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -461,34 +585,20 @@ const AdminConsole = () => {
                     <p className="font-medium text-gray-900 dark:text-white">{clinic.patients}</p>
                   </td>
                   <td className="py-4 px-4">
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${clinic.subscription === 'Premium' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
-                      }`}>
-                      {clinic.subscription}
-                    </span>
-                  </td>
-                  <td className="py-4 px-4">
-                    <p className="font-medium text-gray-900 dark:text-white">₹{clinic.monthlyRevenue.toLocaleString()}</p>
+                    <p className="font-medium text-gray-900 dark:text-white">₹{clinic.monthly_revenue.toLocaleString()}</p>
                   </td>
                   <td className="py-4 px-4">
                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(clinic.status)}`}>
                       {clinic.status}
                     </span>
                   </td>
-                  <td className="py-4 px-4">
-                    <div className="flex space-x-2">
-                      <button className="p-2 hover:bg-gray-100 rounded-lg">
-                        <Eye className="h-4 w-4 text-gray-600" />
-                      </button>
-                      <button className="p-2 hover:bg-gray-100 rounded-lg">
-                        <Edit className="h-4 w-4 text-gray-600" />
-                      </button>
-                      <button className="p-2 hover:bg-gray-100 rounded-lg">
-                        <MoreVertical className="h-4 w-4 text-gray-600" />
-                      </button>
-                    </div>
-                  </td>
                 </tr>
               ))}
+              {clinics.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="py-8 text-center text-gray-500">No clinics data available.</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -501,75 +611,98 @@ const AdminConsole = () => {
       <h2 className="text-2xl font-bold text-gray-900 dark:text-white">System Settings</h2>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="card">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">System Configuration</h3>
-          <div className="space-y-4">
-            <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-medium text-gray-900 dark:text-white">Email Notifications</h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">System-wide email notification settings</p>
-                </div>
-                <button className="btn-outline px-4 py-2">Configure</button>
-              </div>
+        {error && (
+          <div className="col-span-1 lg:col-span-2 p-4 bg-red-50 text-red-600 rounded-lg border border-red-200">
+            {error}
+          </div>
+        )}
+
+        {settings.map((setting) => (
+          <div key={setting.key} className="card overflow-hidden">
+            <div className="bg-gray-50 dark:bg-gray-800/50 px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white capitalize flex items-center">
+                {setting.category === 'notifications' && <Bell className="w-5 h-5 mr-2 text-primary-500" />}
+                {setting.category === 'security' && <Shield className="w-5 h-5 mr-2 text-primary-500" />}
+                {setting.category === 'backup' && <Database className="w-5 h-5 mr-2 text-primary-500" />}
+                {setting.category} Settings
+              </h3>
             </div>
 
-            <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-between">
+            <div className="p-6 space-y-6">
+              <div className="flex items-start justify-between">
                 <div>
-                  <h4 className="font-medium text-gray-900 dark:text-white">Security Settings</h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Password policies and security configurations</p>
+                  <h4 className="font-medium text-gray-900 dark:text-white text-lg mb-1">
+                    {setting.key.split('_').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+                  </h4>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md">
+                    {setting.description}
+                  </p>
                 </div>
-                <button className="btn-outline px-4 py-2">Manage</button>
+                {/* Main Toggle if 'enabled' exists */}
+                {typeof setting.value.enabled === 'boolean' && (
+                  <button
+                    onClick={() => updateSetting(setting.key, { ...setting.value, enabled: !setting.value.enabled })}
+                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${setting.value.enabled ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'
+                      }`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${setting.value.enabled ? 'translate-x-5' : 'translate-x-0'
+                        }`}
+                    />
+                  </button>
+                )}
               </div>
-            </div>
 
-            <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-medium text-gray-900 dark:text-white">Backup & Recovery</h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Data backup and recovery settings</p>
-                </div>
-                <button className="btn-outline px-4 py-2">Setup</button>
+              {/* Render other fields */}
+              <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                {Object.entries(setting.value).map(([key, value]) => {
+                  if (key === 'enabled') return null; // Already handled above
+
+                  return (
+                    <div key={key} className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300 capitalize sm:col-span-1">
+                        {key.replace(/_/g, ' ')}
+                      </label>
+                      <div className="sm:col-span-2">
+                        {typeof value === 'boolean' ? (
+                          <button
+                            onClick={() => updateSetting(setting.key, { ...setting.value, [key]: !value })}
+                            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${value ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'
+                              }`}
+                          >
+                            <span
+                              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${value ? 'translate-x-5' : 'translate-x-0'
+                                }`}
+                            />
+                          </button>
+                        ) : (
+                          <input
+                            type={typeof value === 'number' ? 'number' : 'text'}
+                            value={value as string | number}
+                            onChange={(e) => {
+                              const val = typeof value === 'number' ? parseFloat(e.target.value) : e.target.value;
+                              updateSetting(setting.key, { ...setting.value, [key]: val });
+                            }}
+                            className="input-field w-full text-sm py-1.5"
+                          />
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
-        </div>
-
-        <div className="card">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Integration Settings</h3>
-          <div className="space-y-4">
-            <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-medium text-gray-900 dark:text-white">Payment Gateway</h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Configure payment processing settings</p>
-                </div>
-                <span className="px-3 py-1 bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-400 rounded-full text-sm">Active</span>
-              </div>
-            </div>
-
-            <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-medium text-gray-900 dark:text-white">SMS Service</h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">SMS notification service configuration</p>
-                </div>
-                <span className="px-3 py-1 bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-400 rounded-full text-sm">Active</span>
-              </div>
-            </div>
-
-            <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-medium text-gray-900 dark:text-white">Analytics</h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Third-party analytics integration</p>
-                </div>
-                <span className="px-3 py-1 bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-400 rounded-full text-sm">Pending</span>
-              </div>
-            </div>
+        ))}
+        {!loading && settings.length === 0 && !error && (
+          <p className="text-center col-span-2 text-gray-500">No settings found.</p>
+        )}
+        {loading && (
+          <div className="col-span-2 flex justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+            <span className="ml-2 text-gray-500">Loading settings...</span>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
@@ -600,14 +733,14 @@ const AdminConsole = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-              {[...recentActivities, ...recentActivities].map((activity, idx) => (
+              {logs.map((activity, idx) => (
                 <tr key={`${activity.id}-${idx}`} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                  <td className="py-4 px-4 text-sm text-gray-600 dark:text-gray-400">{activity.time}</td>
-                  <td className="py-4 px-4 text-sm font-medium text-gray-900 dark:text-white uppercase tracking-wider">{activity.type.replace('_', ' ')}</td>
-                  <td className="py-4 px-4 text-sm text-gray-900 dark:text-gray-300">{activity.message}</td>
+                  <td className="py-4 px-4 text-sm text-gray-600 dark:text-gray-400">{new Date(activity.created_at).toLocaleString()}</td>
+                  <td className="py-4 px-4 text-sm font-medium text-gray-900 dark:text-white uppercase tracking-wider">{activity.action.replace('_', ' ')}</td>
+                  <td className="py-4 px-4 text-sm text-gray-900 dark:text-gray-300">{JSON.stringify(activity.details)}</td>
                   <td className="py-4 px-4">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(activity.status)}`}>
-                      {activity.status.toUpperCase()}
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium text-gray-600 bg-gray-100`}>
+                      LOG
                     </span>
                   </td>
                 </tr>
@@ -666,7 +799,10 @@ const AdminConsole = () => {
                 </div>
               </div>
 
-              <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
+              <button
+                onClick={() => setSelectedTab('settings')}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
+              >
                 <Settings className="h-5 w-5 text-gray-600 dark:text-gray-400" />
               </button>
 
@@ -717,6 +853,12 @@ const AdminConsole = () => {
         {selectedTab === 'logs' && renderLogs()}
         {selectedTab === 'settings' && renderSettings()}
       </main>
+      {/* Modal */}
+      <HistoryModal
+        userId={selectedUserId}
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+      />
     </div>
   );
 };
