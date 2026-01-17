@@ -50,6 +50,8 @@ const AdminConsole = () => {
   const [settings, setSettings] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [userFilter, setUserFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
 
   // Modal State
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
@@ -325,7 +327,7 @@ const AdminConsole = () => {
     <div className="space-y-6">
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
-        <div className="card cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setSelectedTab('practitioners')}>
+        <div className="card cursor-pointer hover:shadow-lg transition-shadow" onClick={() => { setSelectedTab('users'); setUserFilter('all'); setStatusFilter('all'); }}>
           <div className="flex items-center">
             <div className="p-3 bg-blue-100 rounded-lg">
               <Users className="h-6 w-6 text-blue-600" />
@@ -337,7 +339,7 @@ const AdminConsole = () => {
           </div>
         </div>
 
-        <div className="card cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setSelectedTab('practitioners')}>
+        <div className="card cursor-pointer hover:shadow-lg transition-shadow" onClick={() => { setSelectedTab('users'); setUserFilter('practitioner'); setStatusFilter('active'); }}>
           <div className="flex items-center">
             <div className="p-3 bg-green-100 rounded-lg">
               <UserCheck className="h-6 w-6 text-green-600" />
@@ -361,7 +363,7 @@ const AdminConsole = () => {
           </div>
         </div>
 
-        <div className="card cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setSelectedTab('practitioners')}>
+        <div className="card cursor-pointer hover:shadow-lg transition-shadow" onClick={() => { setSelectedTab('users'); setUserFilter('patient'); setStatusFilter('active'); }}>
           <div className="flex items-center">
             <div className="p-3 bg-primary-100 rounded-lg">
               <Activity className="h-6 w-6 text-primary-600" />
@@ -451,26 +453,58 @@ const AdminConsole = () => {
     </div>
   );
 
-  const renderPractitioners = () => (
+  const renderUsers = () => (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Practitioner Management</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">User Management</h2>
         <div className="flex space-x-3">
           <div className="relative">
             <Search className="h-5 w-5 text-gray-400 absolute left-3 top-3" />
             <input
               type="text"
-              placeholder="Search practitioners..."
+              placeholder="Search users..."
               className="input-field pl-10"
             />
           </div>
-          <button className="btn-outline px-4 py-2">
-            <Filter className="h-4 w-4 mr-2" /> Filter
-          </button>
+          <div className="flex items-center space-x-2 bg-white dark:bg-gray-800 rounded-lg p-1 border border-gray-200 dark:border-gray-700">
+            <button
+              onClick={() => setStatusFilter('all')}
+              className={`px-3 py-1 text-sm rounded-md transition-colors ${statusFilter === 'all' ? 'bg-gray-100 text-gray-900 font-medium' : 'text-gray-500 hover:text-gray-700'}`}
+            >
+              All
+            </button>
+            <button
+              onClick={() => setStatusFilter('active')}
+              className={`px-3 py-1 text-sm rounded-md transition-colors ${statusFilter === 'active' ? 'bg-green-50 text-green-700 font-medium' : 'text-gray-500 hover:text-gray-700'}`}
+            >
+              Active
+            </button>
+          </div>
           <button className="btn-primary px-4 py-2">
-            <Plus className="h-4 w-4 mr-2" /> Add Practitioner
+            <Plus className="h-4 w-4 mr-2" /> Add User
           </button>
         </div>
+      </div>
+
+      {/* Filter Tabs */}
+      <div className="flex space-x-4 border-b border-gray-200 dark:border-gray-700">
+        {[
+          { id: 'all', label: 'All Users' },
+          { id: 'practitioner', label: 'Practitioners' },
+          { id: 'patient', label: 'Patients' },
+          { id: 'admin', label: 'Admins' }
+        ].map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setUserFilter(tab.id)}
+            className={`py-2 px-4 border-b-2 font-medium text-sm transition-all ${userFilter === tab.id
+              ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       <div className="card">
@@ -478,56 +512,68 @@ const AdminConsole = () => {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-200 dark:border-gray-700">
-                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Practitioner</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Clinic</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Patients</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Revenue</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">User</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Role</th>
+                {userFilter === 'practitioner' && <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Clinic</th>}
                 <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Status</th>
                 <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Joined</th>
                 <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {users.filter(u => u.role === 'practitioner').map((practitioner) => (
-                <tr key={practitioner.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                  <td className="py-4 px-4">
-                    <div>
-                      <p className="font-medium text-gray-900 dark:text-white">{practitioner.full_name}</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">{practitioner.email}</p>
-                    </div>
-                  </td>
-                  <td className="py-4 px-4">
-                    <p className="text-gray-900 dark:text-gray-300">Main Clinic</p>
-                  </td>
-                  <td className="py-4 px-4">
-                    <p className="font-medium text-gray-900 dark:text-white">-</p>
-                  </td>
-                  <td className="py-4 px-4">
-                    <p className="font-medium text-gray-900 dark:text-white">-</p>
-                  </td>
-                  <td className="py-4 px-4">
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${practitioner.is_active ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100'}`}>
-                      {practitioner.is_active ? 'Active' : 'Inactive'}
-                    </span>
-                  </td>
-                  <td className="py-4 px-4">
-                    <p className="text-gray-900 dark:text-gray-300">{new Date(practitioner.created_at).toLocaleDateString()}</p>
-                  </td>
-                  <td className="py-4 px-4">
-                    <div className="flex space-x-2">
-                      <button className="p-2 hover:bg-gray-100 rounded-lg" title="Login As" onClick={() => handleImpersonate(practitioner.id)}>
-                        <LogOut className="h-4 w-4 text-blue-600" />
-                      </button>
-                      <button className="p-2 hover:bg-gray-100 rounded-lg" title="View History" onClick={() => handleViewHistory(practitioner.id)}>
-                        <History className="h-4 w-4 text-gray-600" />
-                      </button>
-                      <button className="p-2 hover:bg-gray-100 rounded-lg" onClick={() => handleDeactivate(practitioner.id)}>
-                        <Trash2 className="h-4 w-4 text-red-600" />
-                      </button>
-                    </div>
-                  </td>
+              {users
+                .filter(u => userFilter === 'all' || u.role === userFilter)
+                .map((user) => (
+                  <tr key={user.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                    <td className="py-4 px-4">
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-white">{user.full_name}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{user.email}</p>
+                      </div>
+                    </td>
+                    <td className="py-4 px-4">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium uppercase
+                          ${user.role === 'admin' ? 'bg-purple-100 text-purple-600' :
+                          user.role === 'practitioner' ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'}
+                      `}>
+                        {user.role}
+                      </span>
+                    </td>
+                    {userFilter === 'practitioner' && (
+                      <td className="py-4 px-4">
+                        <p className="text-gray-900 dark:text-gray-300">
+                          {user.practitioner_profile?.clinic_name || '-'}
+                        </p>
+                      </td>
+                    )}
+                    <td className="py-4 px-4">
+                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${user.is_active ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100'}`}>
+                        {user.is_active ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+                    <td className="py-4 px-4">
+                      <p className="text-gray-900 dark:text-gray-300">{new Date(user.created_at).toLocaleDateString()}</p>
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="flex space-x-2">
+                        <button className="p-2 hover:bg-gray-100 rounded-lg" title="Login As" onClick={() => handleImpersonate(user.id)}>
+                          <LogOut className="h-4 w-4 text-blue-600" />
+                        </button>
+                        <button className="p-2 hover:bg-gray-100 rounded-lg" title="View History" onClick={() => handleViewHistory(user.id)}>
+                          <History className="h-4 w-4 text-gray-600" />
+                        </button>
+                        <button className="p-2 hover:bg-gray-100 rounded-lg" onClick={() => handleDeactivate(user.id)}>
+                          <Trash2 className="h-4 w-4 text-red-600" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              {users.filter(u => (userFilter === 'all' || u.role === userFilter) && (statusFilter === 'all' || (statusFilter === 'active' && u.is_active))).length === 0 && (
+                <tr>
+                  <td colSpan={6} className="text-center py-8 text-gray-500">No users found.</td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
@@ -824,7 +870,7 @@ const AdminConsole = () => {
           <nav className="flex space-x-8">
             {[
               { id: 'dashboard', name: 'Dashboard', icon: TrendingUp },
-              { id: 'practitioners', name: 'Practitioners', icon: UserCheck },
+              { id: 'users', name: 'User Management', icon: Users },
               { id: 'clinics', name: 'Clinics', icon: Building2 },
               { id: 'logs', name: 'Logs', icon: FileText },
               { id: 'settings', name: 'Settings', icon: Settings }
@@ -848,7 +894,7 @@ const AdminConsole = () => {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {selectedTab === 'dashboard' && renderDashboard()}
-        {selectedTab === 'practitioners' && renderPractitioners()}
+        {selectedTab === 'users' && renderUsers()}
         {selectedTab === 'clinics' && renderClinics()}
         {selectedTab === 'logs' && renderLogs()}
         {selectedTab === 'settings' && renderSettings()}
