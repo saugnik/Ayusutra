@@ -18,6 +18,7 @@ const HealthAgentChat: React.FC = () => {
         { id: 0, type: 'agent', text: 'Namaste! I am your personal Health Agent. I can help you plan your diet, schedule workouts, or find a doctor. How can I assist you today?' }
     ]);
     const [isLoading, setIsLoading] = useState(false);
+    const [confirmedActions, setConfirmedActions] = useState<Set<string>>(new Set());
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const scrollToBottom = () => {
@@ -56,17 +57,23 @@ const HealthAgentChat: React.FC = () => {
     };
 
     const handleConfirmAction = async (action: AgentAction, messageId: number) => {
+        const actionKey = `${messageId}-${action.type}-${action.label}`;
+
         try {
             await agentService.confirmActions([action]);
             toast.success(action.type === 'create_reminder' ? 'Reminder Set Successfully!' : 'Action Confirmed');
 
-            // Update UI to show confirmed (optional, maybe disable button)
+            // Mark this action as confirmed
+            setConfirmedActions(prev => new Set(prev).add(actionKey));
         } catch (error) {
             toast.error("Failed to execute action");
         }
     };
 
     const renderActionCard = (action: AgentAction, msgId: number) => {
+        const actionKey = `${msgId}-${action.type}-${action.label}`;
+        const isConfirmed = confirmedActions.has(actionKey);
+
         let Icon = Activity;
         let color = "text-blue-500 bg-blue-100";
 
@@ -87,30 +94,39 @@ const HealthAgentChat: React.FC = () => {
             <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mt-3 bg-white p-3 rounded-xl border border-gray-100 shadow-sm"
+                className={`mt-3 p-3 rounded-xl border shadow-sm ${isConfirmed ? 'bg-gray-50 border-gray-200' : 'bg-white border-gray-100'}`}
             >
                 <div className="flex items-start gap-3">
-                    <div className={`p-2 rounded-lg ${color}`}>
-                        <Icon size={18} />
+                    <div className={`p-2 rounded-lg ${isConfirmed ? 'bg-green-100 text-green-600' : color}`}>
+                        {isConfirmed ? <CheckCircle size={18} /> : <Icon size={18} />}
                     </div>
                     <div className="flex-1">
-                        <h4 className="text-sm font-semibold text-gray-800">{action.label}</h4>
-                        <p className="text-xs text-gray-500 mt-1">
+                        <h4 className={`text-sm font-semibold ${isConfirmed ? 'text-gray-500' : 'text-gray-800'}`}>
+                            {action.label}
+                        </h4>
+                        <p className={`text-xs mt-1 ${isConfirmed ? 'text-gray-400' : 'text-gray-500'}`}>
                             {action.data.message || "Would you like to proceed with this action?"}
                         </p>
                         {action.data.time && (
-                            <div className="mt-1 text-xs font-mono bg-gray-50 inline-block px-2 py-0.5 rounded text-gray-600">
+                            <div className={`mt-1 text-xs font-mono inline-block px-2 py-0.5 rounded ${isConfirmed ? 'bg-gray-100 text-gray-500' : 'bg-gray-50 text-gray-600'}`}>
                                 ⏰ {action.data.time} ({action.data.frequency})
                             </div>
                         )}
 
-                        <button
-                            onClick={() => handleConfirmAction(action, msgId)}
-                            className="mt-3 w-full flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white py-1.5 rounded-lg text-sm font-medium hover:from-emerald-600 hover:to-teal-700 transition-colors"
-                        >
-                            <CheckCircle size={14} />
-                            Confirm & Set
-                        </button>
+                        {isConfirmed ? (
+                            <div className="mt-3 flex items-center gap-2 text-green-600 text-sm font-medium">
+                                <CheckCircle size={14} />
+                                Confirmed!
+                            </div>
+                        ) : (
+                            <button
+                                onClick={() => handleConfirmAction(action, msgId)}
+                                className="mt-3 w-full flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white py-1.5 rounded-lg text-sm font-medium hover:from-emerald-600 hover:to-teal-700 transition-colors"
+                            >
+                                <CheckCircle size={14} />
+                                Confirm & Set
+                            </button>
+                        )}
                     </div>
                 </div>
             </motion.div>
@@ -154,8 +170,8 @@ const HealthAgentChat: React.FC = () => {
                                     className={`mb-4 flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}
                                 >
                                     <div className={`max-w-[85%] rounded-2xl p-3 ${msg.type === 'user'
-                                            ? 'bg-emerald-600 text-white rounded-tr-none'
-                                            : 'bg-white text-gray-800 shadow-sm rounded-tl-none border border-gray-100'
+                                        ? 'bg-emerald-600 text-white rounded-tr-none'
+                                        : 'bg-white text-gray-800 shadow-sm rounded-tl-none border border-gray-100'
                                         }`}>
                                         <p className="text-sm leading-relaxed whitespace-pre-line">{msg.text}</p>
 

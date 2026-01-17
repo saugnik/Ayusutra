@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { Toaster } from 'react-hot-toast';
 import WelcomeIntro from './components/WelcomeIntro';
 import LandingPage from './pages/LandingPage';
 import SimpleAuthPage from './pages/SimpleAuthPage';
@@ -17,7 +18,6 @@ import HealthSupport from './pages/HealthSupport';
 import ChatSupport from './pages/ChatSupport';
 import DebugAuth from './components/DebugAuth';
 import ClinicMap from './pages/ClinicMap';
-import AIAssistant from './components/AIAssistant';
 import './App.css';
 
 function App() {
@@ -47,7 +47,7 @@ function App() {
               <Route path="/dashboard" element={<Navigate to="/patient" replace />} />
               <Route path="/appointments" element={<Navigate to="/my-sessions" replace />} />
             </Routes>
-            <AIAssistant />
+            <Toaster position="top-right" />
           </div>
         </Router>
       </AuthProvider>

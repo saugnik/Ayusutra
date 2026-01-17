@@ -1587,8 +1587,23 @@ async def chat_with_ai_assistant(
     try:
         gemini_api_key = os.getenv("GEMINI_API_KEY")
         if not gemini_api_key:
-            raise HTTPException(status_code=500, detail="AI service not configured")
+            # Return graceful error instead of raising exception
+            ai_reply = "I apologize, but the AI service is currently not configured. Please contact support."
+            ai_message = {
+                "role": "assistant",
+                "content": ai_reply,
+                "timestamp": datetime.utcnow().isoformat()
+            }
+            conversation.messages.append(ai_message)
+            db.commit()
+            
+            return AIChatResponse(
+                reply=ai_reply,
+                conversation_id=conversation_id,
+                actions=[]
+            )
         
+        # Try gemini-pro with v1beta endpoint
         gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={gemini_api_key}"
         
         # Build conversation context
@@ -1596,20 +1611,26 @@ async def chat_with_ai_assistant(
         for msg in conversation.messages[-5:]:  # Last 5 messages for context
             context += f"{msg['role']}: {msg['content']}\n"
         
+        
         response = requests.post(
             gemini_url,
             json={
                 "contents": [{
                     "parts": [{"text": context}]
                 }]
-            }
+            },
+            timeout=30
         )
+        
+        logger.info(f"Gemini API response status: {response.status_code}")
+        logger.info(f"Gemini API response: {response.text[:500]}")  # Log first 500 chars
         
         if response.status_code == 200:
             result = response.json()
             ai_reply = result['candidates'][0]['content']['parts'][0]['text']
         else:
-            ai_reply = "I apologize, but I'm having trouble right now. Please try again later."
+            logger.error(f"Gemini API error: {response.status_code} - {response.text}")
+            ai_reply = f"I apologize, but I'm having trouble connecting to the AI service right now. Please try again in a moment. (Error: {response.status_code})"
         
         # Add AI response
         ai_message = {
@@ -1623,12 +1644,268 @@ async def chat_with_ai_assistant(
         
         return AIChatResponse(
             reply=ai_reply,
-            conversation_id=conversation_id
+            conversation_id=conversation_id,
+            actions=[]
         )
         
+    except requests.exceptions.Timeout:
+        logger.error("AI chat timeout")
+        ai_reply = "The AI service is taking too long to respond. Please try again."
+        ai_message = {
+            "role": "assistant",
+            "content": ai_reply,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        conversation.messages.append(ai_message)
+        db.commit()
+        
+        return AIChatResponse(
+            reply=ai_reply,
+            conversation_id=conversation_id,
+            actions=[]
+        )
     except Exception as e:
         logger.error(f"AI chat error: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to get AI response: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        
+        # Return graceful error instead of raising exception
+        ai_reply = "I apologize, but I encountered an unexpected error. Our team has been notified. Please try again later."
+        ai_message = {
+            "role": "assistant",
+            "content": ai_reply,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        conversation.messages.append(ai_message)
+        db.commit()
+        
+        return AIChatResponse(
+            reply=ai_reply,
+            conversation_id=conversation_id,
+            actions=[]
+        )
+
+
+# ==================== AGENT API ENDPOINTS ====================
+
+@app.post("/api/agent/chat", response_model=AIChatResponse)
+async def agent_chat(
+    request: AIChatRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Health Agent chat endpoint with intelligent action detection
+    Detects user intents and suggests actions like reminders or practitioner appointments
+    """
+    import uuid
+    import re
+    
+    conversation_id = request.conversation_id or f"agent_{current_user.id}_{uuid.uuid4().hex[:8]}"
+    
+    # Get or create conversation
+    conversation = db.query(AIConversation).filter(
+        AIConversation.conversation_id == conversation_id
+    ).first()
+    
+    if not conversation:
+        patient = db.query(Patient).filter(Patient.user_id == current_user.id).first()
+        patient_id = patient.id if patient else None
+        
+        conversation = AIConversation(
+            patient_id=patient_id,
+            conversation_id=conversation_id,
+            messages=[]
+        )
+        db.add(conversation)
+    
+    # Add user message
+    user_message = {
+        "role": "user",
+        "content": request.message,
+        "timestamp": datetime.utcnow().isoformat()
+    }
+    
+    if conversation.messages is None:
+        conversation.messages = []
+    conversation.messages.append(user_message)
+    
+    # Detect intents and generate actions
+    actions = []
+    message_lower = request.message.lower()
+    
+    # Detect reminder requests
+    if any(keyword in message_lower for keyword in ['remind', 'reminder', 'water', 'drink', 'exercise', 'workout', 'medicine', 'medication']):
+        # Extract time if mentioned
+        time_match = re.search(r'(\d{1,2})\s*(am|pm|AM|PM)', request.message)
+        reminder_time = f"{time_match.group(1)}:00 {time_match.group(2).upper()}" if time_match else "08:00 AM"
+        
+        # Determine reminder type
+        if 'water' in message_lower or 'drink' in message_lower:
+            actions.append({
+                "type": "create_reminder",
+                "label": "Set Water Reminder",
+                "data": {
+                    "title": "Drink Water",
+                    "message": "Time to hydrate! Drink a glass of water.",
+                    "time": reminder_time,
+                    "frequency": "daily"
+                }
+            })
+        elif 'exercise' in message_lower or 'workout' in message_lower:
+            actions.append({
+                "type": "create_reminder",
+                "label": "Set Exercise Reminder",
+                "data": {
+                    "title": "Exercise Time",
+                    "message": "Time for your daily workout!",
+                    "time": reminder_time,
+                    "frequency": "daily"
+                }
+            })
+        elif 'medicine' in message_lower or 'medication' in message_lower:
+            actions.append({
+                "type": "create_reminder",
+                "label": "Set Medicine Reminder",
+                "data": {
+                    "title": "Take Medicine",
+                    "message": "Time to take your medication.",
+                    "time": reminder_time,
+                    "frequency": "daily"
+                }
+            })
+    
+    # Detect practitioner/doctor requests
+    if any(keyword in message_lower for keyword in ['doctor', 'practitioner', 'appointment', 'consult', 'specialist']):
+        actions.append({
+            "type": "find_practitioner",
+            "label": "Find a Practitioner",
+            "data": {
+                "message": "I can help you find a suitable Ayurvedic practitioner.",
+                "action_url": "/practitioners"
+            }
+        })
+    
+    # Generate AI response
+    try:
+        gemini_api_key = os.getenv("GEMINI_API_KEY")
+        if gemini_api_key:
+            gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={gemini_api_key}"
+            
+            # Build context
+            context = "You are an Ayurvedic health assistant. Be helpful and friendly. If the user asks about reminders, water intake, exercise, or finding a doctor, acknowledge that you've prepared actions for them.\n\n"
+            for msg in conversation.messages[-5:]:
+                context += f"{msg['role']}: {msg['content']}\n"
+            
+            response = requests.post(
+                gemini_url,
+                json={"contents": [{"parts": [{"text": context}]}]},
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                ai_reply = result['candidates'][0]['content']['parts'][0]['text']
+            else:
+                ai_reply = "I can help you with health reminders, finding practitioners, and wellness advice. What would you like to do?"
+        else:
+            ai_reply = "I can help you with health reminders, finding practitioners, and wellness advice. What would you like to do?"
+    except Exception as e:
+        logger.error(f"Agent chat AI error: {str(e)}")
+        ai_reply = "I can help you with health reminders, finding practitioners, and wellness advice. What would you like to do?"
+    
+    # Add AI response to conversation
+    ai_message = {
+        "role": "assistant",
+        "content": ai_reply,
+        "timestamp": datetime.utcnow().isoformat()
+    }
+    conversation.messages.append(ai_message)
+    db.commit()
+    
+    return AIChatResponse(
+        reply=ai_reply,
+        conversation_id=conversation_id,
+        actions=actions
+    )
+
+
+@app.post("/api/agent/confirm-actions")
+async def confirm_agent_actions(
+    actions: List[AgentAction],
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Confirm and execute agent actions (e.g., create reminders)
+    """
+    results = []
+    
+    for action in actions:
+        try:
+            if action.type == "create_reminder":
+                # Create reminder in database
+                reminder = Reminder(
+                    user_id=current_user.id,
+                    title=action.data.get("title", "Reminder"),
+                    message=action.data.get("message", ""),
+                    time=action.data.get("time", "08:00 AM"),
+                    frequency=action.data.get("frequency", "daily"),
+                    is_active=True
+                )
+                db.add(reminder)
+                db.commit()
+                db.refresh(reminder)
+                
+                results.append({
+                    "action_type": action.type,
+                    "status": "success",
+                    "message": f"Reminder '{reminder.title}' created successfully",
+                    "reminder_id": reminder.id
+                })
+            
+            elif action.type == "find_practitioner":
+                # Just acknowledge - frontend will handle navigation
+                results.append({
+                    "action_type": action.type,
+                    "status": "success",
+                    "message": "Redirecting to practitioners page"
+                })
+            
+            else:
+                results.append({
+                    "action_type": action.type,
+                    "status": "error",
+                    "message": f"Unknown action type: {action.type}"
+                })
+        
+        except Exception as e:
+            logger.error(f"Error confirming action {action.type}: {str(e)}")
+            results.append({
+                "action_type": action.type,
+                "status": "error",
+                "message": str(e)
+            })
+    
+    return {"results": results}
+
+
+@app.get("/api/reminders", response_model=List[ReminderResponse])
+async def get_reminders(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    active_only: bool = True
+):
+    """
+    Get reminders for the current user
+    """
+    query = db.query(Reminder).filter(Reminder.user_id == current_user.id)
+    
+    if active_only:
+        query = query.filter(Reminder.is_active == True)
+    
+    reminders = query.order_by(Reminder.created_at.desc()).all()
+    return reminders
 
 
 

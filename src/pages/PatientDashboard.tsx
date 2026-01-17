@@ -287,7 +287,10 @@ const PatientDashboard = () => {
                       <Calendar className="h-4 w-4 mr-3" />
                       Book New Session
                     </button>
-                    <button className="w-full bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-4 py-3 rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-700 text-left flex items-center">
+                    <button
+                      onClick={() => navigate('/chat-support')}
+                      className="w-full bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-4 py-3 rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-700 text-left flex items-center"
+                    >
                       <MessageCircle className="h-4 w-4 mr-3" />
                       Contact Practitioner
                     </button>

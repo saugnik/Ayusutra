@@ -1,0 +1,356 @@
+====================================================================================================
+ALL LOGIN DATA - AYURSUTRA DATABASE
+====================================================================================================
+
+Total Users: 34
+
+----------------------------------------------------------------------------------------------------
+USER #1
+ID: 35
+Email: testagent1@example.com
+Name: Test Agent User
+Role: PATIENT
+Active: Yes
+Created: 2026-01-16 10:27:57.339116
+Updated: 2026-01-16 10:31:36
+
+----------------------------------------------------------------------------------------------------
+USER #2
+ID: 34
+Email: patient_403_test@test.com
+Name: Test Pat
+Role: PATIENT
+Active: Yes
+Created: 2026-01-15 05:35:57.379912
+Updated: 2026-01-15 05:35:59
+
+----------------------------------------------------------------------------------------------------
+USER #3
+ID: 33
+Email: debug_timeout_1768453913@test.com
+Name: Debug Doc
+Role: PRACTITIONER
+Active: Yes
+Created: 2026-01-15 05:11:56.510866
+Updated: 2026-01-15 05:11:59
+
+----------------------------------------------------------------------------------------------------
+USER #4
+ID: 32
+Email: debug_timeout_1768453806@test.com
+Name: Debug Practitioner
+Role: PRACTITIONER
+Active: Yes
+Created: 2026-01-15 05:10:09.495665
+Updated: None
+
+----------------------------------------------------------------------------------------------------
+USER #5
+ID: 31
+Email: debug_timeout_1768453783@test.com
+Name: Debug Practitioner
+Role: PRACTITIONER
+Active: Yes
+Created: 2026-01-15 05:09:46.458730
+Updated: None
+
+----------------------------------------------------------------------------------------------------
+USER #6
+ID: 30
+Email: debug_timeout_1768453723@test.com
+Name: Debug Practitioner
+Role: PRACTITIONER
+Active: Yes
+Created: 2026-01-15 05:08:45.972813
+Updated: None
+
+----------------------------------------------------------------------------------------------------
+USER #7
+ID: 29
+Email: debug_timeout_1768453701@test.com
+Name: Debug Practitioner
+Role: PRACTITIONER
+Active: Yes
+Created: 2026-01-15 05:08:24.034717
+Updated: None
+
+----------------------------------------------------------------------------------------------------
+USER #8
+ID: 28
+Email: debug_timeout_1768453659@test.com
+Name: Debug Practitioner
+Role: PRACTITIONER
+Active: Yes
+Created: 2026-01-15 05:07:42.342240
+Updated: None
+
+----------------------------------------------------------------------------------------------------
+USER #9
+ID: 27
+Email: dr_flow_1768449412@test.com
+Name: Test Practitioner
+Role: PRACTITIONER
+Active: Yes
+Created: 2026-01-15 03:57:04.684210
+Updated: 2026-01-15 03:57:07
+
+----------------------------------------------------------------------------------------------------
+USER #10
+ID: 26
+Email: p_flow_1768449412@test.com
+Name: Test Patient
+Role: PATIENT
+Active: Yes
+Created: 2026-01-15 03:56:57.438690
+Updated: 2026-01-15 03:57:00
+
+----------------------------------------------------------------------------------------------------
+USER #11
+ID: 25
+Email: dr_flow_1768449354@test.com
+Name: Test Practitioner
+Role: PRACTITIONER
+Active: Yes
+Created: 2026-01-15 03:56:08.369518
+Updated: 2026-01-15 03:56:11
+
+----------------------------------------------------------------------------------------------------
+USER #12
+ID: 24
+Email: dr_flow_1768449014@test.com
+Name: Test Practitioner
+Role: PRACTITIONER
+Active: Yes
+Created: 2026-01-15 03:56:06.343500
+Updated: 2026-01-15 03:56:09
+
+----------------------------------------------------------------------------------------------------
+USER #13
+ID: 23
+Email: p_flow_1768449354@test.com
+Name: Test Patient
+Role: PATIENT
+Active: Yes
+Created: 2026-01-15 03:56:01.247971
+Updated: 2026-01-15 03:56:03
+
+----------------------------------------------------------------------------------------------------
+USER #14
+ID: 22
+Email: p_flow_1768449014@test.com
+Name: Test Patient
+Role: PATIENT
+Active: Yes
+Created: 2026-01-15 03:55:58.598857
+Updated: 2026-01-15 03:56:01
+
+----------------------------------------------------------------------------------------------------
+USER #15
+ID: 21
+Email: quicktest@example.com
+Name: Quick Test
+Role: PATIENT
+Active: Yes
+Created: 2026-01-15 03:55:58.048342
+Updated: None
+
+----------------------------------------------------------------------------------------------------
+USER #16
+ID: 20
+Email: test_prac_7303@example.com
+Name: Test Practitioner
+Role: PRACTITIONER
+Active: Yes
+Created: 2026-01-15 02:59:23.845612
+Updated: None
+
+----------------------------------------------------------------------------------------------------
+USER #17
+ID: 19
+Email: test_prac_7282@example.com
+Name: Test Practitioner
+Role: PRACTITIONER
+Active: Yes
+Created: 2026-01-15 02:58:49.793777
+Updated: None
+
+----------------------------------------------------------------------------------------------------
+USER #18
+ID: 18
+Email: test_prac_9356@example.com
+Name: Test Practitioner
+Role: PRACTITIONER
+Active: Yes
+Created: 2026-01-15 02:58:34.033059
+Updated: None
+
+----------------------------------------------------------------------------------------------------
+USER #19
+ID: 17
+Email: unique_2@example.com
+Name: saugnik aich
+Role: PRACTITIONER
+Active: Yes
+Created: 2026-01-14 20:00:39.791557
+Updated: 2026-01-15 02:55:20
+
+----------------------------------------------------------------------------------------------------
+USER #20
+ID: 16
+Email: sah1@gm.com
+Name: saugnik aich
+Role: PRACTITIONER
+Active: Yes
+Created: 2026-01-14 17:35:50.995385
+Updated: None
+
+----------------------------------------------------------------------------------------------------
+USER #21
+ID: 15
+Email: sah1@gmail.com
+Name: saugnik aich
+Role: PRACTITIONER
+Active: Yes
+Created: 2026-01-14 17:33:59.563990
+Updated: None
+
+----------------------------------------------------------------------------------------------------
+USER #22
+ID: 14
+Email: sah123@gmail.com
+Name: saugnik aich
+Role: PRACTITIONER
+Active: Yes
+Created: 2026-01-14 17:33:31.467982
+Updated: None
+
+----------------------------------------------------------------------------------------------------
+USER #23
+ID: 13
+Email: saugni@gmail.com
+Name: saugnik aich
+Role: PRACTITIONER
+Active: Yes
+Created: 2026-01-14 17:14:00.816934
+Updated: None
+
+----------------------------------------------------------------------------------------------------
+USER #24
+ID: 12
+Email: comprehensive.test@example.com
+Name: Comprehensive Test User
+Role: PATIENT
+Active: Yes
+Created: 2026-01-14 16:50:05.835956
+Updated: 2026-01-14 16:50:08
+
+----------------------------------------------------------------------------------------------------
+USER #25
+ID: 11
+Email: saunewww@gmail.com
+Name: newwwww
+Role: PRACTITIONER
+Active: Yes
+Created: 2026-01-14 16:50:03.876225
+Updated: None
+
+----------------------------------------------------------------------------------------------------
+USER #26
+ID: 9
+Email: mm3@gmail.com
+Name: mm
+Role: ADMIN
+Active: Yes
+Created: 2026-01-13 19:49:42.409231
+Updated: 2026-01-13 19:49:48
+
+----------------------------------------------------------------------------------------------------
+USER #27
+ID: 8
+Email: newnew123@gmail.com
+Name: newnew
+Role: PRACTITIONER
+Active: Yes
+Created: 2026-01-13 19:46:11.680554
+Updated: 2026-01-13 19:46:21
+
+----------------------------------------------------------------------------------------------------
+USER #28
+ID: 7
+Email: patient_1234@test.com
+Name: saugnik aich
+Role: PRACTITIONER
+Active: Yes
+Created: 2026-01-13 19:40:43.746431
+Updated: None
+
+----------------------------------------------------------------------------------------------------
+USER #29
+ID: 6
+Email: patient_123@test.com
+Name: saugnik aich
+Role: PATIENT
+Active: Yes
+Created: 2026-01-13 19:39:49.430688
+Updated: None
+
+----------------------------------------------------------------------------------------------------
+USER #30
+ID: 5
+Email: patient2@test.com
+Name: demo
+Role: PATIENT
+Active: Yes
+Created: 2026-01-13 17:09:27.171372
+Updated: 2026-01-13 17:09:32
+
+----------------------------------------------------------------------------------------------------
+USER #31
+ID: 4
+Email: rajesh.k@email.com
+Name: Rajesh Kumar
+Role: PATIENT
+Active: Yes
+Created: 2026-01-13 07:31:55.698353
+Updated: 2026-01-13 07:32:20
+
+----------------------------------------------------------------------------------------------------
+USER #32
+ID: 3
+Email: patient@test.com
+Name: Test Patient
+Role: PATIENT
+Active: Yes
+Created: 2026-01-12 10:46:23.591225
+Updated: 2026-01-13 15:57:45
+
+----------------------------------------------------------------------------------------------------
+USER #33
+ID: 2
+Email: saugnikaich123@gmail.com
+Name: saugnik aich
+Role: PATIENT
+Active: Yes
+Created: 2026-01-12 10:29:45.980387
+Updated: 2026-01-16 14:47:37
+
+----------------------------------------------------------------------------------------------------
+USER #34
+ID: 1
+Email: dr.sharma@ayursutra.com
+Name: Dr. Priya Sharma
+Role: PRACTITIONER
+Active: Yes
+Created: 2026-01-12 10:18:29.742725
+Updated: 2026-01-15 03:06:07
+
+====================================================================================================
+STATISTICS
+====================================================================================================
+Total: 34
+Patients: 0
+Practitioners: 0
+Admins: 0
+Active: 34
+Inactive: 0
+====================================================================================================
