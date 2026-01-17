@@ -12,6 +12,31 @@ import enum
 
 Base = declarative_base()
 
+class SubscriptionPlanType(enum.Enum):
+    TRIAL = "trial"
+    PREMIUM = "premium"
+
+class SubscriptionStatus(enum.Enum):
+    ACTIVE = "active"
+    EXPIRED = "expired"
+    CANCELLED = "cancelled"
+
+class Subscription(Base):
+    __tablename__ = "subscriptions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
+    plan_type = Column(Enum(SubscriptionPlanType), default=SubscriptionPlanType.TRIAL)
+    status = Column(Enum(SubscriptionStatus), default=SubscriptionStatus.ACTIVE)
+    start_date = Column(DateTime(timezone=True), server_default=func.now())
+    end_date = Column(DateTime(timezone=True), nullable=True) # None for lifetime/recurring active? Or set date for trial end
+    free_consultation_used = Column(Boolean, default=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    # Relationships
+    user = relationship("User", back_populates="subscription")
+
 class UserRole(enum.Enum):
     PATIENT = "patient"
     PRACTITIONER = "practitioner"
@@ -45,6 +70,7 @@ class User(Base):
     patient_profile = relationship("Patient", back_populates="user", uselist=False, cascade="all, delete-orphan")
     practitioner_profile = relationship("Practitioner", back_populates="user", uselist=False, cascade="all, delete-orphan")
     admin_profile = relationship("Admin", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    subscription = relationship("Subscription", back_populates="user", uselist=False, cascade="all, delete-orphan")
 
 class Patient(Base):
     __tablename__ = "patients"

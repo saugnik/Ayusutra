@@ -1,5 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { SubscriptionProvider } from './contexts/SubscriptionContext';
+
 import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { Toaster } from 'react-hot-toast';
@@ -24,32 +26,34 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <Router>
-          <div className="min-h-screen bg-dashboard">
-            <Routes>
-              <Route path="/" element={<WelcomeIntro />} />
-              <Route path="/home" element={<LandingPage />} />
-              <Route path="/auth" element={<SimpleAuthPage />} />
-              <Route path="/patient" element={<PatientDashboard />} />
-              <Route path="/my-sessions" element={<MySessions />} />
-              <Route path="/progress" element={<Progress />} />
-              <Route path="/practitioner" element={<PractitionerDashboard />} />
-              <Route path="/scheduler" element={<Scheduler />} />
-              <Route path="/therapy-room/:sessionId" element={<TherapyRoom />} />
-              <Route path="/admin" element={<AdminConsole />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/health-support" element={<HealthSupport />} />
-              <Route path="/chat-support" element={<ChatSupport />} />
-              <Route path="/map" element={<ClinicMap />} />
-              <Route path="/debug" element={<DebugAuth />} />
+        <SubscriptionProvider>
+          <Router>
+            <div className="min-h-screen bg-dashboard">
+              <Routes>
+                <Route path="/" element={<WelcomeIntro />} />
+                <Route path="/home" element={<LandingPage />} />
+                <Route path="/auth" element={<SimpleAuthPage />} />
+                <Route path="/patient" element={<PatientDashboard />} />
+                <Route path="/my-sessions" element={<MySessions />} />
+                <Route path="/progress" element={<Progress />} />
+                <Route path="/practitioner" element={<PractitionerDashboard />} />
+                <Route path="/scheduler" element={<Scheduler />} />
+                <Route path="/therapy-room/:sessionId" element={<TherapyRoom />} />
+                <Route path="/admin" element={<AdminConsole />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/health-support" element={<HealthSupport />} />
+                <Route path="/chat-support" element={<ChatSupport />} />
+                <Route path="/map" element={<ClinicMap />} />
+                <Route path="/debug" element={<DebugAuth />} />
 
-              {/* Redirects for legacy or missing routes */}
-              <Route path="/dashboard" element={<Navigate to="/patient" replace />} />
-              <Route path="/appointments" element={<Navigate to="/my-sessions" replace />} />
-            </Routes>
-            <Toaster position="top-right" />
-          </div>
-        </Router>
+                {/* Redirects for legacy or missing routes */}
+                <Route path="/dashboard" element={<Navigate to="/patient" replace />} />
+                <Route path="/appointments" element={<Navigate to="/my-sessions" replace />} />
+              </Routes>
+              <Toaster position="top-right" />
+            </div>
+          </Router>
+        </SubscriptionProvider>
       </AuthProvider>
     </ThemeProvider>
   );

@@ -599,6 +599,29 @@ class MonthlySummaryResponse(BaseModel):
     popular_therapies: List[str]
     appointment_status_counts: Dict[str, int]
 
+# ==================== SUBSCRIPTION SCHEMAS ====================
+class SubscriptionBase(BaseModel):
+    plan_type: str
+    status: str
+    end_date: Optional[datetime]
+    free_consultation_used: bool
+
+class SubscriptionCreate(SubscriptionBase):
+    pass
+
+class SubscriptionResponse(SubscriptionBase):
+    id: int
+    user_id: int
+    start_date: datetime
+    created_at: datetime
+    updated_at: Optional[datetime]
+
+    class Config:
+        orm_mode = True
+
+class UpgradeRequest(BaseModel):
+    plan_type: str = "premium" # For now only premium
+
 class FeedbackSummary(BaseModel):
     average_rating: float
     total_reviews: int

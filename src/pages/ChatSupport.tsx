@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { useSubscription } from '../contexts/SubscriptionContext';
 import { useNavigate } from 'react-router-dom';
 import {
     Activity,
@@ -13,7 +14,9 @@ import {
     Settings,
     Sparkles,
     User,
-    Users
+    Users,
+    Lock,
+    Unlock
 } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import api from '../services/api';
@@ -41,6 +44,7 @@ interface ChatMessage {
 
 const ChatSupport = () => {
     const { user, logout } = useAuth();
+    const { subscription, markConsultationUsed, upgradeToPremium, isLoading: subLoading } = useSubscription();
     const navigate = useNavigate();
 
     // State
@@ -281,6 +285,58 @@ const ChatSupport = () => {
         }
 
         const displayMessages = chatMode === 'practitioner' ? messages : aiMessages;
+
+
+
+        // Feature Gating for Practitioner Chat
+        if (chatMode === 'practitioner') {
+            const isPremium = subscription?.plan_type === 'premium';
+            const isFreeUsed = subscription?.free_consultation_used;
+
+            if (!isPremium && isFreeUsed) {
+                return (
+                    <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-gray-50 dark:bg-gray-900">
+                        <div className="bg-purple-100 p-4 rounded-full mb-4">
+                            <Lock className="h-12 w-12 text-purple-600" />
+                        </div>
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Free Consultation Used</h2>
+                        <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md">
+                            You have used your one-time free doctor consultation. Upgrade to Premium for unlimited chat access with our practitioners.
+                        </p>
+                        <button
+                            onClick={upgradeToPremium}
+                            className="btn-primary px-8 py-3 text-lg shadow-lg hover:shadow-xl transform transition-all hover:-translate-y-1"
+                        >
+                            {subLoading ? 'Processing...' : 'Upgrade to Premium - ₹499/mo'}
+                        </button>
+                    </div>
+                );
+            }
+
+            if (!isPremium && !isFreeUsed && messages.length === 0) {
+                // First time user, hasn't started yet
+                return (
+                    <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-white dark:bg-gray-900">
+                        <div className="bg-green-100 p-4 rounded-full mb-4">
+                            <Unlock className="h-12 w-12 text-green-600" />
+                        </div>
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Start Your Free Consultation</h2>
+                        <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md">
+                            You have <b>1 free consultation</b> session available with Dr. {selectedPractitioner?.name || 'Practitioner'}.
+                        </p>
+                        <button
+                            onClick={async () => {
+                                await markConsultationUsed();
+                                // Refresh logic might be needed or handled by context update
+                            }}
+                            className="btn-primary px-8 py-3 text-lg flex items-center"
+                        >
+                            Start Chat Now <Send className="ml-2 h-4 w-4" />
+                        </button>
+                    </div>
+                );
+            }
+        }
 
         return (
             <div className="flex-1 flex flex-col bg-white dark:bg-gray-900">

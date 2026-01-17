@@ -44,6 +44,7 @@ from auth import (
     create_access_token, verify_token, get_password_hash, verify_password,
     get_current_user, get_current_patient, get_current_practitioner, get_current_admin
 )
+import subscription_routes
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -58,6 +59,12 @@ app = FastAPI(
     description="Comprehensive backend service for digital Panchakarma management platform",
     version="1.0.0"
 )
+
+# ... (middleware)
+
+# Include Routers
+app.include_router(subscription_routes.router) # <--- Mount router
+
 
 # Custom CORS middleware - Add headers to ALL responses
 

@@ -19,6 +19,14 @@ interface AuthContextType {
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+export const useAuth = () => {
+    const context = React.useContext(AuthContext);
+    if (context === undefined) {
+        throw new Error('useAuth must be used within an AuthProvider');
+    }
+    return context;
+};
+
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<{ id: number; role: string; full_name: string } | null>(null);
     const [isLoading, setIsLoading] = useState(true);

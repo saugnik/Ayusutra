@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { useSubscription } from '../contexts/SubscriptionContext';
 import { useNavigate } from 'react-router-dom';
 import {
     Activity,
@@ -15,7 +16,8 @@ import {
     Settings,
     Sparkles,
     TrendingUp,
-    User
+    User,
+    Lock
 } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import api from '../services/api';
@@ -46,6 +48,7 @@ interface ChatMessage {
 
 const HealthSupport = () => {
     const { user, logout } = useAuth();
+    const { subscription, upgradeToPremium, isLoading: subLoading, activateTrial } = useSubscription();
     const navigate = useNavigate();
 
     // State
@@ -317,67 +320,94 @@ const HealthSupport = () => {
         </div>
     );
 
-    const renderAIChatTab = () => (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm h-[600px] flex flex-col">
-            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center">
-                    <Sparkles className="h-5 w-5 mr-2 text-primary-600" />
-                    AI Health Assistant
-                </h2>
-                <p className="text-sm text-gray-600 mt-1">Ask questions about Ayurveda, wellness, and your health</p>
-            </div>
 
-            {/* Chat Messages */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-4">
-                {chatMessages.length === 0 ? (
-                    <div className="text-center py-12">
-                        <Sparkles className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-                        <p className="text-gray-500 underline-offset-4">Start a conversation with the AI health assistant</p>
-                        <p className="text-sm text-gray-400 mt-2">Ask about symptoms, remedies, or Ayurvedic practices</p>
-                    </div>
-                ) : (
-                    chatMessages.map((msg, idx) => (
-                        <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                            <div className={`max-w-[80%] rounded-lg p-4 ${msg.role === 'user' ? 'bg-primary-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100'}`}>
-                                <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
-                                <p className={`text-xs mt-2 ${msg.role === 'user' ? 'text-primary-100' : 'text-gray-500'}`}>
-                                    {new Date(msg.timestamp).toLocaleTimeString()}
-                                </p>
-                            </div>
-                        </div>
-                    ))
-                )}
-                {loading && (
-                    <div className="flex justify-start">
-                        <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
-                            <Loader className="h-5 w-5 animate-spin text-gray-500 dark:text-gray-400" />
-                        </div>
-                    </div>
-                )}
-            </div>
 
-            {/* Chat Input */}
-            <form onSubmit={handleAIChat} className="p-6 border-t border-gray-200 dark:border-gray-700">
-                <div className="flex space-x-2">
-                    <input
-                        type="text"
-                        value={chatInput}
-                        onChange={(e) => setChatInput(e.target.value)}
-                        placeholder="Ask a health question..."
-                        className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                        disabled={loading}
-                    />
+    const renderAIChatTab = () => {
+        // Feature Gating Logic
+        const isTrialExpired = subscription?.status === 'expired' && subscription?.plan_type === 'trial';
+
+        if (isTrialExpired) {
+            return (
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm h-[600px] flex flex-col items-center justify-center p-8 text-center">
+                    <div className="bg-purple-100 p-4 rounded-full mb-4">
+                        <Lock className="h-10 w-10 text-purple-600" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Free Trial Expired</h2>
+                    <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md">
+                        Your 7-day free trial of AI Health Assistant has ended. Upgrade to Premium to continue receiving personalized Ayurvedic insights.
+                    </p>
                     <button
-                        type="submit"
-                        disabled={loading || !chatInput.trim()}
-                        className="btn-primary px-6"
+                        onClick={upgradeToPremium}
+                        className="btn-primary px-8 py-3 text-lg shadow-lg hover:shadow-xl transform transition-all hover:-translate-y-1"
                     >
-                        <Send className="h-5 w-5" />
+                        {subLoading ? 'Processing...' : 'Upgrade to Premium - ₹499/mo'}
                     </button>
                 </div>
-            </form>
-        </div>
-    );
+            );
+        }
+
+        return (
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm h-[600px] flex flex-col">
+                <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center">
+                        <Sparkles className="h-5 w-5 mr-2 text-primary-600" />
+                        AI Health Assistant
+                    </h2>
+                    <p className="text-sm text-gray-600 mt-1">Ask questions about Ayurveda, wellness, and your health</p>
+                </div>
+
+                {/* Chat Messages */}
+                <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                    {chatMessages.length === 0 ? (
+                        <div className="text-center py-12">
+                            <Sparkles className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+                            <p className="text-gray-500 underline-offset-4">Start a conversation with the AI health assistant</p>
+                            <p className="text-sm text-gray-400 mt-2">Ask about symptoms, remedies, or Ayurvedic practices</p>
+                        </div>
+                    ) : (
+                        chatMessages.map((msg, idx) => (
+                            <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                <div className={`max-w-[80%] rounded-lg p-4 ${msg.role === 'user' ? 'bg-primary-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100'}`}>
+                                    <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                                    <p className={`text-xs mt-2 ${msg.role === 'user' ? 'text-primary-100' : 'text-gray-500'}`}>
+                                        {new Date(msg.timestamp).toLocaleTimeString()}
+                                    </p>
+                                </div>
+                            </div>
+                        ))
+                    )}
+                    {loading && (
+                        <div className="flex justify-start">
+                            <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
+                                <Loader className="h-5 w-5 animate-spin text-gray-500 dark:text-gray-400" />
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Chat Input */}
+                <form onSubmit={handleAIChat} className="p-6 border-t border-gray-200 dark:border-gray-700">
+                    <div className="flex space-x-2">
+                        <input
+                            type="text"
+                            value={chatInput}
+                            onChange={(e) => setChatInput(e.target.value)}
+                            placeholder="Ask a health question..."
+                            className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            disabled={loading}
+                        />
+                        <button
+                            type="submit"
+                            disabled={loading || !chatInput.trim()}
+                            className="btn-primary px-6"
+                        >
+                            <Send className="h-5 w-5" />
+                        </button>
+                    </div>
+                </form>
+            </div>
+        );
+    };
 
     const renderRecommendationsTab = () => (
         <div className="space-y-6">
