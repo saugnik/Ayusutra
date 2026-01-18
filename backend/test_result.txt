@@ -1,0 +1,30 @@
+--- RESPONSE 1 (Clarification) ---
+To provide the best personalized plan, I need a few details: What is your current weight (in kg)? What is your height (in cm)?
+
+--- RESPONSE 2 (Plan) ---
+Here is a fully personalized diet plan based on your profile (BMI, Dosha, Conditions).
+
+Based on a safe weight loss rate of 0.5 - 1.0 kg/week, you could reach your goal between February 2026 to March 2026 (5-10 weeks).
+
+📊 **Your Metrics:**
+- BMI: Calculated in Engine
+- Daily Calorie Target: 2647 kcal
+- Dominant Dosha: Kapha
+
+🥗 **Macros:**
+- Protein: 198g
+- Carbs: 264g
+- Fats: 88g
+
+✅ **Foods to Favor:** Light foods, Pungent vegetables, Leafy greens, Apples, Pears
+
+❌ **Foods to Avoid:** Heavy foods, Dairy, Fried foods, Sweet foods, Cold foods
+
+🍽️ **Sample Meal Plan:**
+- **Breakfast**: Tuna with Quinoa and Apple (661 kcal)
+- **Lunch**: Tuna bowl with Quinoa, steamed Zucchini, dressed with Olive Oil (926 kcal)
+- **Dinner**: Grilled/Baked Chicken Breast with a large serving of Zucchini cooked in Ghee (794 kcal)
+- **Snacks**: Berries with Ghee (264 kcal)
+
+💧 **Hydration:** 3-4 Liters (Engine Rec)
+

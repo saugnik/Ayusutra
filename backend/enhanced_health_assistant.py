@@ -430,7 +430,12 @@ class ConversationalHealthAssistant:
         
         # Age
         age_match = re.search(r'(\d+)\s*(?:years|yrs|year old)', query_lower)
-        if age_match: info['age'] = int(age_match.group(1))
+        if age_match: 
+            info['age'] = int(age_match.group(1))
+        else:
+            # Fallback for "age is 20" or "i am 20"
+            age_match_2 = re.search(r'(?:age|i am)\s*(?:is)?\s*(\d+)', query_lower)
+            if age_match_2: info['age'] = int(age_match_2.group(1))
         
         # Gender
         if any(w in query_lower for w in ['female', 'woman', 'girl', 'lady']): info['gender'] = 'female'
@@ -485,7 +490,7 @@ class ConversationalHealthAssistant:
         if 'sedentary' in query_lower or 'desk job' in query_lower: info['activity_level'] = 'sedentary'
         elif 'lightly' in query_lower or 'walking' in query_lower: info['activity_level'] = 'lightly active'
         elif 'moderate' in query_lower or 'gym' in query_lower: info['activity_level'] = 'moderately active'
-        elif 'very active' in query_lower or 'athlete' in query_lower: info['activity_level'] = 'very active'
+        elif 'very active' in query_lower or 'athlete' in query_lower or 'highly active' in query_lower: info['activity_level'] = 'very active'
         
         return info
     
@@ -512,12 +517,13 @@ class ConversationalHealthAssistant:
                 questions['basic_info'].append("What is your age?")
             
             # Diet-specific info
-            if not user_profile.get('activity_level'):
-                questions['diet_info'].append("What is your activity level?\n   • Sedentary\n   • Lightly active\n   • Moderately active\n   • Very active\n   • Extremely active")
-            if not user_profile.get('dietary_goal'):
-                questions['diet_info'].append("What is your primary goal?\n   • Weight loss\n   • Weight gain\n   • Muscle building\n   • Maintenance\n   • Health improvement")
+            # Diet-specific info
+            # Relaxed strictness: Default goal to Maintenance and Activity to Moderate if missing
+            # Only ask permissions/allergies if absolutely needed, or let them refine later.
             if not user_profile.get('dietary_restrictions'):
-                questions['diet_info'].append("Do you have any dietary restrictions or allergies?")
+                 # Optional: don't block plan for this, just ask as suggestion or assume none
+                 pass 
+                 # questions['diet_info'].append("Do you have any dietary restrictions?")
         
         # Check for workout-related queries
         if any(word in query_lower for word in ['workout', 'exercise', 'gym', 'fitness', 'yoga', 'training']):
@@ -627,6 +633,29 @@ class ConversationalHealthAssistant:
         
         # 0. Extraction: Update profile with info from query
         extracted_info = self.extract_profile_info(query)
+        # 0. Context Resumption Logic
+        # If we extracted new info, check if we should resume a suspended intent from history
+        context_resumed = False
+        if extracted_info and conversation_history:
+            # Check if last assistant message was asking for details
+            # We look at the last few messages
+            recent_msgs = conversation_history[-3:] # Last 3 messages
+            for msg in reversed(recent_msgs):
+                if msg.get('role') == 'assistant' and 'details' in msg.get('content', '').lower():
+                    # Found clarification request. Now find the user's original request before that
+                    # Iterate backwards from that assistant message
+                   idx = conversation_history.index(msg)
+                   if idx > 0:
+                       prev_user_msg = conversation_history[idx-1]
+                       if prev_user_msg.get('role') == 'user':
+                           # Merge intents: treat the current query as an extension of the original
+                           query = prev_user_msg.get('content', '') + " " + query
+                           query_lower = query.lower()
+                           logger.info(f"Enhanced Assistant: Resuming context from '{prev_user_msg.get('content')}'")
+                           context_resumed = True
+                           break
+            
+        # 1. Update Profile with extracted info
         if extracted_info:
             user_profile.update(extracted_info)
             # Retrigger dosha analysis if needed (not implemented here but good for future)

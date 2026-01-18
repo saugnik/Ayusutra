@@ -84,7 +84,7 @@ const ChatSupport = () => {
         try {
             setLoading(true);
             const response = await api.get(`/health/conversations/${id}`);
-            setAiMessages(response.data);
+            setAiMessages(response.data.messages || []);
             setAiConversationId(id);
         } catch (error) {
             console.error("Failed to load conversation", error);
