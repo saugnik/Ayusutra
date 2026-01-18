@@ -1,4 +1,111 @@
-import React, { useState, useEffect } from 'react';
+// ... (keep existing imports)
+const [alarmsOpen, setAlarmsOpen] = useState(false);
+const [myReminders, setMyReminders] = useState<any[]>([]);
+
+useEffect(() => {
+    if (alarmsOpen) {
+        fetchReminders();
+    }
+}, [alarmsOpen]);
+
+const fetchReminders = async () => {
+    try {
+        const res = await api.get('/reminders');
+        setMyReminders(res.data);
+    } catch (err) {
+        console.error(err);
+    }
+};
+
+const handleDeleteReminder = async (id: number) => {
+    try {
+        await api.delete(`/reminders/${id}`);
+        setMyReminders(prev => prev.filter(r => r.id !== id));
+    } catch (err) {
+        console.error("Failed to delete reminder", err);
+    }
+};
+
+const handleDeleteConversation = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation(); // Prevent opening the chat
+    if (!window.confirm("Delete this conversation?")) return;
+    try {
+        await api.delete(`/health/conversations/${id}`);
+        setAiHistory(prev => prev.filter(c => c.conversation_id !== id));
+        if (aiConversationId === id) {
+            setAiConversationId(null);
+            setAiMessages([]);
+        }
+    } catch (err) {
+        console.error("Failed to delete conversation", err);
+    }
+};
+
+// ... (existing render code)
+
+return (
+    <div className="flex h-screen bg-gray-50">
+        {/* ... Sidebar ... */}
+
+        {/* Alarms Modal */}
+        {alarmsOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                <div className="bg-white rounded-xl p-6 w-96 max-h-[80vh] overflow-y-auto">
+                    <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-xl font-bold text-gray-800">My Alarms</h3>
+                        <button onClick={() => setAlarmsOpen(false)} className="text-gray-500 hover:text-gray-700">✕</button>
+                    </div>
+                    {myReminders.length === 0 ? (
+                        <p className="text-gray-500 text-center py-4">No active alarms.</p>
+                    ) : (
+                        <div className="space-y-3">
+                            {myReminders.map(reminder => (
+                                <div key={reminder.id} className="bg-gray-50 p-3 rounded-lg flex justify-between items-start border border-gray-100">
+                                    <div>
+                                        <p className="font-semibold text-gray-800">{reminder.title}</p>
+                                        <p className="text-sm text-gray-600">{reminder.time} ({reminder.frequency})</p>
+                                    </div>
+                                    <button
+                                        onClick={() => handleDeleteReminder(reminder.id)}
+                                        className="text-red-500 hover:text-red-700 bg-red-50 p-1 rounded"
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+        )}
+
+        {/* ... Main Content ... */}
+        <div className="flex-1 flex flex-col h-full overflow-hidden relative">
+            {/* Header */}
+            <div className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6">
+                {/* ... (existing header content) ... */}
+                <div className="flex items-center space-x-3">
+                    {/* Add Alarm Button */}
+                    <button
+                        onClick={() => setAlarmsOpen(true)}
+                        className="bg-white border border-gray-300 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                    >
+                        <Bell size={18} />
+                        <span className="hidden md:inline">Alarms</span>
+                    </button>
+                    {/* ... (existing switch buttons) ... */}
+                </div>
+            </div>
+
+            {/* ... Chat Area ... */}
+            {/* AI History Sidebar Item rendering update */}
+            {/* Find where aiHistory.map is calling and add Trash Item */}
+        </div>
+    </div>
+);
+};
+
+export default ChatSupport;
 import { useAuth } from '../hooks/useAuth';
 import { useSubscription } from '../contexts/SubscriptionContext';
 import { useNavigate } from 'react-router-dom';
@@ -21,7 +128,7 @@ import {
 import Sidebar from '../components/Sidebar';
 import api from '../services/api';
 import NotificationDropdown, { Notification } from '../components/NotificationDropdown';
-import { Bell } from 'lucide-react';
+import { Bell, Trash2 } from 'lucide-react';
 
 interface Practitioner {
     id: number;
@@ -64,6 +171,49 @@ const ChatSupport = () => {
         { id: 'CN1', type: 'reminder', title: 'Message from Practitioner', message: 'Dr. Priya Sharma sent you a message about your diet plan.', time: '10 mins ago', read: false },
         { id: 'CN2', type: 'alert', title: 'Health Update', message: 'New activity detected in your metrics.', time: '3 hours ago', read: true },
     ]);
+
+    // Alarm/Reminder State
+    const [alarmsOpen, setAlarmsOpen] = useState(false);
+    const [myReminders, setMyReminders] = useState<any[]>([]);
+
+    useEffect(() => {
+        if (alarmsOpen) {
+            fetchReminders();
+        }
+    }, [alarmsOpen]);
+
+    const fetchReminders = async () => {
+        try {
+            const res = await api.get('/reminders');
+            setMyReminders(res.data);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const handleDeleteReminder = async (id: number) => {
+        try {
+            await api.delete(`/reminders/${id}`);
+            setMyReminders(prev => prev.filter(r => r.id !== id));
+        } catch (err) {
+            console.error("Failed to delete reminder", err);
+        }
+    };
+
+    const handleDeleteConversation = async (e: React.MouseEvent, id: string) => {
+        e.stopPropagation(); // Prevent opening the chat
+        if (!window.confirm("Delete this conversation?")) return;
+        try {
+            await api.delete(`/health/conversations/${id}`);
+            setAiHistory(prev => prev.filter(c => c.conversation_id !== id));
+            if (aiConversationId === id) {
+                setAiConversationId(null);
+                setAiMessages([]);
+            }
+        } catch (err) {
+            console.error("Failed to delete conversation", err);
+        }
+    };
 
     useEffect(() => {
         if (chatMode === 'ai') {
@@ -308,17 +458,24 @@ const ChatSupport = () => {
                             <div
                                 key={chat.conversation_id}
                                 onClick={() => loadConversation(chat.conversation_id)}
-                                className={`p-4 border-b border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${aiConversationId === chat.conversation_id ? 'bg-primary-50 dark:bg-primary-900/20' : ''}`}
+                                className={`p-4 border-b border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors group flex justify-between items-center ${aiConversationId === chat.conversation_id ? 'bg-primary-50 dark:bg-primary-900/20' : ''}`}
                             >
-                                <div className="flex items-center space-x-3">
-                                    <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center">
+                                <div className="flex items-center space-x-3 flex-1 min-w-0">
+                                    <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center flex-shrink-0">
                                         <Sparkles className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{chat.title}</p>
+                                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{chat.title || "New Chat"}</p>
                                         <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{new Date(chat.created_at).toLocaleDateString()}</p>
                                     </div>
                                 </div>
+                                <button
+                                    onClick={(e) => handleDeleteConversation(e, chat.conversation_id)}
+                                    className="text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-2"
+                                    title="Delete Chat"
+                                >
+                                    <Trash2 size={16} />
+                                </button>
                             </div>
                         ))
                     )}

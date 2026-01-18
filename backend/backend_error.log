@@ -523,3 +523,47 @@ Traceback (most recent call last):
     )
 fastapi.exceptions.HTTPException: 400: Email already registered
 
+DB CRASH AT 2026-01-18 16:20:05.937751:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 391, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 290, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\main.py", line 414, in delete_reminder
+    raise HTTPException(status_code=404, detail="Reminder not found")
+fastapi.exceptions.HTTPException: 404: Reminder not found
+
+DB CRASH AT 2026-01-18 16:20:08.107469:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 391, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 290, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\main.py", line 1777, in delete_health_conversation
+    raise HTTPException(status_code=404, detail="Conversation not found")
+fastapi.exceptions.HTTPException: 404: Conversation not found
+

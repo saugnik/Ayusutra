@@ -398,6 +398,26 @@ async def get_reminders(
     ).all()
 
 
+@app.delete("/reminders/{reminder_id}")
+async def delete_reminder(
+    reminder_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Delete a reminder"""
+    reminder = db.query(Reminder).filter(
+        Reminder.id == reminder_id,
+        Reminder.user_id == current_user.id
+    ).first()
+    
+    if not reminder:
+        raise HTTPException(status_code=404, detail="Reminder not found")
+        
+    db.delete(reminder)
+    db.commit()
+    return {"status": "success", "message": "Reminder deleted"}
+
+
 # ==================== APPOINTMENT MANAGEMENT ====================
 @app.post("/appointments", response_model=AppointmentResponse)
 async def create_appointment(
@@ -1733,6 +1753,32 @@ async def get_health_conversation_detail(
         "created_at": conversation.created_at,
         "updated_at": conversation.updated_at
     }
+
+@app.delete("/health/conversations/{conversation_id}")
+async def delete_health_conversation(
+    conversation_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Delete a conversation"""
+    if current_user.role != UserRole.PATIENT:
+        raise HTTPException(status_code=403, detail="Only patients can manage conversations")
+    
+    patient = db.query(Patient).filter(Patient.user_id == current_user.id).first()
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient profile not found")
+        
+    conversation = db.query(AIConversation).filter(
+        AIConversation.conversation_id == conversation_id,
+        AIConversation.patient_id == patient.id
+    ).first()
+    
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+        
+    db.delete(conversation)
+    db.commit()
+    return {"status": "success", "message": "Conversation deleted"}
 
 @app.get("/health/recommendations", response_model=HealthRecommendationsResponse)
 async def get_health_recommendations(
