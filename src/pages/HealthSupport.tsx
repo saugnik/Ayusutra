@@ -40,10 +40,17 @@ interface Recommendation {
     priority: string;
 }
 
+interface AgentAction {
+    type: string;
+    label: string;
+    data: any;
+}
+
 interface ChatMessage {
     role: 'user' | 'assistant';
     content: string;
     timestamp: string;
+    actions?: AgentAction[];
 }
 
 const HealthSupport = () => {
@@ -98,7 +105,27 @@ const HealthSupport = () => {
     useEffect(() => {
         fetchSymptoms();
         fetchRecommendations();
+        fetchReminders();
     }, []);
+
+    const fetchReminders = async () => {
+        try {
+            const response = await api.get('/api/reminders');
+            const reminders = response.data;
+            const mappedReminders: Notification[] = reminders.map((r: any) => ({
+                id: `REM-${r.id}`,
+                type: 'info',
+                title: r.title,
+                message: `${r.message} (${r.time})`,
+                time: new Date(r.created_at).toLocaleDateString(),
+                read: false
+            }));
+
+            setNotificationsList(prev => [...mappedReminders, ...prev]);
+        } catch (error) {
+            console.error('Failed to fetch reminders:', error);
+        }
+    };
 
     const fetchSymptoms = async () => {
         try {
@@ -163,6 +190,58 @@ const HealthSupport = () => {
         }
     };
 
+    const handleActionClick = async (action: AgentAction) => {
+        if (action.type === 'create_reminder') {
+            let times = action.data.time ? [action.data.time] : action.data.default_times;
+
+            if (action.data.configurable) {
+                const userTimes = window.prompt("Enter reminder times (comma separated):", times.join(','));
+                if (userTimes) {
+                    times = userTimes.split(',').map(t => t.trim());
+                } else if (userTimes === null) {
+                    return; // Cancelled
+                }
+            }
+
+            // Mock saving reminders for now, or call an API if exists
+            // Since we don't have a direct 'create_reminder' API yet in this file, we'll mock success
+            // In a real app, call api.post('/reminders', ...)
+            try {
+                // If multiple times, we create one reminder with all times stringified, or multiple reminders?
+                // The backend schema supports 'time' as string. The action returns array of times.
+                // Let's create one reminder per time for simplicity or join them if backend handles it
+                // Based on schema `time: str`, let's join them if it's meant to be one record, 
+                // OR create multiple records.
+                // The backend ReminderBase says `time: str`. Let's assume comma-separated is fine for now
+                // or loop and create multiple.
+
+                // Let's loop and create multiple reminders for each time slot to be precise
+                const promises = times.map((time: string) =>
+                    api.post('/api/reminders', {
+                        title: action.data.title,
+                        message: action.data.message,
+                        frequency: action.data.frequency || 'daily',
+                        time: time
+                    })
+                );
+
+                await Promise.all(promises);
+
+                // Show success toast
+                // alert(`Reminders set for ${action.data.title} at: ${times.join(', ')}`);
+                setMessage({ type: 'success', text: `Reminders set for ${action.data.title} at: ${times.join(', ')}` });
+
+                // Optionally refresh reminders if we had a reminders list visible
+            } catch (error) {
+                console.error("Failed to set reminders", error);
+                setMessage({ type: 'error', text: 'Failed to set reminders.' });
+            }
+
+        } else if (action.type === 'find_practitioner') {
+            navigate('/chat-support'); // Or a practitioner search page
+        }
+    };
+
     const handleAIChat = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!chatInput.trim()) return;
@@ -180,13 +259,14 @@ const HealthSupport = () => {
         try {
             const response = await api.post('/health/ask-ai', {
                 question: chatInput,
-                context: {}
+                context: { conversation_id: conversationId }
             });
 
             const aiMessage: ChatMessage = {
                 role: 'assistant',
                 content: response.data.answer,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                actions: response.data.actions
             };
 
             setChatMessages(prev => [...prev, aiMessage]);
@@ -362,13 +442,31 @@ const HealthSupport = () => {
                         <div className="text-center py-12">
                             <Sparkles className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
                             <p className="text-gray-500 underline-offset-4">Start a conversation with the AI health assistant</p>
-                            <p className="text-sm text-gray-400 mt-2">Ask about symptoms, remedies, or Ayurvedic practices</p>
+                            <p className="text-sm text-gray-400 mt-2">Ask about symptoms, remedies, diet, or weight loss</p>
                         </div>
                     ) : (
                         chatMessages.map((msg, idx) => (
                             <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                                 <div className={`max-w-[80%] rounded-lg p-4 ${msg.role === 'user' ? 'bg-primary-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100'}`}>
                                     <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+
+                                    {/* Action Buttons */}
+                                    {msg.actions && msg.actions.length > 0 && (
+                                        <div className="mt-3 space-y-2">
+                                            {msg.actions.map((action, actionIdx) => (
+                                                <button
+                                                    key={actionIdx}
+                                                    onClick={() => handleActionClick(action)}
+                                                    className="w-full flex items-center justify-center px-4 py-2 bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 text-sm font-medium rounded-md border border-primary-200 dark:border-primary-900 hover:bg-primary-50 dark:hover:bg-gray-700 transition-colors"
+                                                >
+                                                    {action.type === 'create_reminder' && <Calendar className="h-4 w-4 mr-2" />}
+                                                    {action.type === 'find_practitioner' && <User className="h-4 w-4 mr-2" />}
+                                                    {action.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+
                                     <p className={`text-xs mt-2 ${msg.role === 'user' ? 'text-primary-100' : 'text-gray-500'}`}>
                                         {new Date(msg.timestamp).toLocaleTimeString()}
                                     </p>

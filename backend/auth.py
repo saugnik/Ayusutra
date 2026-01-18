@@ -77,23 +77,33 @@ def get_current_user(
     db: Session = Depends(get_db)
 ):
     """Get the current authenticated user"""
-    token_data = verify_token(credentials.credentials)
-    
-    user = db.query(User).filter(User.email == token_data["email"]).first()
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    
-    if not user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Inactive user"
-        )
-    
-    return user
+    try:
+        token_data = verify_token(credentials.credentials)
+        
+        user = db.query(User).filter(User.email == token_data["email"]).first()
+        if user is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User not found",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        
+        if not user.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Inactive user"
+            )
+        
+        return user
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        with open("backend_error.log", "a") as f:
+            f.write(f"AUTH CRASH AT {datetime.utcnow()}:\n")
+            f.write(traceback.format_exc())
+            f.write("\n")
+        raise HTTPException(status_code=500, detail="Auth Internal Error")
 
 def get_current_patient(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Get current user as patient (role check)"""

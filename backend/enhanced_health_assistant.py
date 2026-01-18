@@ -7,7 +7,7 @@ import os
 import json
 import logging
 from typing import List, Dict, Any, Optional
-from datetime import datetime
+from datetime import datetime, timedelta
 import google.generativeai as genai
 
 # Configure logging
@@ -27,6 +27,326 @@ else:
     logger.warning("Google API key not found")
     model = None
 
+class FoodDatabase:
+    """
+    Comprehensive Database of Foods with Metabolic & Ayurvedic Properties.
+    Acts as the 'Knowledge Graph' for the Nutritional Engine.
+    """
+    def __init__(self):
+        # Format: Item: {Calories/100g, Protein, Carbs, Fats, GI, Dosha_Impact, Tags}
+        self.db = {
+            # --- PROTEIN SOURCES ---
+            'Chicken Breast': {'cal': 165, 'p': 31, 'c': 0, 'f': 3.6, 'gi': 0, 'dosha': {'vata': 'neutral', 'pitta': 'neutral', 'kapha': 'good'}, 'tags': ['meat', 'lean']},
+            'Chicken Thigh': {'cal': 209, 'p': 26, 'c': 0, 'f': 10.9, 'gi': 0, 'dosha': {'vata': 'good', 'pitta': 'bad', 'kapha': 'bad'}, 'tags': ['meat']},
+            'Salmon': {'cal': 208, 'p': 20, 'c': 0, 'f': 13, 'gi': 0, 'dosha': {'vata': 'good', 'pitta': 'bad', 'kapha': 'good'}, 'tags': ['fish', 'fatty_fish', 'omega3']},
+            'Tuna': {'cal': 132, 'p': 28, 'c': 0, 'f': 1, 'gi': 0, 'dosha': {'vata': 'good', 'pitta': 'good', 'kapha': 'good'}, 'tags': ['fish', 'lean']},
+            'Eggs': {'cal': 155, 'p': 13, 'c': 1.1, 'f': 11, 'gi': 0, 'dosha': {'vata': 'good', 'pitta': 'neutral', 'kapha': 'bad'}, 'tags': ['vegetarian', 'eggs']},
+            'Egg Whites': {'cal': 52, 'p': 11, 'c': 0.7, 'f': 0.2, 'gi': 0, 'dosha': {'vata': 'bad', 'pitta': 'good', 'kapha': 'good'}, 'tags': ['vegetarian', 'lean']},
+            'Tofu': {'cal': 76, 'p': 8, 'c': 1.9, 'f': 4.8, 'gi': 15, 'dosha': {'vata': 'bad', 'pitta': 'good', 'kapha': 'good'}, 'tags': ['vegan', 'plant_protein', 'soy']},
+            'Tempeh': {'cal': 192, 'p': 20.3, 'c': 7.6, 'f': 10.8, 'gi': 15, 'dosha': {'vata': 'neutral', 'pitta': 'good', 'kapha': 'good'}, 'tags': ['vegan', 'plant_protein', 'fermented']},
+            'Lentils (Cooked)': {'cal': 116, 'p': 9, 'c': 20, 'f': 0.4, 'gi': 29, 'dosha': {'vata': 'bad', 'pitta': 'good', 'kapha': 'good'}, 'tags': ['vegan', 'legume']},
+            'Chickpeas (Cooked)': {'cal': 164, 'p': 8.9, 'c': 27.4, 'f': 2.6, 'gi': 28, 'dosha': {'vata': 'bad', 'pitta': 'good', 'kapha': 'good'}, 'tags': ['vegan', 'legume']},
+            'Moong Dal': {'cal': 105, 'p': 7, 'c': 18, 'f': 0.3, 'gi': 25, 'dosha': {'vata': 'good', 'pitta': 'good', 'kapha': 'good'}, 'tags': ['vegan', 'legume', 'tridoshic']},
+            'Paneer': {'cal': 265, 'p': 18, 'c': 1.2, 'f': 20.8, 'gi': 20, 'dosha': {'vata': 'good', 'pitta': 'bad', 'kapha': 'bad'}, 'tags': ['vegetarian', 'dairy']},
+            'Greek Yogurt': {'cal': 59, 'p': 10, 'c': 3.6, 'f': 0.4, 'gi': 12, 'dosha': {'vata': 'good', 'pitta': 'neutral', 'kapha': 'bad'}, 'tags': ['vegetarian', 'dairy', 'probiotic']},
+
+            # --- GRAINS & CARBS ---
+            'Basmati Rice': {'cal': 130, 'p': 2.7, 'c': 28, 'f': 0.3, 'gi': 60, 'dosha': {'vata': 'good', 'pitta': 'good', 'kapha': 'bad'}, 'tags': ['vegan', 'grain']},
+            'Brown Rice': {'cal': 111, 'p': 2.6, 'c': 23, 'f': 0.9, 'gi': 50, 'dosha': {'vata': 'neutral', 'pitta': 'good', 'kapha': 'good'}, 'tags': ['vegan', 'grain', 'fiber']},
+            'Quinoa': {'cal': 120, 'p': 4.4, 'c': 21.3, 'f': 1.9, 'gi': 53, 'dosha': {'vata': 'good', 'pitta': 'good', 'kapha': 'good'}, 'tags': ['vegan', 'grain', 'high_protein']},
+            'Oats': {'cal': 68, 'p': 2.4, 'c': 12, 'f': 1.4, 'gi': 55, 'dosha': {'vata': 'good', 'pitta': 'good', 'kapha': 'bad'}, 'tags': ['vegan', 'grain']},
+            'Sweet Potato': {'cal': 86, 'p': 1.6, 'c': 20.1, 'f': 0.1, 'gi': 61, 'dosha': {'vata': 'good', 'pitta': 'good', 'kapha': 'bad'}, 'tags': ['vegan', 'vegetable', 'starchy']},
+            'Potato': {'cal': 77, 'p': 2, 'c': 17, 'f': 0.1, 'gi': 80, 'dosha': {'vata': 'bad', 'pitta': 'good', 'kapha': 'bad'}, 'tags': ['vegan', 'vegetable', 'starchy']},
+            'Barley': {'cal': 123, 'p': 2.3, 'c': 28, 'f': 0.4, 'gi': 28, 'dosha': {'vata': 'bad', 'pitta': 'good', 'kapha': 'good'}, 'tags': ['vegan', 'grain']},
+            'Millet': {'cal': 119, 'p': 3.5, 'c': 23.7, 'f': 1, 'gi': 71, 'dosha': {'vata': 'bad', 'pitta': 'good', 'kapha': 'good'}, 'tags': ['vegan', 'grain', 'drying']},
+
+            # --- VEGETABLES ---
+            'Spinach': {'cal': 23, 'p': 2.9, 'c': 3.6, 'f': 0.4, 'gi': 15, 'dosha': {'vata': 'bad', 'pitta': 'good', 'kapha': 'good'}, 'tags': ['vegan', 'vegetable', 'leafy']},
+            'Kale': {'cal': 49, 'p': 4.3, 'c': 8.8, 'f': 0.9, 'gi': 5, 'dosha': {'vata': 'bad', 'pitta': 'good', 'kapha': 'good'}, 'tags': ['vegan', 'vegetable', 'leafy']},
+            'Broccoli': {'cal': 34, 'p': 2.8, 'c': 6.6, 'f': 0.4, 'gi': 15, 'dosha': {'vata': 'bad', 'pitta': 'good', 'kapha': 'good'}, 'tags': ['vegan', 'vegetable', 'cruciferous']},
+            'Carrots': {'cal': 41, 'p': 0.9, 'c': 9.6, 'f': 0.2, 'gi': 39, 'dosha': {'vata': 'good', 'pitta': 'good', 'kapha': 'bad'}, 'tags': ['vegan', 'vegetable']},
+            'Cucumber': {'cal': 15, 'p': 0.7, 'c': 3.6, 'f': 0.1, 'gi': 15, 'dosha': {'vata': 'neutral', 'pitta': 'good', 'kapha': 'good'}, 'tags': ['vegan', 'vegetable', 'cooling']},
+            'Bitter Gourd': {'cal': 17, 'p': 1, 'c': 3.7, 'f': 0.2, 'gi': 10, 'dosha': {'vata': 'bad', 'pitta': 'good', 'kapha': 'good'}, 'tags': ['vegan', 'vegetable', 'bitter', 'diabetes_friendly']},
+            'Okra': {'cal': 33, 'p': 1.9, 'c': 7.5, 'f': 0.2, 'gi': 20, 'dosha': {'vata': 'good', 'pitta': 'good', 'kapha': 'good'}, 'tags': ['vegan', 'vegetable']},
+            'Zucchini': {'cal': 17, 'p': 1.2, 'c': 3.1, 'f': 0.3, 'gi': 15, 'dosha': {'vata': 'neutral', 'pitta': 'good', 'kapha': 'good'}, 'tags': ['vegan', 'vegetable']},
+
+            # --- FRUITS ---
+            'Apple': {'cal': 52, 'p': 0.3, 'c': 14, 'f': 0.2, 'gi': 36, 'dosha': {'vata': 'bad', 'pitta': 'good', 'kapha': 'good'}, 'tags': ['vegan', 'fruit']},
+            'Banana': {'cal': 89, 'p': 1.1, 'c': 22.8, 'f': 0.3, 'gi': 51, 'dosha': {'vata': 'good', 'pitta': 'good', 'kapha': 'bad'}, 'tags': ['vegan', 'fruit', 'sweet']},
+            'Berries': {'cal': 57, 'p': 0.7, 'c': 14, 'f': 0.3, 'gi': 25, 'dosha': {'vata': 'good', 'pitta': 'good', 'kapha': 'good'}, 'tags': ['vegan', 'fruit', 'antioxidant']},
+            'Mango': {'cal': 60, 'p': 0.8, 'c': 15, 'f': 0.4, 'gi': 51, 'dosha': {'vata': 'good', 'pitta': 'bad', 'kapha': 'bad'}, 'tags': ['vegan', 'fruit', 'sweet']},
+
+            # --- FATS & OILS ---
+            'Almonds': {'cal': 579, 'p': 21, 'c': 22, 'f': 50, 'gi': 0, 'dosha': {'vata': 'good', 'pitta': 'good', 'kapha': 'bad'}, 'tags': ['vegan', 'nut']},
+            'Walnuts': {'cal': 654, 'p': 15, 'c': 14, 'f': 65, 'gi': 0, 'dosha': {'vata': 'good', 'pitta': 'neutral', 'kapha': 'bad'}, 'tags': ['vegan', 'nut', 'omega3']},
+            'Ghee': {'cal': 900, 'p': 0, 'c': 0, 'f': 100, 'gi': 0, 'dosha': {'vata': 'good', 'pitta': 'good', 'kapha': 'neutral'}, 'tags': ['vegetarian', 'fat']},
+            'Coconut Oil': {'cal': 862, 'p': 0, 'c': 0, 'f': 100, 'gi': 0, 'dosha': {'vata': 'good', 'pitta': 'good', 'kapha': 'bad'}, 'tags': ['vegan', 'fat', 'cooling']},
+            'Olive Oil': {'cal': 884, 'p': 0, 'c': 0, 'f': 100, 'gi': 0, 'dosha': {'vata': 'good', 'pitta': 'neutral', 'kapha': 'neutral'}, 'tags': ['vegan', 'fat']},
+        }
+    
+    def get_foods_by_macro(self, macro_type: str, limit: int = 100) -> List[Dict]:
+        """Filter foods primarily rich in protein, carbs, or fats"""
+        if macro_type == 'protein':
+            return [k for k, v in self.db.items() if v['p'] > 10]
+        elif macro_type == 'carbs':
+            return [k for k, v in self.db.items() if v['c'] > 15]
+        elif macro_type == 'fats':
+            return [k for k, v in self.db.items() if v['f'] > 10]
+        return []
+
+    def filter_foods(self, dosha: str, restrictions: List[str], conditions: List[str]) -> Dict[str, List[str]]:
+        """Comprehensive filtering logic"""
+        allowed = {'protein': [], 'carbs': [], 'veggies': [], 'fats': [], 'fruits': []}
+        
+        for food, data in self.db.items():
+            # 1. Restriction Check
+            if 'vegetarian' in restrictions and 'meat' in data['tags']: continue
+            if 'vegetarian' in restrictions and 'fish' in data['tags']: continue
+            if 'vegan' in restrictions and ('meat' in data['tags'] or 'dairy' in data['tags'] or 'eggs' in data['tags']): continue
+            if 'keto' in restrictions and data['c'] > 10: continue # Strict Keto
+            if 'gluten-free' in restrictions and food in ['Barley', 'Wheat', 'Rye']: continue # Simple list for now
+            
+            # 2. Condition Check
+            if 'diabetes' in conditions and (data['gi'] > 55 or 'sweet' in data['tags']): continue
+            if 'hypertension' in conditions and 'processed' in data['tags']: continue # Assuming DB updated with processed tag
+            if 'thyroid' in conditions and 'cruciferous' in data['tags']: continue # Raw concern, but filtering for safety
+            
+            # 3. Dosha Check (Soft Filter - prioritize 'good' or 'neutral')
+            if data['dosha'][dosha] == 'bad': continue 
+
+            # 4. Categorize
+            if 'meat' in data['tags'] or 'fish' in data['tags'] or data['p'] > 15: allowed['protein'].append(food)
+            elif 'vegetable' in data['tags']: allowed['veggies'].append(food)
+            elif 'fruit' in data['tags']: allowed['fruits'].append(food)
+            elif 'fat' in data['tags'] or 'nut' in data['tags']: allowed['fats'].append(food)
+            elif 'grain' in data['tags'] or data['c'] > 15: allowed['carbs'].append(food)
+            
+        return allowed
+
+# Initialize Gemini
+
+class NutritionalEngine:
+    """
+    Advanced Logic for calculating precise nutrition and constructing meals
+    """
+    def __init__(self):
+        self.food_db = FoodDatabase()
+        
+    def calculate_needs(self, profile: Dict[str, Any]) -> Dict[str, Any]:
+        """Calculate TDEE, BMR, and Macro split based on advanced formulas"""
+        weight = profile.get('weight', 70)
+        height = profile.get('height', 170)
+        age = profile.get('age', 30)
+        gender = profile.get('gender', 'female')
+        activity = profile.get('activity_level', 'moderately active')
+        goal = profile.get('dietary_goal', 'maintenance')
+        
+        # Harris-Benedict Refined
+        if gender == 'male':
+            bmr = 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age)
+        else:
+            bmr = 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age)
+            
+        # Activity Multipliers
+        multipliers = {
+            'sedentary': 1.2,
+            'lightly active': 1.375,
+            'moderately active': 1.55,
+            'very active': 1.725,
+            'extremely active': 1.9
+        }
+        tdee = bmr * multipliers.get(activity, 1.55)
+        
+        # Goal Calculus
+        if goal == 'weight loss':
+            target = tdee * 0.80 # 20% deficit
+            macros = {'p': 0.40, 'c': 0.30, 'f': 0.30}
+        elif goal == 'muscle building':
+            target = tdee * 1.10 # 10% surplus
+            macros = {'p': 0.30, 'c': 0.45, 'f': 0.25}
+        else:
+            target = tdee
+            macros = {'p': 0.30, 'c': 0.40, 'f': 0.30}
+            
+        return {
+            'target_calories': int(target),
+            'bmr': int(bmr),
+            'tdee': int(tdee),
+            'macros_grams': {
+                'protein': int((target * macros['p']) / 4),
+                'carbs': int((target * macros['c']) / 4),
+                'fat': int((target * macros['f']) / 9)
+            }
+        }
+
+    def generate_day_plan(self, profile: Dict[str, Any], dosha: str) -> Dict[str, Any]:
+        """Construct a full day of eating using component-based logic"""
+        needs = self.calculate_needs(profile)
+        restrictions = profile.get('dietary_restrictions', [])
+        conditions = profile.get('medical_conditions', [])
+        
+        # Get allowed foods
+        allowed_foods = self.food_db.filter_foods(dosha, restrictions, conditions)
+        
+        # Check if lists are empty (fallback to generic if strict filters remove everything)
+        import random
+        def pick(category):
+            if allowed_foods[category]: 
+                return random.choice(allowed_foods[category])
+            return f"Generic {category} (Database Empty)"
+
+        # Meal Construction Logic
+        # Breakfast: Protein + Carb + Fruit/Veg
+        breakfast = f"{pick('protein')} with {pick('carbs')} and {pick('fruits')}"
+        
+        # Lunch: Protein + Carb + Veg + Fat
+        lunch = f"{pick('protein')} bowl with {pick('carbs')}, steamed {pick('veggies')}, dressed with {pick('fats')}"
+        
+        # Dinner: Protein + Veg + Fat (Low Carb typically)
+        dinner = f"Grilled/Baked {pick('protein')} with a large serving of {pick('veggies')} cooked in {pick('fats')}"
+        
+        # Snack: Fruit + Fat or Protein
+        snack = f"{pick('fruits')} with {pick('fats')}"
+
+        return {
+            'metrics': needs,
+            'meals': {
+                'breakfast': {'item': breakfast, 'cal': int(needs['target_calories'] * 0.25)},
+                'lunch': {'item': lunch, 'cal': int(needs['target_calories'] * 0.35)},
+                'dinner': {'item': dinner, 'cal': int(needs['target_calories'] * 0.30)},
+                'snacks': {'item': snack, 'cal': int(needs['target_calories'] * 0.10)}
+            }
+        }
+
+
+
+class ExerciseDatabase:
+    """Comprehensive Exercise Library with biomechanical metadata"""
+    def __init__(self):
+        self.db = {
+            # --- CHEST ---
+            'Pushups': {'type': 'push', 'target': 'chest', 'level': 'beginner', 'equip': 'bodyweight', 'impact': 'low'},
+            'Bench Press': {'type': 'push', 'target': 'chest', 'level': 'intermediate', 'equip': 'gym', 'impact': 'medium'},
+            'Dumbbell Flys': {'type': 'push', 'target': 'chest', 'level': 'beginner', 'equip': 'dumbbell', 'impact': 'low'},
+            
+            # --- BACK ---
+            'Pullups': {'type': 'pull', 'target': 'back', 'level': 'advanced', 'equip': 'bar', 'impact': 'medium'},
+            'Dumbbell Rows': {'type': 'pull', 'target': 'back', 'level': 'beginner', 'equip': 'dumbbell', 'impact': 'low'},
+            'Lat Pulldowns': {'type': 'pull', 'target': 'back', 'level': 'beginner', 'equip': 'gym', 'impact': 'low'},
+            
+            # --- LEGS ---
+            'Squats': {'type': 'legs', 'target': 'quads', 'level': 'intermediate', 'equip': 'bodyweight', 'impact': 'medium'},
+            'Lunges': {'type': 'legs', 'target': 'quads', 'level': 'beginner', 'equip': 'bodyweight', 'impact': 'medium'},
+            'Deadlifts': {'type': 'legs', 'target': 'hamstrings', 'level': 'advanced', 'equip': 'gym', 'impact': 'high'},
+            'Leg Press': {'type': 'legs', 'target': 'quads', 'level': 'beginner', 'equip': 'gym', 'impact': 'low'},
+            
+            # --- SHOULDERS ---
+            'Overhead Press': {'type': 'push', 'target': 'shoulders', 'level': 'intermediate', 'equip': 'dumbbell', 'impact': 'medium'},
+            'Lateral Raises': {'type': 'push', 'target': 'shoulders', 'level': 'beginner', 'equip': 'dumbbell', 'impact': 'low'},
+            
+            # --- ARMS ---
+            'Bicep Curls': {'type': 'pull', 'target': 'biceps', 'level': 'beginner', 'equip': 'dumbbell', 'impact': 'low'},
+            'Tricep Dips': {'type': 'push', 'target': 'triceps', 'level': 'intermediate', 'equip': 'bodyweight', 'impact': 'low'},
+            
+            # --- CARDIO ---
+            'Running': {'type': 'cardio', 'target': 'cardio', 'level': 'intermediate', 'equip': 'none', 'impact': 'high'},
+            'Walking': {'type': 'cardio', 'target': 'cardio', 'level': 'beginner', 'equip': 'none', 'impact': 'low'},
+            'Cycling': {'type': 'cardio', 'target': 'cardio', 'level': 'beginner', 'equip': 'bike', 'impact': 'low'},
+            'Burpees': {'type': 'cardio', 'target': 'hiit', 'level': 'advanced', 'equip': 'none', 'impact': 'high'},
+            'Swimming': {'type': 'cardio', 'target': 'full_body', 'level': 'intermediate', 'equip': 'pool', 'impact': 'low'},
+        }
+        
+    def get_exercises(self, criteria: Dict[str, Any]) -> List[str]:
+        """Filter exercises based on criteria"""
+        filtered = []
+        for name, data in self.db.items():
+            if criteria.get('equip') == 'home' and data['equip'] == 'gym': continue
+            if criteria.get('impact') == 'low' and data['impact'] == 'high': continue
+            if criteria.get('level') == 'beginner' and data['level'] == 'advanced': continue
+            
+            target = criteria.get('target_group')
+            if target and data['type'] != target and data['target'] != target: continue
+            
+            filtered.append(name)
+        return filtered
+
+class WorkoutEngine:
+    """Advanced Training Logic for Periodization and Splits"""
+    def __init__(self):
+        self.ex_db = ExerciseDatabase()
+        
+    def generate_split(self, profile: Dict[str, Any], dosha: str) -> Dict[str, Any]:
+        """Generate a scientific training split"""
+        days_available = int(profile.get('frequency', '3 days').split()[0]) if 'frequency' in profile and profile['frequency'] else 3
+        goal = profile.get('workout_goal', 'general fitness')
+        equipment = profile.get('equipment_access', 'home')
+        conditions = profile.get('medical_conditions', [])
+        
+        # Determine Split Structure
+        if days_available <= 3:
+            split_type = "Full Body"
+            structure = ['Full Body A', 'Rest', 'Full Body B', 'Rest', 'Full Body A', 'Rest', 'Rest']
+        elif days_available == 4:
+            split_type = "Upper / Lower"
+            structure = ['Upper Body', 'Lower Body', 'Rest', 'Upper Body', 'Lower Body', 'Rest', 'Rest']
+        else:
+            split_type = "Push / Pull / Legs"
+            structure = ['Push', 'Pull', 'Legs', 'Push', 'Pull', 'Legs', 'Rest']
+            
+        # Determine Intensity & Volume based on Dosha & Goal
+        if dosha == 'kapha' or goal == 'weight loss':
+            sets, reps = 4, "12-15 (High Volume)"
+            rest = "60 sec"
+        elif dosha == 'vata' or goal == 'strength':
+            sets, reps = 3, "6-8 (Heavy)"
+            rest = "120 sec"
+        else: # Pitta / Hypertrophy
+            sets, reps = 3, "8-12 (Moderate)"
+            rest = "90 sec"
+            
+        # Impact check
+        impact_preference = 'low' if ('arthritis' in conditions or 'hypertension' in conditions) else 'any'
+        
+        # Build Weekly Plan
+        weekly_plan = {}
+        days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+        
+        for i, day in enumerate(days):
+            workout_name = structure[i]
+            if workout_name == 'Rest':
+                weekly_plan[day] = "Active Recovery: Walking or Gentle Yoga"
+                continue
+                
+            # Filter exercises for this day
+            target_group = None
+            if 'Upper' in workout_name: target_group = ['chest', 'back', 'shoulders', 'arms']
+            elif 'Lower' in workout_name: target_group = ['legs']
+            elif 'Push' in workout_name: target_group = ['push']
+            elif 'Pull' in workout_name: target_group = ['pull']
+            elif 'Full' in workout_name: target_group = ['push', 'pull', 'legs']
+            
+            # Select Exercises
+            exercises = []
+            import random
+            
+            # Helper to fetch by exact group
+            def add_move(grp):
+                opts = self.ex_db.get_exercises({'target_group': grp, 'equip': equipment, 'impact': impact_preference})
+                if opts: exercises.append(f"{random.choice(opts)} ({sets} sets x {reps})")
+            
+            if isinstance(target_group, list):
+                for grp in target_group: add_move(grp)
+            else:
+                add_move(target_group)
+                
+            weekly_plan[day] = f"{workout_name}: " + ", ".join(exercises)
+            
+        return {
+            'structure': split_type,
+            'weekly_scedule': weekly_plan,
+            'parameters': {'sets': sets, 'reps': reps, 'rest': rest}
+        }
+
 
 class ConversationalHealthAssistant:
     """
@@ -36,6 +356,138 @@ class ConversationalHealthAssistant:
     
     def __init__(self):
         self.conversation_context = {}
+        # Initialize Advanced Engines
+        self.nutrition_engine = NutritionalEngine()
+        self.workout_engine = WorkoutEngine()
+        
+    # ... (extract_profile_info and needs_clarification remain same) ...
+
+    def generate_diet_plan(self, user_profile: Dict[str, Any], dosha_analysis: Dict[str, int]) -> Dict[str, Any]:
+        """
+        Generate robust personalized diet plan using NutritionalEngine
+        """
+        dominant_dosha = max(dosha_analysis, key=dosha_analysis.get)
+        
+        # Use the advanced engine
+        plan_data = self.nutrition_engine.generate_day_plan(user_profile, dominant_dosha)
+        metrics = plan_data['metrics']
+        
+        # Get dosha specific advice (keep existing small helper or move to DB)
+        dosha_foods = self._get_dosha_foods(dominant_dosha)
+        
+        return {
+            'bmi': "Calculated in Engine", # Wrapper to match schema
+            'target_calories': metrics['target_calories'],
+            'dominant_dosha': dominant_dosha,
+            'macros': {
+                'protein': f"{metrics['macros_grams']['protein']}g",
+                'carbs': f"{metrics['macros_grams']['carbs']}g",
+                'fats': f"{metrics['macros_grams']['fat']}g"
+            },
+            'foods_to_favor': dosha_foods['favor'][:5], # Keep top 5
+            'foods_to_avoid': dosha_foods['avoid'][:5],
+            'meal_plan': {
+                'breakfast': {'suggestion': plan_data['meals']['breakfast']['item'], 'calories': plan_data['meals']['breakfast']['cal']},
+                'lunch': {'suggestion': plan_data['meals']['lunch']['item'], 'calories': plan_data['meals']['lunch']['cal']},
+                'dinner': {'suggestion': plan_data['meals']['dinner']['item'], 'calories': plan_data['meals']['dinner']['cal']},
+                'snacks': {'suggestion': plan_data['meals']['snacks']['item'], 'calories': plan_data['meals']['snacks']['cal']}
+            },
+            'hydration': "3-4 Liters (Engine Rec)",
+            'conditions_considered': user_profile.get('medical_conditions', [])
+        }
+
+    def generate_workout_plan(self, user_profile: Dict[str, Any], dosha_analysis: Dict[str, int]) -> Dict[str, Any]:
+        """
+        Generate personalized workout plan using WorkoutEngine
+        """
+        dominant_dosha = max(dosha_analysis, key=dosha_analysis.get)
+        
+        # Use advanced engine
+        workout_data = self.workout_engine.generate_split(user_profile, dominant_dosha)
+        
+        return {
+            'dominant_dosha': dominant_dosha,
+            'workout_style': f"Split: {workout_data['structure']} ({workout_data['parameters']['reps']} reps)",
+            'recommended_activities': ["Detailed in Weekly Plan"], 
+            'weekly_plan': workout_data['weekly_scedule'],
+            'yoga_sequence': self._get_yoga_sequence(dominant_dosha, 30) # Keep yoga helper
+        }
+        
+    def extract_profile_info(self, query: str) -> Dict[str, Any]:
+        """Extract comprehensive user details from natural language query"""
+        info = {}
+        query_lower = query.lower()
+        import re
+        
+        # 1. Metrics Extraction
+        # Weight
+        weight_match = re.search(r'(\d+)\s*(?:kg|kgs)', query_lower)
+        if weight_match: info['weight'] = float(weight_match.group(1))
+        
+        # Height
+        height_match = re.search(r'(\d+)\s*(?:cm|cms)', query_lower)
+        if height_match: info['height'] = float(height_match.group(1))
+        
+        # Age
+        age_match = re.search(r'(\d+)\s*(?:years|yrs|year old)', query_lower)
+        if age_match: info['age'] = int(age_match.group(1))
+        
+        # Gender
+        if any(w in query_lower for w in ['female', 'woman', 'girl', 'lady']): info['gender'] = 'female'
+        elif any(w in query_lower for w in ['male', 'man', 'boy', 'guy']): info['gender'] = 'male'
+
+        # 2. Goal Extraction
+        if any(w in query_lower for w in ['lose weight', 'weight loss', 'fat loss', 'slim down']):
+            info['dietary_goal'] = 'weight loss'
+            info['workout_goal'] = 'weight loss'
+        elif any(w in query_lower for w in ['gain weight', 'muscle', 'bulk', 'mass']):
+            info['dietary_goal'] = 'muscle building'
+            info['workout_goal'] = 'strength'
+        elif 'maintain' in query_lower:
+             info['dietary_goal'] = 'maintenance'
+            
+        # 3. Dietary Restrictions Extraction
+        restrictions = []
+        restriction_map = {
+            'vegetarian': ['vegetarian', 'no meat', 'veg'],
+            'vegan': ['vegan', 'plant based'],
+            'keto': ['keto', 'ketogenic', 'low carb'],
+            'gluten-free': ['gluten free', 'no gluten', 'celiac'],
+            'dairy-free': ['dairy free', 'no dairy', 'lactose'],
+            'nut-free': ['nut free', 'no nuts'],
+            'paleo': ['paleo', 'caveman']
+        }
+        for res, keywords in restriction_map.items():
+            if any(k in query_lower for k in keywords):
+                restrictions.append(res)
+        
+        if restrictions:
+            info['dietary_restrictions'] = restrictions
+            
+        # 4. Medical Conditions Extraction
+        conditions = []
+        condition_map = {
+            'diabetes': ['diabetes', 'diabetic', 'sugar', 'insulin'],
+            'hypertension': ['bp', 'blood pressure', 'hypertension'],
+            'thyroid': ['thyroid', 'hypothyroid', 'hyperthyroid'],
+            'pcos': ['pcos', 'pcod'],
+            'cholesterol': ['cholesterol', 'high lipid'],
+            'arthritis': ['arthritis', 'joint pain']
+        }
+        for cond, keywords in condition_map.items():
+            if any(k in query_lower for k in keywords):
+                conditions.append(cond)
+        
+        if conditions:
+            info['medical_conditions'] = conditions
+            
+        # 5. Activity Level
+        if 'sedentary' in query_lower or 'desk job' in query_lower: info['activity_level'] = 'sedentary'
+        elif 'lightly' in query_lower or 'walking' in query_lower: info['activity_level'] = 'lightly active'
+        elif 'moderate' in query_lower or 'gym' in query_lower: info['activity_level'] = 'moderately active'
+        elif 'very active' in query_lower or 'athlete' in query_lower: info['activity_level'] = 'very active'
+        
+        return info
     
     def needs_clarification(self, query: str, user_profile: Dict[str, Any]) -> Optional[Dict[str, List[str]]]:
         """
@@ -83,48 +535,12 @@ class ConversationalHealthAssistant:
         has_questions = any(questions[cat] for cat in questions)
         return questions if has_questions else None
     
-    def generate_diet_plan(self, user_profile: Dict[str, Any], dosha_analysis: Dict[str, int]) -> Dict[str, Any]:
-        """
-        Generate personalized diet plan based on user profile and dosha
-        """
-        weight = user_profile.get('weight', 70)
-        height = user_profile.get('height', 170)
-        activity_level = user_profile.get('activity_level', 'moderately active')
-        goal = user_profile.get('dietary_goal', 'maintenance')
-        restrictions = user_profile.get('dietary_restrictions', [])
-        
-        # Calculate BMI
-        height_m = height / 100
-        bmi = weight / (height_m ** 2)
-        
-        # Calculate daily calorie needs
-        bmr = 10 * weight + 6.25 * height - 5 * user_profile.get('age', 30) + 5  # Mifflin-St Jeor for men
-        
-        activity_multipliers = {
-            'sedentary': 1.2,
-            'lightly active': 1.375,
-            'moderately active': 1.55,
-            'very active': 1.725,
-            'extremely active': 1.9
-        }
-        
-        tdee = bmr * activity_multipliers.get(activity_level, 1.55)
-        
-        # Adjust for goal
-        if goal == 'weight loss':
-            target_calories = tdee - 500
-        elif goal == 'weight gain' or goal == 'muscle building':
-            target_calories = tdee + 300
-        else:
-            target_calories = tdee
-        
-        # Determine dominant dosha
-        dominant_dosha = max(dosha_analysis, key=dosha_analysis.get)
-        
-        # Dosha-specific food recommendations
+    
+    def _get_dosha_foods(self, dosha: str) -> Dict[str, List[str]]:
+        """Return base food lists for dosha"""
         dosha_foods = {
             'vata': {
-                'favor': ['Warm cooked foods', 'Sweet fruits (bananas, berries)', 'Cooked vegetables', 'Whole grains (rice, oats)', 'Nuts and seeds', 'Ghee and oils', 'Warm milk', 'Root vegetables'],
+                'favor': ['Warm cooked foods', 'Sweet fruits (bananas, berries)', 'Cooked vegetables', 'Whole grains (rice, oats)', 'Nuts and seeds', 'Ghee', 'Warm milk', 'Root vegetables'],
                 'avoid': ['Cold foods', 'Raw vegetables', 'Dry foods', 'Caffeine', 'Beans (except mung)'],
                 'spices': ['Ginger', 'Cinnamon', 'Cardamom', 'Cumin', 'Black pepper']
             },
@@ -139,171 +555,9 @@ class ConversationalHealthAssistant:
                 'spices': ['Ginger', 'Black pepper', 'Cayenne', 'Turmeric', 'Mustard']
             }
         }
-        
-        foods = dosha_foods.get(dominant_dosha, dosha_foods['vata'])
-        
-        # Sample meal plan
-        meal_plan = {
-            'breakfast': self._generate_meal('breakfast', dominant_dosha, target_calories * 0.25),
-            'lunch': self._generate_meal('lunch', dominant_dosha, target_calories * 0.40),
-            'dinner': self._generate_meal('dinner', dominant_dosha, target_calories * 0.30),
-            'snacks': self._generate_meal('snacks', dominant_dosha, target_calories * 0.05)
-        }
-        
-        return {
-            'bmi': round(bmi, 1),
-            'bmr': round(bmr),
-            'tdee': round(tdee),
-            'target_calories': round(target_calories),
-            'dominant_dosha': dominant_dosha,
-            'macros': {
-                'protein': f"{round(target_calories * 0.30 / 4)}g (30%)",
-                'carbs': f"{round(target_calories * 0.40 / 4)}g (40%)",
-                'fats': f"{round(target_calories * 0.30 / 9)}g (30%)"
-            },
-            'foods_to_favor': foods['favor'],
-            'foods_to_avoid': foods['avoid'],
-            'recommended_spices': foods['spices'],
-            'meal_plan': meal_plan,
-            'hydration': f"{round(weight * 0.033, 1)}L per day",
-            'meal_timing': {
-                'breakfast': '7:00-8:00 AM',
-                'lunch': '12:00-1:00 PM',
-                'dinner': '6:00-7:00 PM'
-            }
-        }
-    
-    def _generate_meal(self, meal_type: str, dosha: str, calories: float) -> Dict[str, Any]:
-        """Generate sample meal based on dosha and calorie target"""
-        meals = {
-            'vata': {
-                'breakfast': 'Warm oatmeal with almonds, dates, and cinnamon',
-                'lunch': 'Kitchari (rice and mung dal) with ghee and steamed vegetables',
-                'dinner': 'Vegetable soup with whole grain bread and avocado',
-                'snacks': 'Warm milk with turmeric or handful of soaked nuts'
-            },
-            'pitta': {
-                'breakfast': 'Coconut chia pudding with sweet fruits',
-                'lunch': 'Quinoa salad with cucumber, mint, and cooling herbs',
-                'dinner': 'Steamed vegetables with basmati rice and coconut chutney',
-                'snacks': 'Fresh fruit smoothie or coconut water'
-            },
-            'kapha': {
-                'breakfast': 'Light vegetable poha or upma with ginger tea',
-                'lunch': 'Mixed vegetable curry with millet and minimal oil',
-                'dinner': 'Clear vegetable soup with quinoa',
-                'snacks': 'Apple with cinnamon or herbal tea'
-            }
-        }
-        
-        return {
-            'suggestion': meals.get(dosha, meals['vata']).get(meal_type, 'Balanced meal'),
-            'calories': round(calories),
-            'timing': self._get_meal_timing(meal_type)
-        }
-    
-    def _get_meal_timing(self, meal_type: str) -> str:
-        """Get recommended timing for meal"""
-        timings = {
-            'breakfast': '7:00-8:00 AM',
-            'lunch': '12:00-1:00 PM',
-            'dinner': '6:00-7:00 PM',
-            'snacks': 'Mid-morning or evening'
-        }
-        return timings.get(meal_type, 'As needed')
-    
-    def generate_workout_plan(self, user_profile: Dict[str, Any], dosha_analysis: Dict[str, int]) -> Dict[str, Any]:
-        """
-        Generate personalized workout plan based on user profile and dosha
-        """
-        fitness_level = user_profile.get('fitness_level', 'beginner')
-        goal = user_profile.get('workout_goal', 'general fitness')
-        available_time = user_profile.get('available_time', 30)
-        equipment = user_profile.get('equipment_access', 'home')
-        
-        # Determine dominant dosha
-        dominant_dosha = max(dosha_analysis, key=dosha_analysis.get)
-        
-        # Dosha-specific workout recommendations
-        dosha_workouts = {
-            'vata': {
-                'style': 'Gentle, grounding, and calming',
-                'recommended': ['Hatha Yoga', 'Tai Chi', 'Swimming', 'Walking', 'Light strength training'],
-                'avoid': ['Intense cardio', 'Excessive jumping', 'Overly competitive sports'],
-                'duration': '30-45 minutes',
-                'frequency': '4-5 days per week'
-            },
-            'pitta': {
-                'style': 'Moderate intensity, cooling, and non-competitive',
-                'recommended': ['Swimming', 'Cycling', 'Moderate yoga', 'Hiking', 'Team sports (non-competitive)'],
-                'avoid': ['Hot yoga', 'Intense competition', 'Excessive heat'],
-                'duration': '45-60 minutes',
-                'frequency': '5-6 days per week'
-            },
-            'kapha': {
-                'style': 'Vigorous, stimulating, and energizing',
-                'recommended': ['Running', 'HIIT', 'Ashtanga Yoga', 'Dance', 'Martial arts', 'Weight training'],
-                'avoid': ['Excessive rest', 'Slow movements', 'Water retention activities'],
-                'duration': '60-90 minutes',
-                'frequency': '6-7 days per week'
-            }
-        }
-        
-        workout_info = dosha_workouts.get(dominant_dosha, dosha_workouts['vata'])
-        
-        # Generate weekly plan
-        weekly_plan = self._generate_weekly_workout(fitness_level, goal, available_time, equipment, dominant_dosha)
-        
-        # Yoga recommendations
-        yoga_sequence = self._get_yoga_sequence(dominant_dosha, available_time)
-        
-        return {
-            'dominant_dosha': dominant_dosha,
-            'workout_style': workout_info['style'],
-            'recommended_activities': workout_info['recommended'],
-            'activities_to_avoid': workout_info['avoid'],
-            'recommended_duration': workout_info['duration'],
-            'recommended_frequency': workout_info['frequency'],
-            'weekly_plan': weekly_plan,
-            'yoga_sequence': yoga_sequence,
-            'warm_up': 'Always start with 5-10 minutes of light cardio and dynamic stretching',
-            'cool_down': 'End with 5-10 minutes of static stretching and deep breathing',
-            'rest_days': 'Include 1-2 rest days per week for recovery'
-        }
-    
-    def _generate_weekly_workout(self, level: str, goal: str, time: int, equipment: str, dosha: str) -> Dict[str, str]:
-        """Generate weekly workout schedule"""
-        if dosha == 'vata':
-            return {
-                'Monday': 'Gentle Hatha Yoga (30 min) + Walking (15 min)',
-                'Tuesday': 'Light strength training - Upper body (30 min)',
-                'Wednesday': 'Swimming or Water aerobics (30 min)',
-                'Thursday': 'Yoga for grounding (30 min) + Meditation (10 min)',
-                'Friday': 'Light strength training - Lower body (30 min)',
-                'Saturday': 'Nature walk or Tai Chi (40 min)',
-                'Sunday': 'Rest or gentle stretching (20 min)'
-            }
-        elif dosha == 'pitta':
-            return {
-                'Monday': 'Moderate cycling (40 min)',
-                'Tuesday': 'Vinyasa Yoga (45 min)',
-                'Wednesday': 'Swimming (45 min)',
-                'Thursday': 'Hiking or brisk walking (50 min)',
-                'Friday': 'Strength training - Full body (40 min)',
-                'Saturday': 'Team sport or recreational activity (60 min)',
-                'Sunday': 'Restorative yoga or rest'
-            }
-        else:  # kapha
-            return {
-                'Monday': 'HIIT workout (30 min) + Core exercises (15 min)',
-                'Tuesday': 'Ashtanga Yoga or Power Yoga (60 min)',
-                'Wednesday': 'Running intervals (40 min)',
-                'Thursday': 'Weight training - Upper body (45 min)',
-                'Friday': 'Dance or Zumba (60 min)',
-                'Saturday': 'Weight training - Lower body (45 min) + Cardio (20 min)',
-                'Sunday': 'Active recovery - Light jog or yoga (30 min)'
-            }
-    
+        return dosha_foods.get(dosha, dosha_foods['vata'])
+
+
     def _get_yoga_sequence(self, dosha: str, duration: int) -> List[str]:
         """Get dosha-specific yoga sequence"""
         sequences = {
@@ -335,6 +589,28 @@ class ConversationalHealthAssistant:
         }
         return sequences.get(dosha, sequences['vata'])
     
+    def calculate_weight_loss_timeline(self, current_weight: float, target_weight: float) -> Dict[str, Any]:
+        """
+        Calculate estimated timeline for safe weight loss (0.5-1.0 kg/week)
+        """
+        weight_diff = current_weight - target_weight
+        if weight_diff <= 0:
+            return None
+            
+        # Safe loss rate: 0.5 to 1.0 kg per week
+        weeks_min = weight_diff / 1.0
+        weeks_max = weight_diff / 0.5
+        
+        today = datetime.now()
+        date_min = today + timedelta(weeks=weeks_min)
+        date_max = today + timedelta(weeks=weeks_max)
+        
+        return {
+            "weeks_range": f"{int(weeks_min)}-{int(weeks_max)}",
+            "date_range": f"{date_min.strftime('%B %Y')} to {date_max.strftime('%B %Y')}",
+            "safe_rate": "0.5 - 1.0 kg/week"
+        }
+
     async def generate_conversational_response(
         self,
         query: str,
@@ -347,41 +623,140 @@ class ConversationalHealthAssistant:
         """
         query_lower = query.lower()
         actions = []
+        timeline_info = None
         
+        # 0. Extraction: Update profile with info from query
+        extracted_info = self.extract_profile_info(query)
+        if extracted_info:
+            user_profile.update(extracted_info)
+            # Retrigger dosha analysis if needed (not implemented here but good for future)
+
+        # 0.5 Clarification: Check if missing info for key intents
+        clarification_questions = self.needs_clarification(query, user_profile)
+        if clarification_questions:
+            # Flatten questions
+            all_questions = []
+            for cat, qs in clarification_questions.items():
+                all_questions.extend(qs)
+            
+            if all_questions:
+                return {
+                    'type': 'clarification',
+                    'message': "To provide the best personalized plan, I need a few details: " + " ".join(all_questions[:2]), # Ask max 2 at a time
+                    'conversation_id': "new"
+                }
+
         # 1. Intent: Water / Hydration
         if any(w in query_lower for w in ['water', 'hydrate', 'drink']):
              # Suggest setting water reminders
              actions.append({
                  "type": "create_reminder",
-                 "label": "Set Water Reminders (Every 2 hours)",
+                 "label": "Set Water Reminders",
                  "data": {
                      "title": "Drink Water",
                      "message": "Time to hydrate! Drink a glass of water.",
                      "frequency": "daily",
-                     "time": "09:00,11:00,13:00,15:00,17:00,19:00" # Frontend handle split or backend loop
+                     "default_times": ["09:00", "11:00", "13:00", "15:00", "17:00", "19:00"],
+                     "configurable": True
                  }
              })
 
         # 2. Intent: Weight Loss / Exercise
-        if any(w in query_lower for w in ['weight', 'fat', 'lose', 'slim', 'exercise', 'workout']):
+        if any(w in query_lower for w in ['weight', 'fat', 'lose', 'slim', 'exercise', 'workout', 'diet']):
+             # Check if we have goal info to calculate timeline
+             current_weight = user_profile.get('weight')
+             # Simple heuristic: if query contains "lose weight" and we have current weight, assume a standard target or ask
+             
              # Calculate generic schedule based on profile (or default)
              actions.append({
                  "type": "create_reminder",
-                 "label": "Set Daily Morning Workout (7:00 AM)",
+                 "label": "Set Workout Reminders",
                  "data": {
-                     "title": "Morning Workout",
+                     "title": "Workout Session",
                      "message": "Time for your weight loss exercises!",
                      "frequency": "daily",
-                     "time": "07:00"
+                     "default_times": ["07:00"],
+                     "configurable": True
                  }
              })
              
-             # Also suggest generating a full plan (existing logic reused)
-             workout_plan = self.generate_workout_plan(user_profile, dosha_analysis)
-             # We could embed or just talk about it.
+             actions.append({
+                 "type": "create_reminder",
+                 "label": "Set Meal Reminders",
+                 "data": {
+                     "title": "Healthy Meal",
+                     "message": "Time for a nutritious balanced meal.",
+                     "frequency": "daily",
+                     "default_times": ["08:00", "13:00", "19:00"],
+                     "configurable": True
+                 }
+             })
+             
+             # Also suggest generating a full plan (existing logic reused via text generation context)
+             
+             # Timeline Logic
+             # For now, let's assume a dummy target if not specified to show the capability, 
+             # or purely rely on profile if 'target_weight' existed (it doesn't in current schema, so we estimate)
+             # Let's assume a 5kg loss goal for the timeline example if not specified
+             target_weight = current_weight - 5 if current_weight else None
+             
+             if current_weight and target_weight:
+                 timeline = self.calculate_weight_loss_timeline(current_weight, target_weight)
+                 if timeline:
+                     timeline_info = f"Based on a safe weight loss rate of {timeline['safe_rate']}, you could reach your goal between {timeline['date_range']} ({timeline['weeks_range']} weeks)."
+                     
+                     # Add Doctor Consultation Fallback
+                     actions.append({
+                         "type": "find_practitioner",
+                         "label": "Consult a Dietitian (If no results by " + timeline['weeks_range'].split('-')[0] + " weeks)",
+                         "data": {
+                             "specialization": "Dietitian"
+                         }
+                     })
 
-        # 3. Intent: Medical Help / Doctor
-        if any(w in query_lower for w in ['doctor', 'pain', 'sick', 'ill', 'fever', 'appointment', 'consult']):
+        # 3. Intent: Medical Conditions (Diabetes, Hypertension, etc.)
+        # Broader catch for specific conditions
+        medical_conditions = {
+            'diabetes': {'specialist': 'Endocrinologist', 'avoid': 'Sugar, refined carbs, sugary drinks', 'favor': 'Leafy greens, whole grains, fiber-rich foods'},
+            'sugar': {'specialist': 'Endocrinologist', 'avoid': 'Sugar, sweets, soda', 'favor': 'Vegetables, protein, water'}, # Colloquial for diabetes
+            'bp': {'specialist': 'Cardiologist', 'avoid': 'Sodium (salt), processed foods, caffeine', 'favor': 'Fruits, vegetables, low-fat dairy'},
+            'blood pressure': {'specialist': 'Cardiologist', 'avoid': 'Salt, fried foods', 'favor': 'Bananas, spinach, oats'},
+            'thyroid': {'specialist': 'Endocrinologist', 'avoid': 'Processed foods, gluten (sometimes)', 'favor': 'Iodine-rich foods (if not hyper), selenium'},
+            'pcos': {'specialist': 'Gynecologist', 'avoid': 'Sugar, refined carbs', 'favor': 'Whole foods, fiber'}
+        }
+        
+        detected_condition = next((cond for cond in medical_conditions if cond in query_lower), None)
+        
+        if detected_condition:
+            info = medical_conditions[detected_condition]
+            
+            # Action: Consult Specialist
+            actions.append({
+                "type": "find_practitioner",
+                "label": f"Consult a {info['specialist']}",
+                "data": {
+                    "specialization": info['specialist']
+                }
+            })
+            
+            # Action: Medication Reminder (Generic)
+            actions.append({
+                "type": "create_reminder",
+                "label": "Set Medication/Checkup Reminder",
+                "data": {
+                    "title": "Medication / Checkup",
+                    "message": "Time for your medication or health check.",
+                    "frequency": "daily",
+                    "default_times": ["09:00", "21:00"],
+                    "configurable": True
+                }
+            })
+            
+            # Add specific context for the prompt
+            timeline_info = f"**Dietary Tip for {detected_condition.title()}:** Avoid {info['avoid']}. Favor {info['favor']}."
+
+        # 4. Intent: Medical Help / Doctor (General)
+        if any(w in query_lower for w in ['doctor', 'pain', 'sick', 'ill', 'fever', 'appointment', 'consult']) and not detected_condition:
              # Suggest finding a doctor
              actions.append({
                  "type": "find_practitioner",
@@ -391,35 +766,105 @@ class ConversationalHealthAssistant:
                  }
              })
 
+        # 5. Intent: Specific Plan Request (AGGRESSIVE ROUTING)
+        response_type = 'conversation'
+        plan_data = None
+        plan_message = ""
+        
+        # Broad keywords for plan generation
+        diet_keywords = ['diet', 'meal', 'food', 'eating', 'nutrition', 'recipe']
+        workout_keywords = ['workout', 'exercise', 'gym', 'training', 'fitness', 'routine']
+        action_keywords = ['plan', 'chart', 'table', 'schedule', 'give', 'suggest', 'help', 'want', 'need']
+        
+        is_diet_request = any(k in query_lower for k in diet_keywords) and any(a in query_lower for a in action_keywords)
+        is_workout_request = any(k in query_lower for k in workout_keywords) and any(a in query_lower for a in action_keywords)
+        
+        # Prioritize Diet if ambiguous "help me lose weight" -> Diet usually first
+        if 'lose weight' in query_lower and not is_workout_request:
+            is_diet_request = True
+
+        if is_diet_request:
+            response_type = 'diet_plan'
+            try:
+                plan_data = self.generate_diet_plan(user_profile, dosha_analysis)
+                plan_message = f"Here is a fully personalized diet plan based on your profile (BMI, Dosha, Conditions)."
+                if plan_data['conditions_considered']:
+                    plan_message += f"\n\n**Considered Conditions:** {', '.join(plan_data['conditions_considered'])}"
+            except Exception as e:
+                logger.error(f"Diet Plan Generation Error: {e}")
+                response_type = 'conversation' # Fallback
+                plan_message = f"I struggled to generate a detailed diet plan (Error: {str(e)}). However, generic advice is: Eat fresh, whole foods suitable for your body type."
+
+            if timeline_info:
+                plan_message += f"\n\n{timeline_info}"
+                
+        elif is_workout_request:
+            response_type = 'workout_plan'
+            try:
+                plan_data = self.generate_workout_plan(user_profile, dosha_analysis)
+                plan_message = f"Here is a personalized workout routine tailored to your goals and dosha."
+            except Exception as e:
+                logger.error(f"Workout Plan Generation Error: {e}")
+                response_type = 'conversation'
+                plan_message = "I couldn't generate the full table, but keeping active is key!"
+                
+            if timeline_info:
+                plan_message += f"\n\n{timeline_info}"
+
         # Generate text response using Gemini or Templates
         conversation_context = f"""
         User Profile: {user_profile}
         Dosha: {dosha_analysis}
         Query: {query}
-        Actions Proposed: {[a['label'] for a in actions]}
+        Proposed Actions: {[a['label'] for a in actions]}
+        Additional Info: {timeline_info}
         """
         
         reply_text = ""
-        if model:
-            try:
-                base_prompt = "You are a helpful AyurSutra Health Agent. The user asked: " + query + ". "
-                if actions:
-                    base_prompt += f"You have proposed these actions: {[a['label'] for a in actions]}. Explain why they are good."
-                else:
-                    base_prompt += "Provide helpful health advice."
-                
-                resp = model.generate_content(base_prompt)
-                reply_text = resp.text
-            except Exception as e:
-                logger.error(f"Gemini Error: {e}")
-                reply_text = "I can help you with that. I've also suggested some actions for you below."
+        
+        # Only use Gemini if we don't have a specific plan type, OR to generate the intro message for the plan
+        if response_type == 'conversation':
+            if model:
+                try:
+                    base_prompt = f"You are a helpful AyurSutra Health Agent. The user asked: '{query}'. "
+                    
+                    if detected_condition:
+                         base_prompt += f"IMPORTANT: The user mentioned '{detected_condition}'. Provide helpful dietary and lifestyle advice suitable for this condition properly referencing Ayurveda where applicable. "
+                         base_prompt += "ALWAYS start with a disclaimer: 'I am an AI assistant, not a doctor. Please consult a medical professional for advice.' "
+                         base_prompt += f"Use this info if helpful: {timeline_info}. "
+                    
+                    if timeline_info and not detected_condition: # For weight loss flow
+                        base_prompt += f"Include this timeline information in your response: {timeline_info}. "
+                        base_prompt += "Mention that if they don't see results by then, they should consult a doctor (use the provided action). "
+                    
+                    if actions:
+                        base_prompt += f"You have proposed these actions: {[a['label'] for a in actions]}. Explain why they are good."
+                    
+                    base_prompt += " Provide helpful health advice based on their profile and dosha."
+                    
+                    resp = model.generate_content(base_prompt)
+                    reply_text = resp.text
+                except Exception as e:
+                    logger.error(f"Gemini Error: {e}")
+                    reply_text = "I can help you with that. I've also suggested some actions for you below."
+                    if timeline_info:
+                        reply_text += f"\n\n{timeline_info}"
+            else:
+                 reply_text = "I've analyzed your request. Please check the suggested actions below."
+                 if timeline_info:
+                     reply_text += f"\n\n{timeline_info}"
         else:
-             reply_text = "I've analyzed your request. Please check the suggested actions below."
+            
+            reply_text = plan_message
 
         return {
-            'reply': reply_text,
+            'type': response_type,
+            'reply': reply_text, # Used for conversation type
+            'message': reply_text, # Used for plan types by main.py
+            'data': plan_data,
             'actions': actions,
-            'conversation_id': "new" # Maintain ID in caller
+            'conversation_id': "new",
+            'extracted_info': extracted_info if 'extracted_info' in locals() else None
         }
 
 

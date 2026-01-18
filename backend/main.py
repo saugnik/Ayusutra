@@ -1494,7 +1494,7 @@ async def get_symptoms(
     
     return symptoms
 
-@app.post("/health/ask-ai", response_model=AIHealthResponse)
+@app.post("/health/ask-ai")
 async def ask_health_ai(
     request: AIHealthRequest,
     current_user: User = Depends(get_current_user),
@@ -1546,10 +1546,11 @@ async def ask_health_ai(
         PatientHealthLog.patient_id == patient.id
     ).order_by(PatientHealthLog.date.desc()).first()
     
+    def safe_dosha(val): return val if val is not None else 33
     dosha_analysis = {
-        "vata": latest_log.dosha_vata if latest_log else 33,
-        "pitta": latest_log.dosha_pitta if latest_log else 33,
-        "kapha": latest_log.dosha_kapha if latest_log else 34
+        "vata": safe_dosha(latest_log.dosha_vata) if latest_log else 33,
+        "pitta": safe_dosha(latest_log.dosha_pitta) if latest_log else 33,
+        "kapha": safe_dosha(latest_log.dosha_kapha) if latest_log else 34
     }
     
     # Build user profile from context and patient data
@@ -1559,6 +1560,12 @@ async def ask_health_ai(
         'medical_history': patient.medical_history,
         'allergies': patient.allergies
     })
+    
+    if latest_log:
+        user_profile['weight'] = latest_log.weight
+        user_profile['age'] = (datetime.utcnow() - patient.date_of_birth).days // 365 if patient.date_of_birth else 30
+        user_profile['hydration'] = latest_log.hydration
+        user_profile['sleep_score'] = latest_log.sleep_score
     
     try:
         # Use enhanced health assistant
@@ -1572,39 +1579,59 @@ async def ask_health_ai(
         )
         
         # Format response based on type
-        if response_data['type'] == 'clarification':
+        # Format response based on type
+        response_type = response_data.get('type', 'conversation')
+        
+        if response_type == 'clarification':
             # Use the pre-formatted message from enhanced assistant
             ai_answer = response_data['message']
-        elif response_data['type'] == 'diet_plan':
+        elif response_type == 'diet_plan':
             diet_plan = response_data['data']
-            ai_answer = f"{response_data['message']}\\n\\n"
-            ai_answer += f"📊 **Your Metrics:**\\n"
-            ai_answer += f"- BMI: {diet_plan['bmi']}\\n"
-            ai_answer += f"- Daily Calorie Target: {diet_plan['target_calories']} kcal\\n"
-            ai_answer += f"- Dominant Dosha: {diet_plan['dominant_dosha'].title()}\\n\\n"
-            ai_answer += f"🥗 **Macros:**\\n"
-            ai_answer += f"- Protein: {diet_plan['macros']['protein']}\\n"
-            ai_answer += f"- Carbs: {diet_plan['macros']['carbs']}\\n"
-            ai_answer += f"- Fats: {diet_plan['macros']['fats']}\\n\\n"
-            ai_answer += f"✅ **Foods to Favor:** {', '.join(diet_plan['foods_to_favor'][:5])}\\n\\n"
-            ai_answer += f"❌ **Foods to Avoid:** {', '.join(diet_plan['foods_to_avoid'][:5])}\\n\\n"
-            ai_answer += f"🍽️ **Sample Meal Plan:**\\n"
+            ai_answer = f"{response_data['message']}\n\n"
+            ai_answer += f"📊 **Your Metrics:**\n"
+            ai_answer += f"- BMI: {diet_plan['bmi']}\n"
+            ai_answer += f"- Daily Calorie Target: {diet_plan['target_calories']} kcal\n"
+            ai_answer += f"- Dominant Dosha: {diet_plan['dominant_dosha'].title()}\n\n"
+            ai_answer += f"🥗 **Macros:**\n"
+            ai_answer += f"- Protein: {diet_plan['macros']['protein']}\n"
+            ai_answer += f"- Carbs: {diet_plan['macros']['carbs']}\n"
+            ai_answer += f"- Fats: {diet_plan['macros']['fats']}\n\n"
+            ai_answer += f"✅ **Foods to Favor:** {', '.join(diet_plan['foods_to_favor'][:5])}\n\n"
+            ai_answer += f"❌ **Foods to Avoid:** {', '.join(diet_plan['foods_to_avoid'][:5])}\n\n"
+            ai_answer += f"🍽️ **Sample Meal Plan:**\n"
             for meal, details in diet_plan['meal_plan'].items():
-                ai_answer += f"- **{meal.title()}**: {details['suggestion']} ({details['calories']} kcal)\\n"
-            ai_answer += f"\\n💧 **Hydration:** {diet_plan['hydration']}\\n"
-        elif response_data['type'] == 'workout_plan':
+                ai_answer += f"- **{meal.title()}**: {details['suggestion']} ({details['calories']} kcal)\n"
+            ai_answer += f"\n💧 **Hydration:** {diet_plan['hydration']}\n"
+        elif response_type == 'workout_plan':
             workout_plan = response_data['data']
-            ai_answer = f"{response_data['message']}\\n\\n"
-            ai_answer += f"🏋️ **Workout Style:** {workout_plan['workout_style']}\\n\\n"
-            ai_answer += f"✅ **Recommended Activities:** {', '.join(workout_plan['recommended_activities'][:4])}\\n\\n"
-            ai_answer += f"📅 **Weekly Plan:**\\n"
+            ai_answer = f"{response_data['message']}\n\n"
+            ai_answer += f"🏋️ **Workout Style:** {workout_plan['workout_style']}\n\n"
+            ai_answer += f"✅ **Recommended Activities:** {', '.join(workout_plan['recommended_activities'][:4])}\n\n"
+            ai_answer += f"📅 **Weekly Plan:**\n"
             for day, activity in workout_plan['weekly_plan'].items():
-                ai_answer += f"- **{day}**: {activity}\\n"
-            ai_answer += f"\\n🧘 **Yoga Sequence:**\\n"
+                ai_answer += f"- **{day}**: {activity}\n"
+            ai_answer += f"\n🧘 **Yoga Sequence:**\n"
             for pose in workout_plan['yoga_sequence'][:5]:
-                ai_answer += f"- {pose}\\n"
+                ai_answer += f"- {pose}\n"
         else:
-            ai_answer = response_data['message']
+            # Default conversation
+            ai_answer = response_data.get('reply', response_data.get('message', 'I understood that.'))
+        
+        # Update extracted info if available
+        if response_data.get('extracted_info'):
+            info = response_data['extracted_info']
+            # Update latest log or create new if needed. For simplicity, update latest_log if exists
+            if latest_log:
+                if 'weight' in info: latest_log.weight = info['weight']
+                if 'hydration' in info: latest_log.hydration = info['hydration']
+                # Add other fields as needed
+                db.commit()
+        
+        # Set title for new conversations
+        if not conversation.title:
+            # Generate title from query
+            generated_title = request.question[:30] + "..." if len(request.question) > 30 else request.question
+            conversation.title = generated_title
         
         # Add AI response to conversation
         ai_message = {
@@ -1616,30 +1643,96 @@ async def ask_health_ai(
         
         db.commit()
         
-        return AIHealthResponse(
-            answer=ai_answer,
-            sources=response_data.get('sources', ["Enhanced Health Assistant"]),
-            conversation_id=conversation_id
-        )
+        return {
+            "answer": ai_answer,
+            "sources": response_data.get('sources', ["Enhanced Health Assistant"]),
+            "conversation_id": conversation_id,
+            "actions": response_data.get('actions', [])
+        }
         
     except Exception as e:
         logger.error(f"Enhanced AI health assistant error: {str(e)}")
+        import traceback
+        with open("backend_error.log", "w") as f:
+            f.write(f"ERROR AT {datetime.utcnow()}:\n")
+            f.write(traceback.format_exc())
+            f.write("\n")
         # Fallback to simple response
-        ai_answer = "I can help you with personalized diet plans, workout recommendations, and general health guidance. What would you like to know more about?"
+        ai_answer = "I encountered a processing error. However, your request is noted and I can still assist with general queries."
         
-        ai_message = {
-            "role": "assistant",
-            "content": ai_answer,
-            "timestamp": datetime.utcnow().isoformat()
+        try:
+            conversation.messages.append({
+                "role": "assistant",
+                "content": ai_answer,
+                "timestamp": datetime.utcnow().isoformat()
+            })
+            db.commit()
+        except:
+            db.rollback()
+        
+        return {
+            "answer": ai_answer,
+            "sources": ["Health Assistant (Fallback)"],
+            "conversation_id": conversation_id if conversation_id else "error",
+            "actions": []
         }
-        conversation.messages.append(ai_message)
-        db.commit()
+
+@app.get("/health/conversations")
+async def get_health_conversations(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get history of AI conversations"""
+    if current_user.role != UserRole.PATIENT:
+        raise HTTPException(status_code=403, detail="Only patients can access conversations")
+    
+    patient = db.query(Patient).filter(Patient.user_id == current_user.id).first()
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient profile not found")
         
-        return AIHealthResponse(
-            answer=ai_answer,
-            sources=["Health Assistant"],
-            conversation_id=conversation_id
-        )
+    conversations = db.query(AIConversation).filter(
+        AIConversation.patient_id == patient.id
+    ).order_by(AIConversation.updated_at.desc()).all()
+    
+    return [
+        {
+            "conversation_id": c.conversation_id,
+            "title": c.title,
+            "created_at": c.created_at,
+            "updated_at": c.updated_at
+        }
+        for c in conversations
+    ]
+
+@app.get("/health/conversations/{conversation_id}")
+async def get_health_conversation_detail(
+    conversation_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get specific conversation details"""
+    if current_user.role != UserRole.PATIENT:
+        raise HTTPException(status_code=403, detail="Only patients can access conversations")
+    
+    patient = db.query(Patient).filter(Patient.user_id == current_user.id).first()
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient profile not found")
+        
+    conversation = db.query(AIConversation).filter(
+        AIConversation.conversation_id == conversation_id,
+        AIConversation.patient_id == patient.id
+    ).first()
+    
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    return {
+        "conversation_id": conversation.conversation_id,
+        "title": conversation.title,
+        "messages": conversation.messages,
+        "created_at": conversation.created_at,
+        "updated_at": conversation.updated_at
+    }
 
 @app.get("/health/recommendations", response_model=HealthRecommendationsResponse)
 async def get_health_recommendations(
@@ -2185,6 +2278,28 @@ async def get_reminders(
     
     reminders = query.order_by(Reminder.created_at.desc()).all()
     return reminders
+
+@app.post("/api/reminders", response_model=ReminderResponse)
+async def create_reminder(
+    reminder: ReminderCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Create a new reminder
+    """
+    new_reminder = Reminder(
+        user_id=current_user.id,
+        title=reminder.title,
+        message=reminder.message,
+        frequency=reminder.frequency,
+        time=reminder.time,
+        is_active=True
+    )
+    db.add(new_reminder)
+    db.commit()
+    db.refresh(new_reminder)
+    return new_reminder
 
 
 

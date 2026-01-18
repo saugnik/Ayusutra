@@ -11,7 +11,7 @@ from sqlalchemy.orm import sessionmaker
 # Database URL - defaults to SQLite for development
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "sqlite:///./ayursutra.db"
+    "sqlite:///./ayursutra_v2.db"
 )
 
 # For PostgreSQL in production, use:
@@ -37,5 +37,14 @@ def get_db():
     db = SessionLocal()
     try:
         yield db
+    except Exception:
+        import traceback
+        from datetime import datetime
+        with open("backend_error.log", "a") as f:
+            f.write(f"DB CRASH AT {datetime.utcnow()}:\n")
+            f.write(traceback.format_exc())
+            f.write("\n")
+        db.rollback()
+        raise
     finally:
         db.close()

@@ -58,11 +58,40 @@ const ChatSupport = () => {
     // AI Chat state
     const [aiMessages, setAiMessages] = useState<any[]>([]);
     const [aiConversationId, setAiConversationId] = useState<string | null>(null);
+    const [aiHistory, setAiHistory] = useState<any[]>([]);
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
     const [notificationsList, setNotificationsList] = useState<Notification[]>([
         { id: 'CN1', type: 'reminder', title: 'Message from Practitioner', message: 'Dr. Priya Sharma sent you a message about your diet plan.', time: '10 mins ago', read: false },
         { id: 'CN2', type: 'alert', title: 'Health Update', message: 'New activity detected in your metrics.', time: '3 hours ago', read: true },
     ]);
+
+    useEffect(() => {
+        if (chatMode === 'ai') {
+            fetchAIHistory();
+        }
+    }, [chatMode, aiConversationId]); // Refresh list when ID changes (new chat created)
+
+    const fetchAIHistory = async () => {
+        try {
+            const response = await api.get('/health/conversations');
+            setAiHistory(response.data);
+        } catch (error) {
+            console.error("Failed to fetch AI history", error);
+        }
+    };
+
+    const loadConversation = async (id: string) => {
+        try {
+            setLoading(true);
+            const response = await api.get(`/health/conversations/${id}`);
+            setAiMessages(response.data);
+            setAiConversationId(id);
+        } catch (error) {
+            console.error("Failed to load conversation", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     // Sidebar items
     const sidebarItems = [
@@ -151,14 +180,14 @@ const ChatSupport = () => {
         setLoading(true);
 
         try {
-            const response = await api.post('/chat/ai-assistant', {
-                message: messageInput,
-                conversation_id: aiConversationId
+            const response = await api.post('/health/ask-ai', {
+                question: messageInput,
+                context: { conversation_id: aiConversationId }
             });
 
             const aiMessage = {
                 role: 'assistant',
-                content: response.data.reply,
+                content: response.data.answer,
                 timestamp: new Date().toISOString()
             };
 
@@ -257,16 +286,42 @@ const ChatSupport = () => {
                 </div>
             )}
 
-            {/* AI Assistant Info */}
+            {/* AI Assistant History */}
             {chatMode === 'ai' && (
-                <div className="p-6">
-                    <div className="text-center">
-                        <div className="w-16 h-16 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <Sparkles className="h-8 w-8 text-white" />
-                        </div>
-                        <h3 className="font-medium text-gray-900 dark:text-white mb-2">AI Health Assistant</h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Get instant answers to your health and wellness questions</p>
+                <div className="overflow-y-auto" style={{ height: 'calc(100vh - 200px)' }}>
+                    <div className="p-4 border-b border-gray-100 dark:border-gray-700">
+                        <button
+                            onClick={() => {
+                                setAiConversationId(null);
+                                setAiMessages([]);
+                                setNotificationsList([]); // clear fake notifs if any
+                            }}
+                            className="w-full py-2 px-4 bg-primary-50 text-primary-600 rounded-lg text-sm font-medium hover:bg-primary-100 transition-colors"
+                        >
+                            + New Conversation
+                        </button>
                     </div>
+                    {aiHistory.length === 0 ? (
+                        <p className="text-gray-500 text-center py-8 text-sm">No past conversations</p>
+                    ) : (
+                        aiHistory.map((chat) => (
+                            <div
+                                key={chat.conversation_id}
+                                onClick={() => loadConversation(chat.conversation_id)}
+                                className={`p-4 border-b border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${aiConversationId === chat.conversation_id ? 'bg-primary-50 dark:bg-primary-900/20' : ''}`}
+                            >
+                                <div className="flex items-center space-x-3">
+                                    <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center">
+                                        <Sparkles className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{chat.title}</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{new Date(chat.created_at).toLocaleDateString()}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    )}
                 </div>
             )}
         </div>

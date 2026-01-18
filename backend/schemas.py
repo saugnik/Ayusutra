@@ -483,6 +483,7 @@ class AIHealthResponse(BaseModel):
     answer: str
     sources: Optional[List[str]] = None
     conversation_id: str
+    actions: Optional[List[Dict[str, Any]]] = []
 
 class HealthRecommendation(BaseModel):
     category: str  # diet, lifestyle, herbs, therapy
