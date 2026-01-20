@@ -11,7 +11,7 @@ from sqlalchemy.orm import sessionmaker
 # Database URL - defaults to SQLite for development
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "sqlite:///./ayursutra_v2.db"
+    "sqlite:///./ayursutra.db"
 )
 
 # For PostgreSQL in production, use:

@@ -2421,37 +2421,50 @@ async def get_debug_db_data(db: Session = Depends(get_db)):
     """Fetch all DB data for the viewer"""
     stats = {}
     
-    # Tables to inspect
-    tables = {
-        "users": User,
-        "patients": Patient,
-        "practitioners": Practitioner,
-        "admins": Admin,
-        "appointments": Appointment,
-        "therapy_sessions": TherapySession
-    }
-    
-    output = {"stats": {}, "users": []}
-    
-    for name, model in tables.items():
-        count = db.query(func.count(model.id)).scalar()
-        output["stats"][name] = count
+    try:
+        # Tables to inspect
+        tables = {
+            "users": User,
+            "patients": Patient,
+            "practitioners": Practitioner,
+            "admins": Admin,
+            "appointments": Appointment,
+            "therapy_sessions": TherapySession
+        }
         
-    # Fetch all users with details
-    users = db.query(User).all()
-    user_list = []
-    for u in users:
-        user_list.append({
-            "id": u.id,
-            "full_name": u.full_name,
-            "email": u.email,
-            "role": u.role.value,
-            "last_login": u.last_login or "Never",
-            "is_active": u.is_active
-        })
-    output["users"] = user_list
-    
-    return output
+        output = {"stats": {}, "users": []}
+        
+        for name, model in tables.items():
+            count = db.query(model).count()
+            output["stats"][name] = count
+            
+        # Fetch all users with details
+        users = db.query(User).all()
+        user_list = []
+        for u in users:
+            try:
+                user_list.append({
+                    "id": u.id,
+                    "full_name": u.full_name,
+                    "email": u.email,
+                    "role": u.role.value if hasattr(u.role, 'value') else str(u.role),
+                    "last_login": u.last_login.strftime("%Y-%m-%d %H:%M:%S") if u.last_login else "Never",
+                    "is_active": u.is_active
+                })
+            except Exception as e:
+                print(f"Error serializing user {u.id}: {e}")
+                user_list.append({
+                    "id": u.id,
+                    "error": str(e)
+                })
+                
+        output["users"] = user_list
+        return output
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return JSONResponse(status_code=500, content={"detail": str(e), "trace": traceback.format_exc()})
 
 @app.delete("/debug/delete-user/{user_id}")
 async def debug_delete_user(user_id: int, db: Session = Depends(get_db)):
@@ -2476,6 +2489,6 @@ if __name__ == "__main__":
         "main:app",
         host="0.0.0.0",
         port=8001,
-        reload=False,
+        reload=True,
         log_level="info"
     )

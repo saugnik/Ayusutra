@@ -1,111 +1,4 @@
-// ... (keep existing imports)
-const [alarmsOpen, setAlarmsOpen] = useState(false);
-const [myReminders, setMyReminders] = useState<any[]>([]);
-
-useEffect(() => {
-    if (alarmsOpen) {
-        fetchReminders();
-    }
-}, [alarmsOpen]);
-
-const fetchReminders = async () => {
-    try {
-        const res = await api.get('/reminders');
-        setMyReminders(res.data);
-    } catch (err) {
-        console.error(err);
-    }
-};
-
-const handleDeleteReminder = async (id: number) => {
-    try {
-        await api.delete(`/reminders/${id}`);
-        setMyReminders(prev => prev.filter(r => r.id !== id));
-    } catch (err) {
-        console.error("Failed to delete reminder", err);
-    }
-};
-
-const handleDeleteConversation = async (e: React.MouseEvent, id: string) => {
-    e.stopPropagation(); // Prevent opening the chat
-    if (!window.confirm("Delete this conversation?")) return;
-    try {
-        await api.delete(`/health/conversations/${id}`);
-        setAiHistory(prev => prev.filter(c => c.conversation_id !== id));
-        if (aiConversationId === id) {
-            setAiConversationId(null);
-            setAiMessages([]);
-        }
-    } catch (err) {
-        console.error("Failed to delete conversation", err);
-    }
-};
-
-// ... (existing render code)
-
-return (
-    <div className="flex h-screen bg-gray-50">
-        {/* ... Sidebar ... */}
-
-        {/* Alarms Modal */}
-        {alarmsOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                <div className="bg-white rounded-xl p-6 w-96 max-h-[80vh] overflow-y-auto">
-                    <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-xl font-bold text-gray-800">My Alarms</h3>
-                        <button onClick={() => setAlarmsOpen(false)} className="text-gray-500 hover:text-gray-700">✕</button>
-                    </div>
-                    {myReminders.length === 0 ? (
-                        <p className="text-gray-500 text-center py-4">No active alarms.</p>
-                    ) : (
-                        <div className="space-y-3">
-                            {myReminders.map(reminder => (
-                                <div key={reminder.id} className="bg-gray-50 p-3 rounded-lg flex justify-between items-start border border-gray-100">
-                                    <div>
-                                        <p className="font-semibold text-gray-800">{reminder.title}</p>
-                                        <p className="text-sm text-gray-600">{reminder.time} ({reminder.frequency})</p>
-                                    </div>
-                                    <button
-                                        onClick={() => handleDeleteReminder(reminder.id)}
-                                        className="text-red-500 hover:text-red-700 bg-red-50 p-1 rounded"
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            </div>
-        )}
-
-        {/* ... Main Content ... */}
-        <div className="flex-1 flex flex-col h-full overflow-hidden relative">
-            {/* Header */}
-            <div className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6">
-                {/* ... (existing header content) ... */}
-                <div className="flex items-center space-x-3">
-                    {/* Add Alarm Button */}
-                    <button
-                        onClick={() => setAlarmsOpen(true)}
-                        className="bg-white border border-gray-300 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-50 flex items-center gap-2 transition-colors"
-                    >
-                        <Bell size={18} />
-                        <span className="hidden md:inline">Alarms</span>
-                    </button>
-                    {/* ... (existing switch buttons) ... */}
-                </div>
-            </div>
-
-            {/* ... Chat Area ... */}
-            {/* AI History Sidebar Item rendering update */}
-            {/* Find where aiHistory.map is calling and add Trash Item */}
-        </div>
-    </div>
-);
-};
-
-export default ChatSupport;
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useSubscription } from '../contexts/SubscriptionContext';
 import { useNavigate } from 'react-router-dom';
@@ -123,12 +16,14 @@ import {
     User,
     Users,
     Lock,
-    Unlock
+    Unlock,
+    Bell,
+    Trash2
 } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import api from '../services/api';
+import toast, { Toaster } from 'react-hot-toast';
 import NotificationDropdown, { Notification } from '../components/NotificationDropdown';
-import { Bell, Trash2 } from 'lucide-react';
 
 interface Practitioner {
     id: number;
@@ -191,18 +86,47 @@ const ChatSupport = () => {
         }
     };
 
-    const handleDeleteReminder = async (id: number) => {
+    const executeDeleteReminder = async (id: number) => {
         try {
             await api.delete(`/reminders/${id}`);
             setMyReminders(prev => prev.filter(r => r.id !== id));
+            toast.success('Reminder deleted successfully');
         } catch (err) {
             console.error("Failed to delete reminder", err);
+            toast.error('Failed to delete reminder');
         }
     };
 
-    const handleDeleteConversation = async (e: React.MouseEvent, id: string) => {
-        e.stopPropagation(); // Prevent opening the chat
-        if (!window.confirm("Delete this conversation?")) return;
+    const handleDeleteReminder = (id: number) => {
+        toast((t) => (
+            <div className="flex flex-col gap-2">
+                <p className="font-medium text-gray-800 dark:text-white">Delete this alarm?</p>
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => {
+                            toast.dismiss(t.id);
+                            executeDeleteReminder(id);
+                        }}
+                        className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition-colors"
+                    >
+                        Delete
+                    </button>
+                    <button
+                        onClick={() => toast.dismiss(t.id)}
+                        className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-1 rounded text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                    >
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        ), {
+            duration: 5000,
+            icon: '⏰',
+            className: 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xl'
+        });
+    };
+
+    const executeDeleteConversation = async (id: string) => {
         try {
             await api.delete(`/health/conversations/${id}`);
             setAiHistory(prev => prev.filter(c => c.conversation_id !== id));
@@ -210,9 +134,42 @@ const ChatSupport = () => {
                 setAiConversationId(null);
                 setAiMessages([]);
             }
+            toast.success('Conversation deleted successfully');
         } catch (err) {
             console.error("Failed to delete conversation", err);
+            toast.error('Failed to delete conversation');
         }
+    };
+
+    const handleDeleteConversation = (e: React.MouseEvent, id: string) => {
+        e.stopPropagation(); // Prevent opening the chat
+
+        toast((t) => (
+            <div className="flex flex-col gap-2">
+                <p className="font-medium text-gray-800 dark:text-white">Delete this conversation?</p>
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => {
+                            toast.dismiss(t.id);
+                            executeDeleteConversation(id);
+                        }}
+                        className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition-colors"
+                    >
+                        Delete
+                    </button>
+                    <button
+                        onClick={() => toast.dismiss(t.id)}
+                        className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-1 rounded text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                    >
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        ), {
+            duration: 5000,
+            icon: '🗑️',
+            className: 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xl'
+        });
     };
 
     useEffect(() => {
@@ -644,6 +601,47 @@ const ChatSupport = () => {
 
     return (
         <div className="flex h-screen bg-dashboard">
+            <Toaster
+                position="top-right"
+                toastOptions={{
+                    className: 'dark:bg-gray-800 dark:text-white',
+                    style: {
+                        maxWidth: '500px',
+                    },
+                }}
+            />
+            {/* Alarms Modal */}
+            {alarmsOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="bg-white rounded-xl p-6 w-96 max-h-[80vh] overflow-y-auto">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-xl font-bold text-gray-800">My Alarms</h3>
+                            <button onClick={() => setAlarmsOpen(false)} className="text-gray-500 hover:text-gray-700">✕</button>
+                        </div>
+                        {myReminders.length === 0 ? (
+                            <p className="text-gray-500 text-center py-4">No active alarms.</p>
+                        ) : (
+                            <div className="space-y-3">
+                                {myReminders.map(reminder => (
+                                    <div key={reminder.id} className="bg-gray-50 p-3 rounded-lg flex justify-between items-start border border-gray-100">
+                                        <div>
+                                            <p className="font-semibold text-gray-800">{reminder.title}</p>
+                                            <p className="text-sm text-gray-600">{reminder.time} ({reminder.frequency})</p>
+                                        </div>
+                                        <button
+                                            onClick={() => handleDeleteReminder(reminder.id)}
+                                            className="text-red-500 hover:text-red-700 bg-red-50 p-1 rounded"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
             <Sidebar items={sidebarItems} user={user} onLogout={handleLogout} />
 
             <div className="flex-1 flex flex-col overflow-hidden">
@@ -655,6 +653,15 @@ const ChatSupport = () => {
                     </div>
 
                     <div className="flex items-center space-x-4 relative">
+                        {/* Alarm Button */}
+                        <button
+                            onClick={() => setAlarmsOpen(true)}
+                            className="bg-white border border-gray-300 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                        >
+                            <Bell size={18} />
+                            <span className="hidden md:inline">Alarms</span>
+                        </button>
+
                         <button
                             onClick={() => setIsNotificationOpen(!isNotificationOpen)}
                             className="p-2 text-gray-400 hover:text-gray-500 relative"

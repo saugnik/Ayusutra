@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AyurSutra Database Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #2d3748;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            font-size: 1.1em;
+            margin-bottom: 40px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #2ba461 0%, #1e854c 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-card h3 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .stat-card p {
+            opacity: 0.95;
+            font-size: 1.1em;
+        }
+
+        .table-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .table-card {
+            border: 2px solid #e2e8f0;
+            border-radius: 15px;
+            padding: 25px;
+            background: #f7fafc;
+            transition: all 0.3s;
+        }
+
+        .table-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            border-color: #2ba461;
+        }
+
+        .table-card h3 {
+            color: #2d3748;
+            font-size: 1.4em;
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 3px solid #2ba461;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .table-icon {
+            font-size: 1.2em;
+        }
+
+        .table-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .info-item {
+            text-align: center;
+        }
+
+        .info-label {
+            color: #718096;
+            font-size: 0.85em;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            color: #2d3748;
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .status-empty {
+            background: #fed7d7;
+            color: #c53030;
+        }
+
+        .status-data {
+            background: #c6f6d5;
+            color: #2f855a;
+        }
+
+        .columns-list {
+            max-height: 250px;
+            overflow-y: auto;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 0.9em;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .column-item {
+            padding: 8px;
+            border-bottom: 1px solid #e2e8f0;
+            color: #4a5568;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .column-item:last-child {
+            border-bottom: none;
+        }
+
+        .column-bullet {
+            color: #2ba461;
+            font-weight: bold;
+        }
+
+        .section-title {
+            margin: 40px 0 20px 0;
+            color: #2d3748;
+            font-size: 1.8em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .refresh-btn {
+            background: linear-gradient(135deg, #2ba461 0%, #1e854c 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1em;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+            margin: 20px auto;
+            display: block;
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #718096;
+            font-style: italic;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 0.9em;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .data-table th {
+            background-color: #f7fafc;
+            color: #4a5568;
+            font-weight: 600;
+        }
+
+        .data-table tr:hover {
+            background-color: #f1f5f9;
+        }
+
+        .role-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+
+        .role-patient {
+            background: #ebf8ff;
+            color: #3182ce;
+        }
+
+        .role-practitioner {
+            background: #f0fff4;
+            color: #38a169;
+        }
+
+        .role-admin {
+            background: #fff5f5;
+            color: #e53e3e;
+        }
+
+        .delete-btn {
+            background-color: #fc8181;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: background 0.2s;
+        }
+
+        .delete-btn:hover {
+            background-color: #f56565;
+        }
+    </style>
+
+    <script>
+        const STATIC_DATA = {"stats": {"users": 36, "patients": 12, "practitioners": 16, "admins": 2, "appointments": 0, "therapy_sessions": 0}, "users": [{"id": 1, "full_name": "Dr. Priya Sharma", "email": "dr.sharma@ayursutra.com", "role": "PRACTITIONER", "last_login": "2026-01-15 03:06:07.342922", "is_active": true}, {"id": 2, "full_name": "Saugnik Aich", "email": "saugnikaich123@gmail.com", "role": "PATIENT", "last_login": "2026-01-21 00:41:55.322771", "is_active": true}, {"id": 3, "full_name": "Test Patient", "email": "patient@test.com", "role": "PATIENT", "last_login": "2026-01-13 15:57:45.305948", "is_active": true}, {"id": 4, "full_name": "Rajesh Kumar", "email": "rajesh.k@email.com", "role": "PATIENT", "last_login": "2026-01-13 07:32:20.960492", "is_active": true}, {"id": 5, "full_name": "demo", "email": "patient2@test.com", "role": "PATIENT", "last_login": "2026-01-13 17:09:32.334685", "is_active": true}, {"id": 6, "full_name": "saugnik aich", "email": "patient_123@test.com", "role": "PATIENT", "last_login": "Never", "is_active": true}, {"id": 7, "full_name": "saugnik aich", "email": "patient_1234@test.com", "role": "PRACTITIONER", "last_login": "Never", "is_active": true}, {"id": 8, "full_name": "newnew", "email": "newnew123@gmail.com", "role": "PRACTITIONER", "last_login": "2026-01-13 19:46:21.436752", "is_active": true}, {"id": 9, "full_name": "mm", "email": "mm3@gmail.com", "role": "ADMIN", "last_login": "2026-01-13 19:49:48.068430", "is_active": true}, {"id": 11, "full_name": "newwwww", "email": "saunewww@gmail.com", "role": "PRACTITIONER", "last_login": "Never", "is_active": true}, {"id": 12, "full_name": "Comprehensive Test User", "email": "comprehensive.test@example.com", "role": "PATIENT", "last_login": "2026-01-14 16:50:08.440515", "is_active": true}, {"id": 13, "full_name": "saugnik aich", "email": "saugni@gmail.com", "role": "PRACTITIONER", "last_login": "Never", "is_active": true}, {"id": 14, "full_name": "saugnik aich", "email": "sah123@gmail.com", "role": "PRACTITIONER", "last_login": "Never", "is_active": true}, {"id": 15, "full_name": "saugnik aich", "email": "sah1@gmail.com", "role": "PRACTITIONER", "last_login": "Never", "is_active": true}, {"id": 16, "full_name": "saugnik aich", "email": "sah1@gm.com", "role": "PRACTITIONER", "last_login": "Never", "is_active": true}, {"id": 17, "full_name": "saugnik aich", "email": "unique_2@example.com", "role": "PRACTITIONER", "last_login": "2026-01-15 02:55:20.336513", "is_active": true}, {"id": 18, "full_name": "Test Practitioner", "email": "test_prac_9356@example.com", "role": "PRACTITIONER", "last_login": "Never", "is_active": true}, {"id": 19, "full_name": "Test Practitioner", "email": "test_prac_7282@example.com", "role": "PRACTITIONER", "last_login": "Never", "is_active": true}, {"id": 20, "full_name": "Test Practitioner", "email": "test_prac_7303@example.com", "role": "PRACTITIONER", "last_login": "Never", "is_active": true}, {"id": 21, "full_name": "Quick Test", "email": "quicktest@example.com", "role": "PATIENT", "last_login": "Never", "is_active": true}, {"id": 22, "full_name": "Test Patient", "email": "p_flow_1768449014@test.com", "role": "PATIENT", "last_login": "2026-01-15 03:56:01.764942", "is_active": true}, {"id": 23, "full_name": "Test Patient", "email": "p_flow_1768449354@test.com", "role": "PATIENT", "last_login": "2026-01-15 03:56:03.795887", "is_active": true}, {"id": 24, "full_name": "Test Practitioner", "email": "dr_flow_1768449014@test.com", "role": "PRACTITIONER", "last_login": "2026-01-15 03:56:09.058039", "is_active": true}, {"id": 25, "full_name": "Test Practitioner", "email": "dr_flow_1768449354@test.com", "role": "PRACTITIONER", "last_login": "2026-01-15 03:56:11.124414", "is_active": true}, {"id": 26, "full_name": "Test Patient", "email": "p_flow_1768449412@test.com", "role": "PATIENT", "last_login": "2026-01-15 03:57:00.083909", "is_active": true}, {"id": 27, "full_name": "Test Practitioner", "email": "dr_flow_1768449412@test.com", "role": "PRACTITIONER", "last_login": "2026-01-15 03:57:07.244644", "is_active": true}, {"id": 28, "full_name": "Debug Practitioner", "email": "debug_timeout_1768453659@test.com", "role": "PRACTITIONER", "last_login": "Never", "is_active": true}, {"id": 29, "full_name": "Debug Practitioner", "email": "debug_timeout_1768453701@test.com", "role": "PRACTITIONER", "last_login": "Never", "is_active": true}, {"id": 30, "full_name": "Debug Practitioner", "email": "debug_timeout_1768453723@test.com", "role": "PRACTITIONER", "last_login": "Never", "is_active": true}, {"id": 31, "full_name": "Debug Practitioner", "email": "debug_timeout_1768453783@test.com", "role": "PRACTITIONER", "last_login": "Never", "is_active": true}, {"id": 32, "full_name": "Debug Practitioner", "email": "debug_timeout_1768453806@test.com", "role": "PRACTITIONER", "last_login": "Never", "is_active": true}, {"id": 33, "full_name": "Debug Doc", "email": "debug_timeout_1768453913@test.com", "role": "PRACTITIONER", "last_login": "2026-01-15 05:11:59.048030", "is_active": true}, {"id": 34, "full_name": "Test Pat", "email": "patient_403_test@test.com", "role": "PATIENT", "last_login": "2026-01-15 05:35:59.900096", "is_active": true}, {"id": 35, "full_name": "Test Agent User", "email": "testagent1@example.com", "role": "PATIENT", "last_login": "2026-01-16 10:31:35.809547", "is_active": true}, {"id": 36, "full_name": "Test Patient", "email": "test_patient@ayursutra.com", "role": "patient", "last_login": "Never", "is_active": true}, {"id": 37, "full_name": "System Super Admin", "email": "admin@ayursutra.com", "role": "ADMIN", "last_login": "2026-01-21 00:14:10.408522", "is_active": true}]};
+        
+        // Override fetch to return static data
+        window.originalFetch = window.fetch;
+        window.fetch = async (url) => {
+            if (url === '/debug/db-data') {
+                return {
+                    json: async () => STATIC_DATA
+                };
+            }
+            return window.originalFetch(url);
+        };
+    </script>
+    
+</head>
+
+<body>
+    <div class="container">
+        <h1>🗄️ AyurSutra Database</h1>
+        <p class="subtitle">Live Database Viewer</p>
+
+        <div class="stats">
+            <div class="stat-card">
+                <h3>11</h3>
+                <p>Total Tables</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="total-rows">0</h3>
+                <p>Total Rows</p>
+            </div>
+            <div class="stat-card">
+                <h3><span id="db-status">Checking...</span></h3>
+                <p>Status</p>
+            </div>
+            <button class="refresh-btn" onclick="fetchData()">🔄 Refresh Data</button>
+        </div>
+
+        <h2 class="section-title">👤 Registered Users</h2>
+        <div class="table-card" style="grid-column: 1 / -1; max-width: 100%;">
+            <div id="users-table-container">
+                <p style="text-align:center; padding: 20px;">Loading users...</p>
+            </div>
+        </div>
+
+        <h2 class="section-title">📋 Table Statistics</h2>
+
+        <div class="table-grid" id="tables-grid">
+            <!-- Table cards will be updated by JS -->
+            <div class="table-card" id="card-users">
+                <h3><span class="table-icon">👤</span> users</h3>
+                <div class="table-info">
+                    <div class="info-item">
+                        <div class="info-label">Columns</div>
+                        <div class="info-value">11</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Rows</div>
+                        <div class="info-value" id="count-users">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-card" id="card-patients">
+                <h3><span class="table-icon">🏥</span> patients</h3>
+                <div class="table-info">
+                    <div class="info-item">
+                        <div class="info-label">Columns</div>
+                        <div class="info-value">12</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Rows</div>
+                        <div class="info-value" id="count-patients">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-card" id="card-practitioners">
+                <h3><span class="table-icon">👨‍⚕️</span> practitioners</h3>
+                <div class="table-info">
+                    <div class="info-item">
+                        <div class="info-label">Columns</div>
+                        <div class="info-value">14</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Rows</div>
+                        <div class="info-value" id="count-practitioners">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-card" id="card-admins">
+                <h3><span class="table-icon">🛡️</span> admins</h3>
+                <div class="table-info">
+                    <div class="info-item">
+                        <div class="info-label">Columns</div>
+                        <div class="info-value">7</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Rows</div>
+                        <div class="info-value" id="count-admins">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-card" id="card-appointments">
+                <h3><span class="table-icon">📅</span> appointments</h3>
+                <div class="table-info">
+                    <div class="info-item">
+                        <div class="info-label">Columns</div>
+                        <div class="info-value">16</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Rows</div>
+                        <div class="info-value" id="count-appointments">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-card" id="card-therapy_sessions">
+                <h3><span class="table-icon">🧘</span> therapy_sessions</h3>
+                <div class="table-info">
+                    <div class="info-item">
+                        <div class="info-label">Columns</div>
+                        <div class="info-value">17</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Rows</div>
+                        <div class="info-value" id="count-therapy_sessions">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', fetchData);
+
+        async function fetchData() {
+            const statusEl = document.getElementById('db-status');
+            statusEl.innerText = "Connecting...";
+            statusEl.style.color = "orange";
+
+            try {
+                const response = await fetch('/debug/db-data');
+                const data = await response.json();
+
+                // Update Status
+                statusEl.innerText = "Connected";
+                statusEl.style.color = "#2ba461";
+
+                // Update Stats
+                let totalRows = 0;
+                for (const [table, count] of Object.entries(data.stats)) {
+                    totalRows += count;
+                    const countEl = document.getElementById(`count-${table}`);
+                    if (countEl) countEl.innerText = count;
+                }
+                document.getElementById('total-rows').innerText = totalRows;
+
+                // Render Users Table
+                renderUsersTable(data.users);
+
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                statusEl.innerText = "Error";
+                statusEl.style.color = "red";
+                document.getElementById('users-table-container').innerHTML = `<p style="color:red; text-align:center;">Failed to load data. Ensure backend is running.</p>`;
+            }
+        }
+
+        function renderUsersTable(users) {
+            if (!users || users.length === 0) {
+                document.getElementById('users-table-container').innerHTML = '<p style="text-align:center; padding: 20px;">No users found.</p>';
+                return;
+            }
+
+            let html = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Last Login</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            users.forEach(user => {
+                const roleLower = user.role.toLowerCase();
+                // Extract role if it is an object or enum string
+                let roleDisplay = user.role;
+                if (roleDisplay.includes('.')) roleDisplay = roleDisplay.split('.')[1];
+
+                const lastLogin = user.last_login === "Never" ? '<span style="color:#a0aec0">Never</span>' : new Date(user.last_login).toLocaleString();
+
+                html += `
+                    <tr>
+                        <td>#${user.id}</td>
+                        <td style="font-weight:600; color:#2d3748;">${user.full_name}</td>
+                        <td>${user.email}</td>
+                        <td><span class="role-badge role-${roleLower}">${roleDisplay}</span></td>
+                        <td>${lastLogin}</td>
+                        <td>${user.is_active ? '✅' : '❌'}</td>
+                        <td>
+                            <button class="delete-btn" onclick="deleteUser(${user.id}, '${user.email}')">🗑️ Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table>';
+            document.getElementById('users-table-container').innerHTML = html;
+        }
+
+        async function deleteUser(userId, userEmail) {
+            if (!confirm(`Are you sure you want to delete user #${userId} (${userEmail})?\nThis action cannot be undone.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/debug/delete-user/${userId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    alert('User deleted successfully!');
+                    fetchData(); // Refresh list
+                } else {
+                    const err = await response.json();
+                    alert('Failed to delete user: ' + (err.detail || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error("Error deleting user:", error);
+                alert("Error deleting user. Check console for details.");
+            }
+        }
+    </script>
+</body>
+
+</html>
