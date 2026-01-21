@@ -15,7 +15,7 @@ from fastapi.responses import JSONResponse, FileResponse, HTMLResponse
 from pydantic import BaseModel
 import uvicorn
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import func, text
 import requests
 
 from database import engine, SessionLocal, get_db
@@ -1343,46 +1343,6 @@ async def db_viewer():
     """Serve the database viewer HTML page"""
     return FileResponse("database_viewer.html")
 
-@app.get("/debug/db-data")
-async def get_db_data(db: Session = Depends(get_db)):
-    """Get database statistics and user data for the viewer"""
-    
-    # 1. Get counts
-    counts = {
-        "users": db.query(User).count(),
-        "patients": db.query(Patient).count(),
-        "practitioners": db.query(Practitioner).count(),
-        "admins": db.query(Admin).count(),
-        "appointments": db.query(Appointment).count(),
-        "therapy_sessions": db.query(TherapySession).count(),
-        "feedback": db.query(Feedback).count(),
-        "notifications": db.query(Notification).count(),
-        "system_settings": db.query(SystemSettings).count(),
-        "audit_logs": db.query(AuditLog).count()
-    }
-    
-    # 2. Get Users List (limited details for security)
-    users = db.query(User).all()
-    users_list = []
-    for u in users:
-        users_list.append({
-            "id": u.id,
-            "email": u.email,
-            "full_name": u.full_name,
-            "role": u.role.value if hasattr(u.role, 'value') else str(u.role),
-            "phone": u.phone,
-            "is_active": u.is_active,
-            "is_verified": u.is_verified,
-            "created_at": u.created_at.isoformat() if u.created_at else None,
-            "last_login": u.last_login.isoformat() if u.last_login else "Never"
-        })
-        
-    return {
-        "stats": counts,
-        "users": users_list,
-        "database_size": "Unknown" # Calculating file size would require os path access which is fine but keep it simple
-    }
-
 
 @app.delete("/debug/delete-user/{user_id}")
 async def delete_user(user_id: int, db: Session = Depends(get_db)):
@@ -2435,28 +2395,51 @@ async def get_debug_db_data(db: Session = Depends(get_db)):
         output = {"stats": {}, "users": []}
         
         for name, model in tables.items():
-            count = db.query(model).count()
-            output["stats"][name] = count
+            try:
+                count = db.query(model).count()
+                output["stats"][name] = count
+            except Exception as e:
+                print(f"Error counting {name}: {e}")
+                output["stats"][name] = f"Error: {str(e)[:50]}"
             
         # Fetch all users with details
-        users = db.query(User).all()
-        user_list = []
-        for u in users:
+        try:
+            users = db.query(User).all()
+            user_list = []
+            for u in users:
+                try:
+                    user_list.append({
+                        "id": u.id,
+                        "full_name": u.full_name,
+                        "email": u.email,
+                        "role": u.role.value if hasattr(u.role, 'value') else str(u.role),
+                        "last_login": u.last_login.strftime("%Y-%m-%d %H:%M:%S") if u.last_login else "Never",
+                        "is_active": u.is_active
+                    })
+                except Exception as e:
+                    print(f"Error serializing user {u.id}: {e}")
+                    user_list.append({
+                        "id": u.id,
+                        "error": str(e)
+                    })
+        except Exception as e:
+            print(f"Error querying users: {e}")
+            # Fallback: try to get users via raw SQL
             try:
-                user_list.append({
-                    "id": u.id,
-                    "full_name": u.full_name,
-                    "email": u.email,
-                    "role": u.role.value if hasattr(u.role, 'value') else str(u.role),
-                    "last_login": u.last_login.strftime("%Y-%m-%d %H:%M:%S") if u.last_login else "Never",
-                    "is_active": u.is_active
-                })
-            except Exception as e:
-                print(f"Error serializing user {u.id}: {e}")
-                user_list.append({
-                    "id": u.id,
-                    "error": str(e)
-                })
+                result = db.execute(text("SELECT id, full_name, email, role, last_login, is_active FROM users"))
+                user_list = []
+                for row in result:
+                    user_list.append({
+                        "id": row[0],
+                        "full_name": row[1],
+                        "email": row[2],
+                        "role": str(row[3]).upper() if row[3] else "UNKNOWN",
+                        "last_login": str(row[4]) if row[4] else "Never",
+                        "is_active": bool(row[5])
+                    })
+            except Exception as e2:
+                print(f"Error with raw SQL fallback: {e2}")
+                user_list = [{"error": f"Could not fetch users: {str(e)[:100]}"}]
                 
         output["users"] = user_list
         return output
