@@ -219,6 +219,7 @@ export interface DashboardStats {
     // Admin dashboard
     total_users?: number;
     total_practitioners?: number;
+    total_clinics?: number;   // Added - for admin dashboard clinic count
     recent_registrations?: number;
     system_health?: number;
 }

@@ -5753,3 +5753,2007 @@ FROM (SELECT practitioners.id AS practitioners_id, practitioners.user_id AS prac
 FROM practitioners) AS anon_1]
 (Background on this error at: https://sqlalche.me/e/20/e3q8)
 
+DB CRASH AT 2026-01-21 14:47:47.516273:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 432, in app
+    raise validation_error
+fastapi.exceptions.RequestValidationError: [{'type': 'missing', 'loc': ('body', 'question'), 'msg': 'Field required', 'input': {'query': 'Give me one short, inspiring Ayurvedic daily health tip (max 2 sentences) for general well-being. Do not use markdown.'}}]
+
+DB CRASH AT 2026-01-21 14:47:47.463490:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 432, in app
+    raise validation_error
+fastapi.exceptions.RequestValidationError: [{'type': 'missing', 'loc': ('body', 'question'), 'msg': 'Field required', 'input': {'query': 'Give me one short, inspiring Ayurvedic daily health tip (max 2 sentences) for general well-being. Do not use markdown.'}}]
+
+DB CRASH AT 2026-01-21 14:49:39.081777:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jws.py", line 269, in _load
+    signing_input, crypto_segment = jwt.rsplit(b".", 1)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: not enough values to unpack (expected 2, got 1)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\auth.py", line 54, in verify_token
+    payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jwt.py", line 222, in decode
+    decoded = self.decode_complete(
+        jwt,
+    ...<8 lines>...
+        leeway=leeway,
+    )
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jwt.py", line 156, in decode_complete
+    decoded = api_jws.decode_complete(
+        jwt,
+    ...<3 lines>...
+        detached_payload=detached_payload,
+    )
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jws.py", line 209, in decode_complete
+    payload, signing_input, header, signature = self._load(jwt)
+                                                ~~~~~~~~~~^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jws.py", line 272, in _load
+    raise DecodeError("Not enough segments") from err
+jwt.exceptions.DecodeError: Not enough segments
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 381, in app
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\dependencies\utils.py", line 615, in solve_dependencies
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\dependencies\utils.py", line 646, in solve_dependencies
+    solved = await run_in_threadpool(call, **solved_result.values)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\starlette\concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py", line 2476, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py", line 967, in run
+    result = context.run(func, *args)
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\auth.py", line 81, in get_current_user
+    token_data = verify_token(credentials.credentials)
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\auth.py", line 68, in verify_token
+    raise HTTPException(
+    ...<3 lines>...
+    )
+fastapi.exceptions.HTTPException: 401: Invalid authentication credentials
+
+DB CRASH AT 2026-01-21 14:49:39.449208:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jws.py", line 269, in _load
+    signing_input, crypto_segment = jwt.rsplit(b".", 1)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: not enough values to unpack (expected 2, got 1)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\auth.py", line 54, in verify_token
+    payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jwt.py", line 222, in decode
+    decoded = self.decode_complete(
+        jwt,
+    ...<8 lines>...
+        leeway=leeway,
+    )
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jwt.py", line 156, in decode_complete
+    decoded = api_jws.decode_complete(
+        jwt,
+    ...<3 lines>...
+        detached_payload=detached_payload,
+    )
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jws.py", line 209, in decode_complete
+    payload, signing_input, header, signature = self._load(jwt)
+                                                ~~~~~~~~~~^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jws.py", line 272, in _load
+    raise DecodeError("Not enough segments") from err
+jwt.exceptions.DecodeError: Not enough segments
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 381, in app
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\dependencies\utils.py", line 615, in solve_dependencies
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\dependencies\utils.py", line 646, in solve_dependencies
+    solved = await run_in_threadpool(call, **solved_result.values)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\starlette\concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py", line 2476, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py", line 967, in run
+    result = context.run(func, *args)
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\auth.py", line 81, in get_current_user
+    token_data = verify_token(credentials.credentials)
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\auth.py", line 68, in verify_token
+    raise HTTPException(
+    ...<3 lines>...
+    )
+fastapi.exceptions.HTTPException: 401: Invalid authentication credentials
+
+DB CRASH AT 2026-01-21 14:49:42.594229:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such column: practitioners.latitude
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 391, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 290, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\main.py", line 976, in get_clinics_aggregated
+    practitioners = db.query(Practitioner).all()
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\query.py", line 2704, in all
+    return self._iter().all()  # type: ignore
+           ~~~~~~~~~~^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+        params,
+        ^^^^^^^
+        execution_options={"_sa_orm_load_options": self.load_options},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 2249, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        conn,
+        ^^^^^
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+        statement, params or {}, execution_options=execution_options
+    )
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1419, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\elements.py", line 527, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2363, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such column: practitioners.latitude
+[SQL: SELECT practitioners.id AS practitioners_id, practitioners.user_id AS practitioners_user_id, practitioners.license_number AS practitioners_license_number, practitioners.specializations AS practitioners_specializations, practitioners.experience_years AS practitioners_experience_years, practitioners.qualification AS practitioners_qualification, practitioners.clinic_name AS practitioners_clinic_name, practitioners.clinic_address AS practitioners_clinic_address, practitioners.latitude AS practitioners_latitude, practitioners.longitude AS practitioners_longitude, practitioners.consultation_fee AS practitioners_consultation_fee, practitioners.availability_schedule AS practitioners_availability_schedule, practitioners.bio AS practitioners_bio, practitioners.rating AS practitioners_rating, practitioners.total_reviews AS practitioners_total_reviews, practitioners.is_verified AS practitioners_is_verified, practitioners.created_at AS practitioners_created_at, practitioners.updated_at AS practitioners_updated_at 
+FROM practitioners]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+
+DB CRASH AT 2026-01-21 15:22:12.583708:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 381, in app
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\dependencies\utils.py", line 646, in solve_dependencies
+    solved = await run_in_threadpool(call, **solved_result.values)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\starlette\concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py", line 2476, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py", line 967, in run
+    result = context.run(func, *args)
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\auth.py", line 150, in get_current_admin
+    raise HTTPException(
+    ...<2 lines>...
+    )
+fastapi.exceptions.HTTPException: 403: Access denied. Admin role required.
+
+DB CRASH AT 2026-01-21 15:22:14.264003:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 381, in app
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\dependencies\utils.py", line 646, in solve_dependencies
+    solved = await run_in_threadpool(call, **solved_result.values)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\starlette\concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py", line 2476, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py", line 967, in run
+    result = context.run(func, *args)
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\auth.py", line 150, in get_current_admin
+    raise HTTPException(
+    ...<2 lines>...
+    )
+fastapi.exceptions.HTTPException: 403: Access denied. Admin role required.
+
+DB CRASH AT 2026-01-21 17:25:38.264925:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 381, in app
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\dependencies\utils.py", line 646, in solve_dependencies
+    solved = await run_in_threadpool(call, **solved_result.values)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\starlette\concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py", line 2476, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py", line 967, in run
+    result = context.run(func, *args)
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\auth.py", line 150, in get_current_admin
+    raise HTTPException(
+    ...<2 lines>...
+    )
+fastapi.exceptions.HTTPException: 403: Access denied. Admin role required.
+
+DB CRASH AT 2026-01-21 17:25:38.749979:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 381, in app
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\dependencies\utils.py", line 646, in solve_dependencies
+    solved = await run_in_threadpool(call, **solved_result.values)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\starlette\concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py", line 2476, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py", line 967, in run
+    result = context.run(func, *args)
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\auth.py", line 150, in get_current_admin
+    raise HTTPException(
+    ...<2 lines>...
+    )
+fastapi.exceptions.HTTPException: 403: Access denied. Admin role required.
+
+DB CRASH AT 2026-01-21 17:25:48.861458:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 381, in app
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\dependencies\utils.py", line 646, in solve_dependencies
+    solved = await run_in_threadpool(call, **solved_result.values)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\starlette\concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py", line 2476, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py", line 967, in run
+    result = context.run(func, *args)
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\auth.py", line 150, in get_current_admin
+    raise HTTPException(
+    ...<2 lines>...
+    )
+fastapi.exceptions.HTTPException: 403: Access denied. Admin role required.
+
+DB CRASH AT 2026-01-21 17:30:02.304229:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jws.py", line 269, in _load
+    signing_input, crypto_segment = jwt.rsplit(b".", 1)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: not enough values to unpack (expected 2, got 1)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\auth.py", line 54, in verify_token
+    payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jwt.py", line 222, in decode
+    decoded = self.decode_complete(
+        jwt,
+    ...<8 lines>...
+        leeway=leeway,
+    )
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jwt.py", line 156, in decode_complete
+    decoded = api_jws.decode_complete(
+        jwt,
+    ...<3 lines>...
+        detached_payload=detached_payload,
+    )
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jws.py", line 209, in decode_complete
+    payload, signing_input, header, signature = self._load(jwt)
+                                                ~~~~~~~~~~^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jws.py", line 272, in _load
+    raise DecodeError("Not enough segments") from err
+jwt.exceptions.DecodeError: Not enough segments
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 381, in app
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\dependencies\utils.py", line 615, in solve_dependencies
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\dependencies\utils.py", line 646, in solve_dependencies
+    solved = await run_in_threadpool(call, **solved_result.values)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\starlette\concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py", line 2476, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py", line 967, in run
+    result = context.run(func, *args)
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\auth.py", line 81, in get_current_user
+    token_data = verify_token(credentials.credentials)
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\auth.py", line 68, in verify_token
+    raise HTTPException(
+    ...<3 lines>...
+    )
+fastapi.exceptions.HTTPException: 401: Invalid authentication credentials
+
+DB CRASH AT 2026-01-21 17:30:02.937215:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jws.py", line 269, in _load
+    signing_input, crypto_segment = jwt.rsplit(b".", 1)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: not enough values to unpack (expected 2, got 1)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\auth.py", line 54, in verify_token
+    payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jwt.py", line 222, in decode
+    decoded = self.decode_complete(
+        jwt,
+    ...<8 lines>...
+        leeway=leeway,
+    )
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jwt.py", line 156, in decode_complete
+    decoded = api_jws.decode_complete(
+        jwt,
+    ...<3 lines>...
+        detached_payload=detached_payload,
+    )
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jws.py", line 209, in decode_complete
+    payload, signing_input, header, signature = self._load(jwt)
+                                                ~~~~~~~~~~^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jws.py", line 272, in _load
+    raise DecodeError("Not enough segments") from err
+jwt.exceptions.DecodeError: Not enough segments
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 381, in app
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\dependencies\utils.py", line 615, in solve_dependencies
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\dependencies\utils.py", line 646, in solve_dependencies
+    solved = await run_in_threadpool(call, **solved_result.values)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\starlette\concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py", line 2476, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py", line 967, in run
+    result = context.run(func, *args)
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\auth.py", line 81, in get_current_user
+    token_data = verify_token(credentials.credentials)
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\auth.py", line 68, in verify_token
+    raise HTTPException(
+    ...<3 lines>...
+    )
+fastapi.exceptions.HTTPException: 401: Invalid authentication credentials
+
+DB CRASH AT 2026-01-21 17:32:56.407463:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 391, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 290, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\main.py", line 217, in login
+    raise HTTPException(
+    ...<2 lines>...
+    )
+fastapi.exceptions.HTTPException: 401: Invalid email or password
+
+DB CRASH AT 2026-01-21 18:19:34.863292:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 432, in app
+    raise validation_error
+fastapi.exceptions.RequestValidationError: [{'type': 'value_error', 'loc': ('body', 'email'), 'msg': "value is not a valid email address: The part after the @-sign contains invalid characters: '@'.", 'input': 'finaltest_unique_2@exaadmin@ayursutra.commple.com', 'ctx': {'reason': "The part after the @-sign contains invalid characters: '@'."}}]
+
+DB CRASH AT 2026-01-21 18:20:58.720834:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 391, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 290, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\main.py", line 217, in login
+    raise HTTPException(
+    ...<2 lines>...
+    )
+fastapi.exceptions.HTTPException: 401: Invalid email or password
+
+DB CRASH AT 2026-01-21 19:08:35.371252:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 391, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 290, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\main.py", line 217, in login
+    raise HTTPException(
+    ...<2 lines>...
+    )
+fastapi.exceptions.HTTPException: 401: Invalid email or password
+
+DB CRASH AT 2026-01-21 19:14:55.699030:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\sqltypes.py", line 1709, in _object_value_for_elem
+    return self._object_lookup[elem]  # type: ignore[return-value]
+           ~~~~~~~~~~~~~~~~~~~^^^^^^
+KeyError: 'patient'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 391, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 290, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\main.py", line 759, in get_all_users
+    users = query.offset(skip).limit(limit).all()
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\query.py", line 2704, in all
+    return self._iter().all()  # type: ignore
+           ~~~~~~~~~~~~~~~~^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 1774, in all
+    return self._allrows()
+           ~~~~~~~~~~~~~^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 548, in _allrows
+    rows = self._fetchall_impl()
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 1681, in _fetchall_impl
+    return self._real_result._fetchall_impl()
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 2275, in _fetchall_impl
+    return list(self.iterator)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\loading.py", line 220, in chunks
+    fetch = cursor._raw_all_rows()
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 541, in _raw_all_rows
+    return [make_row(row) for row in rows]
+            ~~~~~~~~^^^^^
+  File "lib/sqlalchemy/cyextension/resultproxy.pyx", line 22, in sqlalchemy.cyextension.resultproxy.BaseRow.__init__
+  File "lib/sqlalchemy/cyextension/resultproxy.pyx", line 79, in sqlalchemy.cyextension.resultproxy._apply_processors
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\sqltypes.py", line 1829, in process
+    value = self._object_value_for_elem(value)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\sqltypes.py", line 1711, in _object_value_for_elem
+    raise LookupError(
+    ...<7 lines>...
+    ) from err
+LookupError: 'patient' is not among the defined enum values. Enum name: userrole. Possible values: PATIENT, PRACTITIONE.., ADMIN
+
+DB CRASH AT 2026-01-21 19:18:19.788800:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\sqltypes.py", line 1709, in _object_value_for_elem
+    return self._object_lookup[elem]  # type: ignore[return-value]
+           ~~~~~~~~~~~~~~~~~~~^^^^^^
+KeyError: 'patient'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 391, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 290, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\main.py", line 759, in get_all_users
+    users = query.offset(skip).limit(limit).all()
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\query.py", line 2704, in all
+    return self._iter().all()  # type: ignore
+           ~~~~~~~~~~~~~~~~^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 1774, in all
+    return self._allrows()
+           ~~~~~~~~~~~~~^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 548, in _allrows
+    rows = self._fetchall_impl()
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 1681, in _fetchall_impl
+    return self._real_result._fetchall_impl()
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 2275, in _fetchall_impl
+    return list(self.iterator)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\loading.py", line 220, in chunks
+    fetch = cursor._raw_all_rows()
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 541, in _raw_all_rows
+    return [make_row(row) for row in rows]
+            ~~~~~~~~^^^^^
+  File "lib/sqlalchemy/cyextension/resultproxy.pyx", line 22, in sqlalchemy.cyextension.resultproxy.BaseRow.__init__
+  File "lib/sqlalchemy/cyextension/resultproxy.pyx", line 79, in sqlalchemy.cyextension.resultproxy._apply_processors
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\sqltypes.py", line 1829, in process
+    value = self._object_value_for_elem(value)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\sqltypes.py", line 1711, in _object_value_for_elem
+    raise LookupError(
+    ...<7 lines>...
+    ) from err
+LookupError: 'patient' is not among the defined enum values. Enum name: userrole. Possible values: PATIENT, PRACTITIONE.., ADMIN
+
+DB CRASH AT 2026-01-21 19:19:58.585472:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\sqltypes.py", line 1709, in _object_value_for_elem
+    return self._object_lookup[elem]  # type: ignore[return-value]
+           ~~~~~~~~~~~~~~~~~~~^^^^^^
+KeyError: 'patient'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 391, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 290, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\main.py", line 759, in get_all_users
+    users = query.offset(skip).limit(limit).all()
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\query.py", line 2704, in all
+    return self._iter().all()  # type: ignore
+           ~~~~~~~~~~~~~~~~^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 1774, in all
+    return self._allrows()
+           ~~~~~~~~~~~~~^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 548, in _allrows
+    rows = self._fetchall_impl()
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 1681, in _fetchall_impl
+    return self._real_result._fetchall_impl()
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 2275, in _fetchall_impl
+    return list(self.iterator)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\loading.py", line 220, in chunks
+    fetch = cursor._raw_all_rows()
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 541, in _raw_all_rows
+    return [make_row(row) for row in rows]
+            ~~~~~~~~^^^^^
+  File "lib/sqlalchemy/cyextension/resultproxy.pyx", line 22, in sqlalchemy.cyextension.resultproxy.BaseRow.__init__
+  File "lib/sqlalchemy/cyextension/resultproxy.pyx", line 79, in sqlalchemy.cyextension.resultproxy._apply_processors
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\sqltypes.py", line 1829, in process
+    value = self._object_value_for_elem(value)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\sqltypes.py", line 1711, in _object_value_for_elem
+    raise LookupError(
+    ...<7 lines>...
+    ) from err
+LookupError: 'patient' is not among the defined enum values. Enum name: userrole. Possible values: PATIENT, PRACTITIONE.., ADMIN
+
+DB CRASH AT 2026-01-21 19:22:27.682944:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\sqltypes.py", line 1709, in _object_value_for_elem
+    return self._object_lookup[elem]  # type: ignore[return-value]
+           ~~~~~~~~~~~~~~~~~~~^^^^^^
+KeyError: 'patient'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 391, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 290, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\main.py", line 759, in get_all_users
+    users = query.offset(skip).limit(limit).all()
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\query.py", line 2704, in all
+    return self._iter().all()  # type: ignore
+           ~~~~~~~~~~~~~~~~^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 1774, in all
+    return self._allrows()
+           ~~~~~~~~~~~~~^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 548, in _allrows
+    rows = self._fetchall_impl()
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 1681, in _fetchall_impl
+    return self._real_result._fetchall_impl()
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 2275, in _fetchall_impl
+    return list(self.iterator)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\loading.py", line 220, in chunks
+    fetch = cursor._raw_all_rows()
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 541, in _raw_all_rows
+    return [make_row(row) for row in rows]
+            ~~~~~~~~^^^^^
+  File "lib/sqlalchemy/cyextension/resultproxy.pyx", line 22, in sqlalchemy.cyextension.resultproxy.BaseRow.__init__
+  File "lib/sqlalchemy/cyextension/resultproxy.pyx", line 79, in sqlalchemy.cyextension.resultproxy._apply_processors
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\sqltypes.py", line 1829, in process
+    value = self._object_value_for_elem(value)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\sqltypes.py", line 1711, in _object_value_for_elem
+    raise LookupError(
+    ...<7 lines>...
+    ) from err
+LookupError: 'patient' is not among the defined enum values. Enum name: userrole. Possible values: PATIENT, PRACTITIONE.., ADMIN
+
+DB CRASH AT 2026-01-21 19:25:16.964847:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\sqltypes.py", line 1709, in _object_value_for_elem
+    return self._object_lookup[elem]  # type: ignore[return-value]
+           ~~~~~~~~~~~~~~~~~~~^^^^^^
+KeyError: 'patient'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 391, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 290, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\main.py", line 759, in get_all_users
+    users = query.offset(skip).limit(limit).all()
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\query.py", line 2704, in all
+    return self._iter().all()  # type: ignore
+           ~~~~~~~~~~~~~~~~^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 1774, in all
+    return self._allrows()
+           ~~~~~~~~~~~~~^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 548, in _allrows
+    rows = self._fetchall_impl()
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 1681, in _fetchall_impl
+    return self._real_result._fetchall_impl()
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 2275, in _fetchall_impl
+    return list(self.iterator)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\loading.py", line 220, in chunks
+    fetch = cursor._raw_all_rows()
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 541, in _raw_all_rows
+    return [make_row(row) for row in rows]
+            ~~~~~~~~^^^^^
+  File "lib/sqlalchemy/cyextension/resultproxy.pyx", line 22, in sqlalchemy.cyextension.resultproxy.BaseRow.__init__
+  File "lib/sqlalchemy/cyextension/resultproxy.pyx", line 79, in sqlalchemy.cyextension.resultproxy._apply_processors
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\sqltypes.py", line 1829, in process
+    value = self._object_value_for_elem(value)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\sqltypes.py", line 1711, in _object_value_for_elem
+    raise LookupError(
+    ...<7 lines>...
+    ) from err
+LookupError: 'patient' is not among the defined enum values. Enum name: userrole. Possible values: PATIENT, PRACTITIONE.., ADMIN
+
+DB CRASH AT 2026-01-21 19:26:01.178692:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such column: practitioners.latitude
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 391, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 290, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\main.py", line 976, in get_clinics_aggregated
+    practitioners = db.query(Practitioner).all()
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\query.py", line 2704, in all
+    return self._iter().all()  # type: ignore
+           ~~~~~~~~~~^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+        params,
+        ^^^^^^^
+        execution_options={"_sa_orm_load_options": self.load_options},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 2249, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        conn,
+        ^^^^^
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+        statement, params or {}, execution_options=execution_options
+    )
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1419, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\elements.py", line 527, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2363, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such column: practitioners.latitude
+[SQL: SELECT practitioners.id AS practitioners_id, practitioners.user_id AS practitioners_user_id, practitioners.license_number AS practitioners_license_number, practitioners.specializations AS practitioners_specializations, practitioners.experience_years AS practitioners_experience_years, practitioners.qualification AS practitioners_qualification, practitioners.clinic_name AS practitioners_clinic_name, practitioners.clinic_address AS practitioners_clinic_address, practitioners.latitude AS practitioners_latitude, practitioners.longitude AS practitioners_longitude, practitioners.consultation_fee AS practitioners_consultation_fee, practitioners.availability_schedule AS practitioners_availability_schedule, practitioners.bio AS practitioners_bio, practitioners.rating AS practitioners_rating, practitioners.total_reviews AS practitioners_total_reviews, practitioners.is_verified AS practitioners_is_verified, practitioners.created_at AS practitioners_created_at, practitioners.updated_at AS practitioners_updated_at 
+FROM practitioners]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+
+DB CRASH AT 2026-01-21 19:26:28.438869:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\sqltypes.py", line 1709, in _object_value_for_elem
+    return self._object_lookup[elem]  # type: ignore[return-value]
+           ~~~~~~~~~~~~~~~~~~~^^^^^^
+KeyError: 'patient'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 391, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 290, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\main.py", line 759, in get_all_users
+    users = query.offset(skip).limit(limit).all()
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\query.py", line 2704, in all
+    return self._iter().all()  # type: ignore
+           ~~~~~~~~~~~~~~~~^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 1774, in all
+    return self._allrows()
+           ~~~~~~~~~~~~~^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 548, in _allrows
+    rows = self._fetchall_impl()
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 1681, in _fetchall_impl
+    return self._real_result._fetchall_impl()
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 2275, in _fetchall_impl
+    return list(self.iterator)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\loading.py", line 220, in chunks
+    fetch = cursor._raw_all_rows()
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 541, in _raw_all_rows
+    return [make_row(row) for row in rows]
+            ~~~~~~~~^^^^^
+  File "lib/sqlalchemy/cyextension/resultproxy.pyx", line 22, in sqlalchemy.cyextension.resultproxy.BaseRow.__init__
+  File "lib/sqlalchemy/cyextension/resultproxy.pyx", line 79, in sqlalchemy.cyextension.resultproxy._apply_processors
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\sqltypes.py", line 1829, in process
+    value = self._object_value_for_elem(value)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\sqltypes.py", line 1711, in _object_value_for_elem
+    raise LookupError(
+    ...<7 lines>...
+    ) from err
+LookupError: 'patient' is not among the defined enum values. Enum name: userrole. Possible values: PATIENT, PRACTITIONE.., ADMIN
+
+DB CRASH AT 2026-01-21 19:27:09.091996:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jws.py", line 269, in _load
+    signing_input, crypto_segment = jwt.rsplit(b".", 1)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: not enough values to unpack (expected 2, got 1)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\auth.py", line 54, in verify_token
+    payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jwt.py", line 222, in decode
+    decoded = self.decode_complete(
+        jwt,
+    ...<8 lines>...
+        leeway=leeway,
+    )
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jwt.py", line 156, in decode_complete
+    decoded = api_jws.decode_complete(
+        jwt,
+    ...<3 lines>...
+        detached_payload=detached_payload,
+    )
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jws.py", line 209, in decode_complete
+    payload, signing_input, header, signature = self._load(jwt)
+                                                ~~~~~~~~~~^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jws.py", line 272, in _load
+    raise DecodeError("Not enough segments") from err
+jwt.exceptions.DecodeError: Not enough segments
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 381, in app
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\dependencies\utils.py", line 615, in solve_dependencies
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\dependencies\utils.py", line 646, in solve_dependencies
+    solved = await run_in_threadpool(call, **solved_result.values)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\starlette\concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py", line 2476, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py", line 967, in run
+    result = context.run(func, *args)
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\auth.py", line 81, in get_current_user
+    token_data = verify_token(credentials.credentials)
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\auth.py", line 68, in verify_token
+    raise HTTPException(
+    ...<3 lines>...
+    )
+fastapi.exceptions.HTTPException: 401: Invalid authentication credentials
+
+DB CRASH AT 2026-01-21 19:28:00.829215:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\sqltypes.py", line 1709, in _object_value_for_elem
+    return self._object_lookup[elem]  # type: ignore[return-value]
+           ~~~~~~~~~~~~~~~~~~~^^^^^^
+KeyError: 'patient'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 391, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 290, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\main.py", line 759, in get_all_users
+    users = query.offset(skip).limit(limit).all()
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\query.py", line 2704, in all
+    return self._iter().all()  # type: ignore
+           ~~~~~~~~~~~~~~~~^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 1774, in all
+    return self._allrows()
+           ~~~~~~~~~~~~~^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 548, in _allrows
+    rows = self._fetchall_impl()
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 1681, in _fetchall_impl
+    return self._real_result._fetchall_impl()
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 2275, in _fetchall_impl
+    return list(self.iterator)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\loading.py", line 220, in chunks
+    fetch = cursor._raw_all_rows()
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 541, in _raw_all_rows
+    return [make_row(row) for row in rows]
+            ~~~~~~~~^^^^^
+  File "lib/sqlalchemy/cyextension/resultproxy.pyx", line 22, in sqlalchemy.cyextension.resultproxy.BaseRow.__init__
+  File "lib/sqlalchemy/cyextension/resultproxy.pyx", line 79, in sqlalchemy.cyextension.resultproxy._apply_processors
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\sqltypes.py", line 1829, in process
+    value = self._object_value_for_elem(value)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\sqltypes.py", line 1711, in _object_value_for_elem
+    raise LookupError(
+    ...<7 lines>...
+    ) from err
+LookupError: 'patient' is not among the defined enum values. Enum name: userrole. Possible values: PATIENT, PRACTITIONE.., ADMIN
+
+DB CRASH AT 2026-01-21 19:29:31.604783:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\sqltypes.py", line 1709, in _object_value_for_elem
+    return self._object_lookup[elem]  # type: ignore[return-value]
+           ~~~~~~~~~~~~~~~~~~~^^^^^^
+KeyError: 'patient'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 391, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 290, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\main.py", line 759, in get_all_users
+    users = query.offset(skip).limit(limit).all()
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\query.py", line 2704, in all
+    return self._iter().all()  # type: ignore
+           ~~~~~~~~~~~~~~~~^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 1774, in all
+    return self._allrows()
+           ~~~~~~~~~~~~~^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 548, in _allrows
+    rows = self._fetchall_impl()
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 1681, in _fetchall_impl
+    return self._real_result._fetchall_impl()
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 2275, in _fetchall_impl
+    return list(self.iterator)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\loading.py", line 220, in chunks
+    fetch = cursor._raw_all_rows()
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 541, in _raw_all_rows
+    return [make_row(row) for row in rows]
+            ~~~~~~~~^^^^^
+  File "lib/sqlalchemy/cyextension/resultproxy.pyx", line 22, in sqlalchemy.cyextension.resultproxy.BaseRow.__init__
+  File "lib/sqlalchemy/cyextension/resultproxy.pyx", line 79, in sqlalchemy.cyextension.resultproxy._apply_processors
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\sqltypes.py", line 1829, in process
+    value = self._object_value_for_elem(value)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\sqltypes.py", line 1711, in _object_value_for_elem
+    raise LookupError(
+    ...<7 lines>...
+    ) from err
+LookupError: 'patient' is not among the defined enum values. Enum name: userrole. Possible values: PATIENT, PRACTITIONE.., ADMIN
+
+DB CRASH AT 2026-01-21 19:32:08.566159:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\sqltypes.py", line 1709, in _object_value_for_elem
+    return self._object_lookup[elem]  # type: ignore[return-value]
+           ~~~~~~~~~~~~~~~~~~~^^^^^^
+KeyError: 'patient'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 391, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 290, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\main.py", line 759, in get_all_users
+    users = query.offset(skip).limit(limit).all()
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\query.py", line 2704, in all
+    return self._iter().all()  # type: ignore
+           ~~~~~~~~~~~~~~~~^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 1774, in all
+    return self._allrows()
+           ~~~~~~~~~~~~~^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 548, in _allrows
+    rows = self._fetchall_impl()
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 1681, in _fetchall_impl
+    return self._real_result._fetchall_impl()
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 2275, in _fetchall_impl
+    return list(self.iterator)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\loading.py", line 220, in chunks
+    fetch = cursor._raw_all_rows()
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\result.py", line 541, in _raw_all_rows
+    return [make_row(row) for row in rows]
+            ~~~~~~~~^^^^^
+  File "lib/sqlalchemy/cyextension/resultproxy.pyx", line 22, in sqlalchemy.cyextension.resultproxy.BaseRow.__init__
+  File "lib/sqlalchemy/cyextension/resultproxy.pyx", line 79, in sqlalchemy.cyextension.resultproxy._apply_processors
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\sqltypes.py", line 1829, in process
+    value = self._object_value_for_elem(value)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\sqltypes.py", line 1711, in _object_value_for_elem
+    raise LookupError(
+    ...<7 lines>...
+    ) from err
+LookupError: 'patient' is not among the defined enum values. Enum name: userrole. Possible values: PATIENT, PRACTITIONE.., ADMIN
+
+DB CRASH AT 2026-01-21 19:33:19.418037:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jws.py", line 269, in _load
+    signing_input, crypto_segment = jwt.rsplit(b".", 1)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: not enough values to unpack (expected 2, got 1)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\auth.py", line 54, in verify_token
+    payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jwt.py", line 222, in decode
+    decoded = self.decode_complete(
+        jwt,
+    ...<8 lines>...
+        leeway=leeway,
+    )
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jwt.py", line 156, in decode_complete
+    decoded = api_jws.decode_complete(
+        jwt,
+    ...<3 lines>...
+        detached_payload=detached_payload,
+    )
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jws.py", line 209, in decode_complete
+    payload, signing_input, header, signature = self._load(jwt)
+                                                ~~~~~~~~~~^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jws.py", line 272, in _load
+    raise DecodeError("Not enough segments") from err
+jwt.exceptions.DecodeError: Not enough segments
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 381, in app
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\dependencies\utils.py", line 615, in solve_dependencies
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\dependencies\utils.py", line 646, in solve_dependencies
+    solved = await run_in_threadpool(call, **solved_result.values)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\starlette\concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py", line 2476, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py", line 967, in run
+    result = context.run(func, *args)
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\auth.py", line 81, in get_current_user
+    token_data = verify_token(credentials.credentials)
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\auth.py", line 68, in verify_token
+    raise HTTPException(
+    ...<3 lines>...
+    )
+fastapi.exceptions.HTTPException: 401: Invalid authentication credentials
+
+DB CRASH AT 2026-01-21 19:33:19.525855:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jws.py", line 269, in _load
+    signing_input, crypto_segment = jwt.rsplit(b".", 1)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: not enough values to unpack (expected 2, got 1)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\auth.py", line 54, in verify_token
+    payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jwt.py", line 222, in decode
+    decoded = self.decode_complete(
+        jwt,
+    ...<8 lines>...
+        leeway=leeway,
+    )
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jwt.py", line 156, in decode_complete
+    decoded = api_jws.decode_complete(
+        jwt,
+    ...<3 lines>...
+        detached_payload=detached_payload,
+    )
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jws.py", line 209, in decode_complete
+    payload, signing_input, header, signature = self._load(jwt)
+                                                ~~~~~~~~~~^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jws.py", line 272, in _load
+    raise DecodeError("Not enough segments") from err
+jwt.exceptions.DecodeError: Not enough segments
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 381, in app
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\dependencies\utils.py", line 615, in solve_dependencies
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\dependencies\utils.py", line 646, in solve_dependencies
+    solved = await run_in_threadpool(call, **solved_result.values)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\starlette\concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py", line 2476, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py", line 967, in run
+    result = context.run(func, *args)
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\auth.py", line 81, in get_current_user
+    token_data = verify_token(credentials.credentials)
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\auth.py", line 68, in verify_token
+    raise HTTPException(
+    ...<3 lines>...
+    )
+fastapi.exceptions.HTTPException: 401: Invalid authentication credentials
+
+DB CRASH AT 2026-01-21 20:04:34.425316:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jws.py", line 269, in _load
+    signing_input, crypto_segment = jwt.rsplit(b".", 1)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: not enough values to unpack (expected 2, got 1)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\auth.py", line 54, in verify_token
+    payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jwt.py", line 222, in decode
+    decoded = self.decode_complete(
+        jwt,
+    ...<8 lines>...
+        leeway=leeway,
+    )
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jwt.py", line 156, in decode_complete
+    decoded = api_jws.decode_complete(
+        jwt,
+    ...<3 lines>...
+        detached_payload=detached_payload,
+    )
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jws.py", line 209, in decode_complete
+    payload, signing_input, header, signature = self._load(jwt)
+                                                ~~~~~~~~~~^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jws.py", line 272, in _load
+    raise DecodeError("Not enough segments") from err
+jwt.exceptions.DecodeError: Not enough segments
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 381, in app
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\dependencies\utils.py", line 615, in solve_dependencies
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\dependencies\utils.py", line 646, in solve_dependencies
+    solved = await run_in_threadpool(call, **solved_result.values)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\starlette\concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py", line 2476, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py", line 967, in run
+    result = context.run(func, *args)
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\auth.py", line 81, in get_current_user
+    token_data = verify_token(credentials.credentials)
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\auth.py", line 68, in verify_token
+    raise HTTPException(
+    ...<3 lines>...
+    )
+fastapi.exceptions.HTTPException: 401: Invalid authentication credentials
+
+DB CRASH AT 2026-01-21 20:04:39.133839:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jws.py", line 269, in _load
+    signing_input, crypto_segment = jwt.rsplit(b".", 1)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: not enough values to unpack (expected 2, got 1)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\auth.py", line 54, in verify_token
+    payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jwt.py", line 222, in decode
+    decoded = self.decode_complete(
+        jwt,
+    ...<8 lines>...
+        leeway=leeway,
+    )
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jwt.py", line 156, in decode_complete
+    decoded = api_jws.decode_complete(
+        jwt,
+    ...<3 lines>...
+        detached_payload=detached_payload,
+    )
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jws.py", line 209, in decode_complete
+    payload, signing_input, header, signature = self._load(jwt)
+                                                ~~~~~~~~~~^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jws.py", line 272, in _load
+    raise DecodeError("Not enough segments") from err
+jwt.exceptions.DecodeError: Not enough segments
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 381, in app
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\dependencies\utils.py", line 615, in solve_dependencies
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\dependencies\utils.py", line 646, in solve_dependencies
+    solved = await run_in_threadpool(call, **solved_result.values)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\starlette\concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py", line 2476, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py", line 967, in run
+    result = context.run(func, *args)
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\auth.py", line 81, in get_current_user
+    token_data = verify_token(credentials.credentials)
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\auth.py", line 68, in verify_token
+    raise HTTPException(
+    ...<3 lines>...
+    )
+fastapi.exceptions.HTTPException: 401: Invalid authentication credentials
+
+DB CRASH AT 2026-01-21 20:04:39.150054:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jws.py", line 269, in _load
+    signing_input, crypto_segment = jwt.rsplit(b".", 1)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: not enough values to unpack (expected 2, got 1)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\auth.py", line 54, in verify_token
+    payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jwt.py", line 222, in decode
+    decoded = self.decode_complete(
+        jwt,
+    ...<8 lines>...
+        leeway=leeway,
+    )
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jwt.py", line 156, in decode_complete
+    decoded = api_jws.decode_complete(
+        jwt,
+    ...<3 lines>...
+        detached_payload=detached_payload,
+    )
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jws.py", line 209, in decode_complete
+    payload, signing_input, header, signature = self._load(jwt)
+                                                ~~~~~~~~~~^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jws.py", line 272, in _load
+    raise DecodeError("Not enough segments") from err
+jwt.exceptions.DecodeError: Not enough segments
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 381, in app
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\dependencies\utils.py", line 615, in solve_dependencies
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\dependencies\utils.py", line 646, in solve_dependencies
+    solved = await run_in_threadpool(call, **solved_result.values)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\starlette\concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py", line 2476, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py", line 967, in run
+    result = context.run(func, *args)
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\auth.py", line 81, in get_current_user
+    token_data = verify_token(credentials.credentials)
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\auth.py", line 68, in verify_token
+    raise HTTPException(
+    ...<3 lines>...
+    )
+fastapi.exceptions.HTTPException: 401: Invalid authentication credentials
+
+DB CRASH AT 2026-01-21 20:11:15.721072:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jws.py", line 269, in _load
+    signing_input, crypto_segment = jwt.rsplit(b".", 1)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: not enough values to unpack (expected 2, got 1)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\auth.py", line 54, in verify_token
+    payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jwt.py", line 222, in decode
+    decoded = self.decode_complete(
+        jwt,
+    ...<8 lines>...
+        leeway=leeway,
+    )
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jwt.py", line 156, in decode_complete
+    decoded = api_jws.decode_complete(
+        jwt,
+    ...<3 lines>...
+        detached_payload=detached_payload,
+    )
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jws.py", line 209, in decode_complete
+    payload, signing_input, header, signature = self._load(jwt)
+                                                ~~~~~~~~~~^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jws.py", line 272, in _load
+    raise DecodeError("Not enough segments") from err
+jwt.exceptions.DecodeError: Not enough segments
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 381, in app
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\dependencies\utils.py", line 615, in solve_dependencies
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\dependencies\utils.py", line 646, in solve_dependencies
+    solved = await run_in_threadpool(call, **solved_result.values)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\starlette\concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py", line 2476, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py", line 967, in run
+    result = context.run(func, *args)
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\auth.py", line 81, in get_current_user
+    token_data = verify_token(credentials.credentials)
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\auth.py", line 68, in verify_token
+    raise HTTPException(
+    ...<3 lines>...
+    )
+fastapi.exceptions.HTTPException: 401: Invalid authentication credentials
+
+DB CRASH AT 2026-01-21 20:11:15.922127:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jws.py", line 269, in _load
+    signing_input, crypto_segment = jwt.rsplit(b".", 1)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: not enough values to unpack (expected 2, got 1)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\auth.py", line 54, in verify_token
+    payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jwt.py", line 222, in decode
+    decoded = self.decode_complete(
+        jwt,
+    ...<8 lines>...
+        leeway=leeway,
+    )
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jwt.py", line 156, in decode_complete
+    decoded = api_jws.decode_complete(
+        jwt,
+    ...<3 lines>...
+        detached_payload=detached_payload,
+    )
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jws.py", line 209, in decode_complete
+    payload, signing_input, header, signature = self._load(jwt)
+                                                ~~~~~~~~~~^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\jwt\api_jws.py", line 272, in _load
+    raise DecodeError("Not enough segments") from err
+jwt.exceptions.DecodeError: Not enough segments
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 381, in app
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\dependencies\utils.py", line 615, in solve_dependencies
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\dependencies\utils.py", line 646, in solve_dependencies
+    solved = await run_in_threadpool(call, **solved_result.values)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\starlette\concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py", line 2476, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py", line 967, in run
+    result = context.run(func, *args)
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\auth.py", line 81, in get_current_user
+    token_data = verify_token(credentials.credentials)
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\auth.py", line 68, in verify_token
+    raise HTTPException(
+    ...<3 lines>...
+    )
+fastapi.exceptions.HTTPException: 401: Invalid authentication credentials
+

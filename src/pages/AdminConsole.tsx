@@ -61,7 +61,7 @@ const AdminConsole = () => {
   useEffect(() => {
     if (selectedTab === 'dashboard') {
       fetchDashboard();
-    } else if (selectedTab === 'practitioners') {
+    } else if (selectedTab === 'users' || selectedTab === 'practitioners') {
       fetchUsers();
     } else if (selectedTab === 'clinics') {
       fetchClinics(); // Fetch real clinics
@@ -74,13 +74,19 @@ const AdminConsole = () => {
 
   const fetchDashboard = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8001/admin/dashboard', {
+      const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+      console.log('[DEBUG] Fetching dashboard with token:', token ? 'Token exists' : 'No token');
+      const response = await fetch('http://localhost:8002/admin/dashboard', {
         headers: { Authorization: `Bearer ${token}` }
       });
+      console.log('[DEBUG] Dashboard response status:', response.status);
       if (response.ok) {
         const data = await response.json();
+        console.log('[DEBUG] Dashboard data received:', data);
         setDashboardStats(data);
+        console.log('[DEBUG] Dashboard stats set successfully');
+      } else {
+        console.error('[DEBUG] Dashboard fetch failed:', response.status, await response.text());
       }
     } catch (error) {
       console.error("Error fetching dashboard:", error);
@@ -89,8 +95,8 @@ const AdminConsole = () => {
 
   const fetchUsers = async () => {
     try {
-      const token = localStorage.getItem('access_token');
-      const response = await fetch('http://localhost:8001/admin/users?limit=100', {
+      const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+      const response = await fetch('http://localhost:8002/admin/users?limit=100', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.ok) {
@@ -104,8 +110,8 @@ const AdminConsole = () => {
 
   const fetchLogs = async () => {
     try {
-      const token = localStorage.getItem('access_token');
-      const response = await fetch('http://localhost:8001/admin/audit-logs', {
+      const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+      const response = await fetch('http://localhost:8002/admin/audit-logs', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.ok) {
@@ -119,8 +125,8 @@ const AdminConsole = () => {
 
   const fetchClinics = async () => {
     try {
-      const token = localStorage.getItem('access_token');
-      const response = await fetch('http://localhost:8001/admin/clinics', {
+      const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+      const response = await fetch('http://localhost:8002/admin/clinics', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.ok) {
@@ -136,8 +142,8 @@ const AdminConsole = () => {
     setLoading(true);
     setError(null);
     try {
-      const token = localStorage.getItem('access_token');
-      const response = await fetch('http://localhost:8001/admin/settings', {
+      const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+      const response = await fetch('http://localhost:8002/admin/settings', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.ok) {
@@ -160,8 +166,8 @@ const AdminConsole = () => {
 
   const updateSetting = async (key: string, newValue: any) => {
     try {
-      const token = localStorage.getItem('access_token');
-      const response = await fetch(`http://localhost:8001/admin/settings?key=${key}`, {
+      const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+      const response = await fetch(`http://localhost:8002/admin/settings?key=${key}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -187,8 +193,8 @@ const AdminConsole = () => {
     if (!window.confirm("Are you sure you want to login as this user?")) return;
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8001/admin/impersonate/${userId}`, {
+      const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+      const response = await fetch(`http://localhost:8002/admin/impersonate/${userId}`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -219,8 +225,8 @@ const AdminConsole = () => {
   const handleDeactivate = async (userId: number) => {
     if (!window.confirm("Are you sure you want to deactivate this user?")) return;
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8001/admin/users/${userId}`, {
+      const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+      const response = await fetch(`http://localhost:8002/admin/users/${userId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });

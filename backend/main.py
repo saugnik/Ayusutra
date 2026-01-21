@@ -72,8 +72,8 @@ app.include_router(subscription_routes.router) # <--- Mount router
 # Configure CORS - Specific origins required when using credentials
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],  # Explicit origins for credentials
+    allow_credentials=True,  # Enable credentials (auth tokens)
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["*"],
     expose_headers=["*"]
