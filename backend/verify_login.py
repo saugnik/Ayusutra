@@ -1,43 +1,30 @@
 
-import sqlite3
-from passlib.context import CryptContext
+import requests
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+BASE_URL = "http://localhost:8002"
+EMAIL = "test_patient_gpu@ayursutra.com"
+PASSWORD = "password123"
 
-def verify_admin_login():
+def test_login():
+    print(f"Attempting login for {EMAIL}...")
     try:
-        conn = sqlite3.connect('ayursutra.db')
-        cursor = conn.cursor()
+        response = requests.post(
+            f"{BASE_URL}/auth/login",
+            json={"email": EMAIL, "password": PASSWORD}
+        )
         
-        email = "admin_demo@test.com"
-        password = "admin123"
-        
-        cursor.execute("SELECT hashed_password, role, is_active FROM users WHERE email=?", (email,))
-        result = cursor.fetchone()
-        
-        if not result:
-            print("User not found!")
-            return
-            
-        stored_hash, role, is_active = result
-        
-        print(f"User found: {email}")
-        print(f"Role: {role}")
-        print(f"Active: {is_active}")
-        
-        if pwd_context.verify(password, stored_hash):
-            print("Password verification: SUCCESS")
+        if response.status_code == 200:
+            print("✓ Login successful!")
+            token = response.json().get('access_token')
+            print(f"Token received: {token[:20]}...")
+            return token
         else:
-            print("Password verification: FAILED")
-            print(f"Hash in DB: {stored_hash}")
-            new_hash = pwd_context.hash(password)
-            print(f"Expected hash for '{password}': {new_hash}")
-            
+            print(f"✗ Login failed: {response.status_code}")
+            print(response.text)
+            return None
     except Exception as e:
         print(f"Error: {e}")
-    finally:
-        if 'conn' in locals():
-            conn.close()
+        return None
 
 if __name__ == "__main__":
-    verify_admin_login()
+    test_login()

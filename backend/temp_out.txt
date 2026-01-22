@@ -1,0 +1,60 @@
+Logging in as test_patient_gpu@ayursutra.com...
+[PASS] Login successful
+
+--- Testing Category: Hydration Agent ---
+Prompt: 'I barely drank any water today, maybe just one glass.'
+[PASS] Response received in 2.59s
+Actions Returned: 1
+Action Types Found: ['create_reminder']
+[PASS] All expected actions present
+
+Response Preview:
+  I can help you with that. I've also suggested some actions for you below.
+
+Detailed Actions:
+  1. Set Water Reminders (create_reminder)
+     Data: {"title": "Drink Water", "message": "Time to hydrate! Drink a glass of water.", "frequency": "daily", "default_times": ["09:00", "11:00", "13:00", "15:00", "17:00", "19:00"], "configurable": true}
+
+--- Testing Category: Weight Loss Agent (Timeline) ---
+Prompt: 'I weigh 95kg and want to lose weight to reach 85kg.'
+[PASS] Response received in 2.07s
+Actions Returned: 0
+Action Types Found: []
+[FAIL] Missing expected action: create_reminder
+[FAIL] Missing expected action: find_practitioner
+
+Response Preview:
+  To provide the best personalized plan, I need a few details: What is your height (in cm)? What is your age?
+
+--- Testing Category: Medical Specialist Agent ---
+Prompt: 'I have been diagnosed with high blood pressure and need help.'
+[PASS] Response received in 9.68s
+Actions Returned: 2
+Action Types Found: ['find_practitioner', 'create_reminder']
+[PASS] All expected actions present
+
+Response Preview:
+  I understand you've been diagnosed with hypertension. That's a common condition, but it can be managed effectively.  
+
+It's important to remember that **I am not a medical professional and cannot prov...
+
+Detailed Actions:
+  1. Consult a Cardiologist (find_practitioner)
+     Data: {"specialization": "Cardiologist"}
+  2. Set Medication/Checkup Reminder (create_reminder)
+     Data: {"title": "Medication / Checkup", "message": "Time for your medication or health check.", "frequency": "daily", "default_times": ["09:00", "21:00"], "configurable": true}
+
+--- Testing Category: General Query (No Actions) ---
+Prompt: 'What are the benefits of Ashwagandha?'
+[PASS] Response received in 2.46s
+Actions Returned: 0
+Action Types Found: []
+[PASS] Correctly returned no actions for general query
+
+Response Preview:
+  I can help you with that. I've also suggested some actions for you below.
+
+
+Total Tests: 4
+Passed: 3
+Failed: 1

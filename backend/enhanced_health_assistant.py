@@ -10,6 +10,10 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime, timedelta
 import google.generativeai as genai
 
+# Import Med-Gemma and Query Classifier
+from med_gemma_service import get_med_gemma_service
+from query_classifier import get_query_classifier
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -359,6 +363,12 @@ class ConversationalHealthAssistant:
         # Initialize Advanced Engines
         self.nutrition_engine = NutritionalEngine()
         self.workout_engine = WorkoutEngine()
+        
+        # Initialize Hybrid AI System
+        self.med_gemma_service = get_med_gemma_service()
+        self.query_classifier = get_query_classifier()
+        
+        logger.info(f"Med-Gemma available: {self.med_gemma_service.is_available()}")
         
     # ... (extract_profile_info and needs_clarification remain same) ...
 
@@ -840,6 +850,12 @@ class ConversationalHealthAssistant:
             if timeline_info:
                 plan_message += f"\n\n{timeline_info}"
 
+        # ===== HYBRID AI ROUTING =====
+        # Classify query to determine which AI model to use
+        query_type, classification_confidence, classification_metadata = self.query_classifier.classify(query)
+        
+        logger.info(f"Query classified as: {query_type} (confidence: {classification_confidence:.2f})")
+        
         # Generate text response using Gemini or Templates
         conversation_context = f"""
         User Profile: {user_profile}
@@ -850,38 +866,72 @@ class ConversationalHealthAssistant:
         """
         
         reply_text = ""
+        ai_model_used = "none"
         
         # Only use Gemini if we don't have a specific plan type, OR to generate the intro message for the plan
         if response_type == 'conversation':
-            if model:
+            # HYBRID ROUTING: Use Med-Gemma for medical queries, Gemini Pro for Ayurvedic/wellness
+            if query_type == 'medical' and self.med_gemma_service.is_available():
+                # Use Med-Gemma for medical queries
                 try:
-                    base_prompt = f"You are a helpful AyurSutra Health Agent. The user asked: '{query}'. "
+                    logger.info("Using Med-Gemma for medical query")
+                    med_response = self.med_gemma_service.generate_medical_response(
+                        query=query,
+                        context=f"Patient conditions: {user_profile.get('medical_conditions', [])}. Dosha: {dosha_analysis}",
+                        conversation_history=conversation_history
+                    )
                     
-                    if detected_condition:
-                         base_prompt += f"IMPORTANT: The user mentioned '{detected_condition}'. Provide helpful dietary and lifestyle advice suitable for this condition properly referencing Ayurveda where applicable. "
-                         base_prompt += "ALWAYS start with a disclaimer: 'I am an AI assistant, not a doctor. Please consult a medical professional for advice.' "
-                         base_prompt += f"Use this info if helpful: {timeline_info}. "
-                    
-                    if timeline_info and not detected_condition: # For weight loss flow
-                        base_prompt += f"Include this timeline information in your response: {timeline_info}. "
-                        base_prompt += "Mention that if they don't see results by then, they should consult a doctor (use the provided action). "
-                    
-                    if actions:
-                        base_prompt += f"You have proposed these actions: {[a['label'] for a in actions]}. Explain why they are good."
-                    
-                    base_prompt += " Provide helpful health advice based on their profile and dosha."
-                    
-                    resp = model.generate_content(base_prompt)
-                    reply_text = resp.text
+                    if med_response.get('response'):
+                        reply_text = med_response['response']
+                        ai_model_used = "med-gemma"
+                        
+                        # Add Ayurvedic context if relevant
+                        if dosha_analysis:
+                            dominant_dosha = max(dosha_analysis, key=dosha_analysis.get)
+                            reply_text += f"\n\n**Ayurvedic Perspective:** Your dominant dosha is {dominant_dosha}. Consider this in your treatment approach."
+                    else:
+                        # Fallback to Gemini if Med-Gemma fails
+                        logger.warning(f"Med-Gemma failed: {med_response.get('error')}. Falling back to Gemini.")
+                        query_type = 'ayurvedic'  # Force Gemini fallback
                 except Exception as e:
-                    logger.error(f"Gemini Error: {e}")
-                    reply_text = "I can help you with that. I've also suggested some actions for you below."
-                    if timeline_info:
-                        reply_text += f"\n\n{timeline_info}"
-            else:
-                 reply_text = "I've analyzed your request. Please check the suggested actions below."
-                 if timeline_info:
-                     reply_text += f"\n\n{timeline_info}"
+                    logger.error(f"Med-Gemma Error: {e}. Falling back to Gemini.")
+                    query_type = 'ayurvedic'  # Force Gemini fallback
+            
+            # Use Gemini Pro for Ayurvedic/wellness queries OR as fallback
+            if query_type in ['ayurvedic', 'general', 'hybrid'] or not reply_text:
+                if model:
+                    try:
+                        logger.info(f"Using Gemini Pro for {query_type} query")
+                        base_prompt = f"You are a helpful AyurSutra Health Agent specializing in Ayurveda and wellness. The user asked: '{query}'. "
+                        
+                        if detected_condition:
+                             base_prompt += f"IMPORTANT: The user mentioned '{detected_condition}'. Provide helpful dietary and lifestyle advice suitable for this condition properly referencing Ayurveda where applicable. "
+                             base_prompt += "ALWAYS start with a disclaimer: 'I am an AI assistant, not a doctor. Please consult a medical professional for advice.' "
+                             base_prompt += f"Use this info if helpful: {timeline_info}. "
+                        
+                        if timeline_info and not detected_condition: # For weight loss flow
+                            base_prompt += f"Include this timeline information in your response: {timeline_info}. "
+                            base_prompt += "Mention that if they don't see results by then, they should consult a doctor (use the provided action). "
+                        
+                        if actions:
+                            base_prompt += f"You have proposed these actions: {[a['label'] for a in actions]}. Explain why they are good."
+                        
+                        base_prompt += " Provide helpful health advice based on their profile and dosha."
+                        
+                        resp = model.generate_content(base_prompt)
+                        reply_text = resp.text
+                        ai_model_used = "gemini-pro"
+                    except Exception as e:
+                        logger.error(f"Gemini Error: {e}")
+                        reply_text = "I can help you with that. I've also suggested some actions for you below."
+                        if timeline_info:
+                            reply_text += f"\n\n{timeline_info}"
+                        ai_model_used = "fallback"
+                else:
+                     reply_text = "I've analyzed your request. Please check the suggested actions below."
+                     if timeline_info:
+                         reply_text += f"\n\n{timeline_info}"
+                     ai_model_used = "template"
         else:
             
             reply_text = plan_message
@@ -893,7 +943,14 @@ class ConversationalHealthAssistant:
             'data': plan_data,
             'actions': actions,
             'conversation_id': "new",
-            'extracted_info': extracted_info if 'extracted_info' in locals() else None
+            'extracted_info': extracted_info if 'extracted_info' in locals() else None,
+            # Hybrid AI metadata
+            'ai_model_used': ai_model_used,
+            'query_classification': {
+                'type': query_type,
+                'confidence': classification_confidence,
+                'metadata': classification_metadata
+            }
         }
 
 

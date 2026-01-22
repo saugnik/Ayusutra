@@ -1990,65 +1990,91 @@ async def chat_with_ai_assistant(
         conversation.messages = []
     conversation.messages.append(user_message)
     
-    # Call AI service
+    # Prepare User Profile for Assistant
+    user_profile = {}
+    if current_user.role == UserRole.PATIENT.value and patient:
+        today = datetime.now()
+        age = None
+        if patient.date_of_birth:
+            age = today.year - patient.date_of_birth.year - ((today.month, today.day) < (patient.date_of_birth.month, patient.date_of_birth.day))
+        
+        user_profile = {
+            "name": current_user.full_name,
+            "age": age,
+            "gender": patient.gender,
+            "medical_history": patient.medical_history,
+            "current_medications": patient.current_medications,
+            "allergies": patient.allergies,
+            "dietary_restrictions": patient.lifestyle_preferences.get('dietary_restrictions', []) if patient.lifestyle_preferences else [],
+            "medical_conditions": patient.medical_history # Simplified mapping
+        }
+
+    # Prepare Conversation History
+    history = [{"role": msg["role"], "content": msg["content"]} for msg in conversation.messages[-10:]]
+
+    # Call Enhanced Health Assistant
     try:
-        gemini_api_key = os.getenv("GEMINI_API_KEY")
-        if not gemini_api_key:
-            # Return graceful error instead of raising exception
-            ai_reply = "I apologize, but the AI service is currently not configured. Please contact support."
-            ai_message = {
-                "role": "assistant",
-                "content": ai_reply,
-                "timestamp": datetime.utcnow().isoformat()
-            }
-            conversation.messages.append(ai_message)
-            db.commit()
-            
-            return AIChatResponse(
-                reply=ai_reply,
-                conversation_id=conversation_id,
-                actions=[]
-            )
-        
-        # Try gemini-pro with v1beta endpoint
-        gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={gemini_api_key}"
-        
-        # Build conversation context
-        context = "You are an Ayurvedic health assistant. Provide helpful, accurate information about Ayurveda, wellness, and natural health practices.\n\n"
-        for msg in conversation.messages[-5:]:  # Last 5 messages for context
-            context += f"{msg['role']}: {msg['content']}\n"
-        
-        
-        response = requests.post(
-            gemini_url,
-            json={
-                "contents": [{
-                    "parts": [{"text": context}]
-                }]
-            },
-            timeout=30
+        # Dummy dosha analysis for now if not in DB
+        dosha_analysis = {"vata": 33, "pitta": 33, "kapha": 34} 
+        if patient and patient.lifestyle_preferences and 'dosha_analysis' in patient.lifestyle_preferences:
+            dosha_analysis = patient.lifestyle_preferences['dosha_analysis']
+
+        response_data = await health_assistant.generate_conversational_response(
+            query=request.message,
+            user_profile=user_profile,
+            conversation_history=history,
+            dosha_analysis=dosha_analysis
         )
+
+        ai_reply = response_data.get('reply') or response_data.get('message', "I'm not sure how to respond to that.")
+        actions = response_data.get('actions', [])
         
-        logger.info(f"Gemini API response status: {response.status_code}")
-        logger.info(f"Gemini API response: {response.text[:500]}")  # Log first 500 chars
+        # Log model usage
+        ai_model = response_data.get('ai_model_used', 'unknown')
+        logger.info(f"AI Response generated using model: {ai_model}")
+
+        # Add AI response to conversation
+        ai_message = {
+            "role": "assistant",
+            "content": ai_reply,
+            "timestamp": datetime.utcnow().isoformat(),
+            "model": ai_model # Store model info in message metadata
+        }
+        conversation.messages.append(ai_message)
+        db.commit()
         
-        if response.status_code == 200:
-            result = response.json()
-            ai_reply = result['candidates'][0]['content']['parts'][0]['text']
-        else:
-            logger.error(f"Gemini API error: {response.status_code} - {response.text}")
-            ai_reply = f"I apologize, but I'm having trouble connecting to the AI service right now. Please try again in a moment. (Error: {response.status_code})"
+        # Convert internal actions to API schema if necessary
+        api_actions = []
+        if actions:
+            from schemas import AgentAction
+            for action in actions:
+                api_actions.append(AgentAction(
+                    type=action['type'],
+                    data=action['data'],
+                    label=action['label']
+                ))
+
+        return AIChatResponse(
+            reply=ai_reply,
+            conversation_id=conversation_id,
+            actions=api_actions
+        )
+
+    except Exception as e:
+        logger.error(f"Enhanced Assistant Error: {str(e)}")
+        import traceback
+        traceback.print_exc()
         
-        # Add AI response
+        # Fallback
+        ai_reply = "I apologize, but I encountered an error processing your request. Please try again."
         ai_message = {
             "role": "assistant",
             "content": ai_reply,
             "timestamp": datetime.utcnow().isoformat()
         }
         conversation.messages.append(ai_message)
-        
         db.commit()
-        
+
         return AIChatResponse(
             reply=ai_reply,
             conversation_id=conversation_id,
@@ -2500,7 +2526,7 @@ if __name__ == "__main__":
     uvicorn.run(
         "main:app",
         host="0.0.0.0",
-        port=8001,
+        port=8002,
         reload=True,
         log_level="info"
     )

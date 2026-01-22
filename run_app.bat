@@ -14,7 +14,7 @@ start "AyurSutra Frontend" cmd /k "npm start"
 
 echo ===========================================
 echo      Servers are starting up!
-echo      Main Backend: http://localhost:8001
+echo      Main Backend: http://localhost:8002
 echo      AI Service:   http://localhost:8000
 echo      Frontend:     http://localhost:3000
 echo ===========================================
