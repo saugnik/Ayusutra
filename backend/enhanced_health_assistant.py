@@ -506,50 +506,33 @@ class ConversationalHealthAssistant:
     
     def needs_clarification(self, query: str, user_profile: Dict[str, Any]) -> Optional[Dict[str, List[str]]]:
         """
-        Determine if clarifying questions are needed
+        Determine if clarifying questions are needed - ONLY for explicit plan requests
         Returns dict with categorized questions, or None if no clarification needed
         """
         query_lower = query.lower()
-        questions = {
-            'basic_info': [],
-            'diet_info': [],
-            'fitness_info': []
-        }
         
-        # Check for diet-related queries
-        if any(word in query_lower for word in ['diet', 'food', 'eat', 'nutrition', 'meal', 'weight']):
-            # Basic info
+        # ONLY ask for clarification if user explicitly requests a detailed plan
+        plan_keywords = ['diet plan', 'meal plan', 'workout plan', 'exercise plan', 'fitness plan', 
+                        'give me a plan', 'create a plan', 'make a plan', 'need a plan']
+        is_explicit_plan_request = any(keyword in query_lower for keyword in plan_keywords)
+        
+        # Skip clarification for general questions, symptoms, or casual queries
+        if not is_explicit_plan_request:
+            return None
+        
+        questions = {'basic_info': []}
+        
+        # Only ask ESSENTIAL missing info for plan generation
+        if not user_profile.get('age'):
+            questions['basic_info'].append("What is your age?")
+        
+        # Only ask weight for diet plans
+        if 'diet' in query_lower or 'meal' in query_lower or 'food' in query_lower:
             if not user_profile.get('weight'):
-                questions['basic_info'].append("What is your current weight (in kg)?")
-            if not user_profile.get('height'):
-                questions['basic_info'].append("What is your height (in cm)?")
-            if not user_profile.get('age'):
-                questions['basic_info'].append("What is your age?")
-            
-            # Diet-specific info
-            # Diet-specific info
-            # Relaxed strictness: Default goal to Maintenance and Activity to Moderate if missing
-            # Only ask permissions/allergies if absolutely needed, or let them refine later.
-            if not user_profile.get('dietary_restrictions'):
-                 # Optional: don't block plan for this, just ask as suggestion or assume none
-                 pass 
-                 # questions['diet_info'].append("Do you have any dietary restrictions?")
+                questions['basic_info'].append("What is your weight (in kg)?")
         
-        # Check for workout-related queries
-        if any(word in query_lower for word in ['workout', 'exercise', 'gym', 'fitness', 'yoga', 'training']):
-            # Fitness-specific info
-            if not user_profile.get('fitness_level'):
-                questions['fitness_info'].append("What is your current fitness level?\n   • Beginner\n   • Intermediate\n   • Advanced")
-            if not user_profile.get('workout_goal'):
-                questions['fitness_info'].append("What is your fitness goal?\n   • Strength\n   • Endurance\n   • Flexibility\n   • Weight loss\n   • General fitness")
-            if not user_profile.get('available_time'):
-                questions['fitness_info'].append("How much time can you dedicate to workouts per day? (in minutes)")
-            if not user_profile.get('equipment_access'):
-                questions['fitness_info'].append("Do you have access to a gym or prefer home workouts?")
-        
-        # Check if any questions were added
-        has_questions = any(questions[cat] for cat in questions)
-        return questions if has_questions else None
+        # Return questions only if we have any
+        return questions if questions['basic_info'] else None
     
     
     def _get_dosha_foods(self, dosha: str) -> Dict[str, List[str]]:
@@ -753,7 +736,122 @@ class ConversationalHealthAssistant:
                          }
                      })
 
-        # 3. Intent: Medical Conditions (Diabetes, Hypertension, etc.)
+        # 3. Intent: Medical Conditions / Disease Detection (ENHANCED)
+        # Comprehensive disease symptom database
+        disease_symptoms = {
+            'fever': {
+                'keywords': ['fever', 'temperature', 'hot', 'burning up'],
+                'immediate': 'Rest in a cool place, drink plenty of fluids (water, ORS), monitor temperature every 2 hours',
+                'ayurvedic': 'Tulsi (Holy Basil) tea, ginger water with honey, light khichdi diet, avoid heavy foods',
+                'specialist': 'General Physician',
+                'severity': 'moderate',
+                'urgency': False
+            },
+            'chest pain': {
+                'keywords': ['chest pain', 'heart pain', 'chest pressure', 'chest tightness'],
+                'immediate': '🚨 EMERGENCY: Call ambulance immediately, sit upright, loosen tight clothing, take aspirin if prescribed',
+                'ayurvedic': 'DO NOT self-treat - seek immediate medical attention',
+                'specialist': 'Cardiologist',
+                'severity': 'critical',
+                'urgency': True
+            },
+            'headache': {
+                'keywords': ['headache', 'head pain', 'migraine', 'head hurts'],
+                'immediate': 'Rest in a dark, quiet room, apply cold compress to forehead, stay hydrated',
+                'ayurvedic': 'Peppermint oil on temples, ginger tea, avoid screen time, practice deep breathing',
+                'specialist': 'Neurologist',
+                'severity': 'low',
+                'urgency': False
+            },
+            'stomach pain': {
+                'keywords': ['stomach pain', 'abdominal pain', 'belly pain', 'stomach ache'],
+                'immediate': 'Avoid solid food temporarily, sip warm water, rest in comfortable position',
+                'ayurvedic': 'Ajwain (carom seeds) water, fennel tea, warm compress on abdomen, avoid spicy/oily foods',
+                'specialist': 'Gastroenterologist',
+                'severity': 'moderate',
+                'urgency': False
+            },
+            'cough': {
+                'keywords': ['cough', 'coughing', 'throat irritation'],
+                'immediate': 'Stay hydrated, avoid cold drinks, use steam inhalation',
+                'ayurvedic': 'Honey with warm water, tulsi tea, ginger-turmeric milk, avoid dairy temporarily',
+                'specialist': 'Pulmonologist',
+                'severity': 'low',
+                'urgency': False
+            },
+            'diabetes': {
+                'keywords': ['diabetes', 'blood sugar', 'high sugar', 'diabetic'],
+                'immediate': 'Monitor blood sugar regularly, maintain meal schedule, stay hydrated',
+                'ayurvedic': 'Bitter gourd juice, fenugreek seeds soaked overnight, cinnamon tea, avoid refined sugars',
+                'specialist': 'Endocrinologist',
+                'severity': 'moderate',
+                'urgency': False
+            },
+            'high blood pressure': {
+                'keywords': ['blood pressure', 'hypertension', 'bp', 'high bp'],
+                'immediate': 'Reduce salt intake, avoid stress, monitor BP daily, take prescribed medications',
+                'ayurvedic': 'Garlic in morning, coconut water, reduce caffeine, practice meditation and pranayama',
+                'specialist': 'Cardiologist',
+                'severity': 'moderate',
+                'urgency': False
+            }
+        }
+        
+        # Detect symptoms in query
+        detected_diseases = []
+        for disease, info in disease_symptoms.items():
+            if any(keyword in query_lower for keyword in info['keywords']):
+                detected_diseases.append((disease, info))
+        
+        # If disease detected, provide comprehensive response
+        if detected_diseases:
+            for disease, info in detected_diseases:
+                # Build multi-step response
+                disease_response = f"I understand you're experiencing {disease}. Here's what you should do:\n\n"
+                
+                if info['urgency']:
+                    disease_response += f"⚠️ **URGENT - {info['severity'].upper()} SEVERITY**\n\n"
+                
+                disease_response += f"**Immediate Action:**\n{info['immediate']}\n\n"
+                disease_response += f"**Ayurvedic Remedy:**\n{info['ayurvedic']}\n\n"
+                
+                if info['urgency']:
+                    disease_response += "🚨 **Please seek immediate medical attention - this is a medical emergency!**\n\n"
+                else:
+                    disease_response += "💡 **Recommendation:** If symptoms persist for more than 2-3 days or worsen, please consult a specialist.\n\n"
+                
+                # Add to timeline_info for inclusion in final response
+                if timeline_info:
+                    timeline_info += "\n\n" + disease_response
+                else:
+                    timeline_info = disease_response
+                
+                # Add specialist consultation action
+                actions.append({
+                    "type": "find_practitioner",
+                    "label": f"Consult {info['specialist']}" + (" URGENTLY" if info['urgency'] else ""),
+                    "data": {
+                        "specialization": info['specialist'],
+                        "urgent": info['urgency'],
+                        "condition": disease
+                    }
+                })
+                
+                # Add medication reminder for chronic conditions
+                if disease in ['diabetes', 'high blood pressure']:
+                    actions.append({
+                        "type": "create_reminder",
+                        "label": "Set Medication Reminder",
+                        "data": {
+                            "title": f"{disease.title()} Medication",
+                            "message": "Time to take your prescribed medication",
+                            "frequency": "daily",
+                            "default_times": ["09:00", "21:00"],
+                            "configurable": True
+                        }
+                    })
+        
+        # 3b. Legacy Medical Conditions (Keep for backward compatibility)
         # Broader catch for specific conditions
         medical_conditions = {
             'diabetes': {'specialist': 'Endocrinologist', 'avoid': 'Sugar, refined carbs, sugary drinks', 'favor': 'Leafy greens, whole grains, fiber-rich foods'},
@@ -826,13 +924,51 @@ class ConversationalHealthAssistant:
             response_type = 'diet_plan'
             try:
                 plan_data = self.generate_diet_plan(user_profile, dosha_analysis)
-                plan_message = f"Here is a fully personalized diet plan based on your profile (BMI, Dosha, Conditions)."
+                plan_message = f"Here is your personalized diet plan:\n\n"
+                plan_message += f"**Target Calories:** {plan_data['target_calories']} kcal/day\n"
+                plan_message += f"**Macros:** Protein: {plan_data['macros']['protein']}, Carbs: {plan_data['macros']['carbs']}, Fats: {plan_data['macros']['fats']}\n\n"
+                plan_message += "**Daily Meal Plan:**\n"
+                for meal_name, meal_details in plan_data['meal_plan'].items():
+                    plan_message += f"\n**{meal_name.title()}** ({meal_details['calories']} kcal)\n"
+                    plan_message += f"  {meal_details['suggestion']}\n"
+                
+                plan_message += f"\n**Foods to Favor:** {', '.join(plan_data['foods_to_favor'][:5])}\n"
+                plan_message += f"**Foods to Avoid:** {', '.join(plan_data['foods_to_avoid'][:5])}\n"
+                
                 if plan_data['conditions_considered']:
-                    plan_message += f"\n\n**Considered Conditions:** {', '.join(plan_data['conditions_considered'])}"
+                    plan_message += f"\n*Tailored for: {', '.join(plan_data['conditions_considered'])}*"
+                
+                # Add structured meal reminders with specific times
+                meal_times = {
+                    'breakfast': '08:00',
+                    'lunch': '13:00',
+                    'dinner': '19:00',
+                    'snacks': '16:00'
+                }
+                
+                meal_reminders = []
+                for meal_name, meal_details in plan_data['meal_plan'].items():
+                    if meal_name in meal_times:
+                        meal_reminders.append({
+                            "title": f"{meal_name.title()} Time",
+                            "time": meal_times[meal_name],
+                            "message": meal_details['suggestion'][:100]  # Truncate long messages
+                        })
+                
+                actions.append({
+                    "type": "create_reminder",
+                    "label": "Schedule Daily Meal Reminders",
+                    "data": {
+                        "reminders": meal_reminders,
+                        "frequency": "daily",
+                        "configurable": True
+                    }
+                })
+                
             except Exception as e:
                 logger.error(f"Diet Plan Generation Error: {e}")
-                response_type = 'conversation' # Fallback
-                plan_message = f"I struggled to generate a detailed diet plan (Error: {str(e)}). However, generic advice is: Eat fresh, whole foods suitable for your body type."
+                response_type = 'conversation'
+                plan_message = f"I struggled to generate a detailed diet plan. However, focus on fresh, whole foods suitable for your body type."
 
             if timeline_info:
                 plan_message += f"\n\n{timeline_info}"
@@ -841,11 +977,20 @@ class ConversationalHealthAssistant:
             response_type = 'workout_plan'
             try:
                 plan_data = self.generate_workout_plan(user_profile, dosha_analysis)
-                plan_message = f"Here is a personalized workout routine tailored to your goals and dosha."
+                plan_message = f"Here is your personalized workout routine:\n\n"
+                plan_message += f"**Workout Style:** {plan_data['workout_style']}\n\n"
+                plan_message += "**Weekly Schedule:**\n"
+                for day, workout in plan_data['weekly_plan'].items():
+                    plan_message += f"\n**{day}:**\n  {workout}\n"
+                
+                if 'yoga_sequence' in plan_data:
+                    plan_message += "\n**Recommended Yoga Sequence:**\n"
+                    for pose in plan_data['yoga_sequence'][:5]:
+                        plan_message += f"  • {pose}\n"
             except Exception as e:
                 logger.error(f"Workout Plan Generation Error: {e}")
                 response_type = 'conversation'
-                plan_message = "I couldn't generate the full table, but keeping active is key!"
+                plan_message = "I couldn't generate the full workout plan, but staying active is key! Try 30 minutes of moderate exercise daily."
                 
             if timeline_info:
                 plan_message += f"\n\n{timeline_info}"
@@ -933,8 +1078,18 @@ class ConversationalHealthAssistant:
                          reply_text += f"\n\n{timeline_info}"
                      ai_model_used = "template"
         else:
-            
+            # For plan types, use the plan_message as the base reply
             reply_text = plan_message
+            
+            # Optionally add AI commentary if Gemini is available
+            if model and response_type in ['diet_plan', 'workout_plan']:
+                try:
+                    commentary_prompt = f"The user requested a {response_type.replace('_', ' ')}. I've generated a detailed plan. Add a brief encouraging message (2-3 sentences) about following this plan."
+                    resp = model.generate_content(commentary_prompt)
+                    reply_text = resp.text + "\n\n" + reply_text
+                    ai_model_used = "gemini-pro"
+                except:
+                    pass  # Use plan_message as-is
 
         return {
             'type': response_type,

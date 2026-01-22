@@ -11258,3 +11258,166 @@ Traceback (most recent call last):
     raise validation_error
 fastapi.exceptions.RequestValidationError: [{'type': 'missing', 'loc': ('body', 'question'), 'msg': 'Field required', 'input': {'query': 'Give me one short, inspiring Ayurvedic daily health tip (max 2 sentences) for general well-being. Do not use markdown.'}}]
 
+DB CRASH AT 2026-01-22 19:32:44.649886:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 432, in app
+    raise validation_error
+fastapi.exceptions.RequestValidationError: [{'type': 'missing', 'loc': ('body', 'question'), 'msg': 'Field required', 'input': {'query': 'Give me one short, inspiring Ayurvedic daily health tip (max 2 sentences) for general well-being. Do not use markdown.'}}]
+
+DB CRASH AT 2026-01-22 19:32:45.011037:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 432, in app
+    raise validation_error
+fastapi.exceptions.RequestValidationError: [{'type': 'missing', 'loc': ('body', 'question'), 'msg': 'Field required', 'input': {'query': 'Give me one short, inspiring Ayurvedic daily health tip (max 2 sentences) for general well-being. Do not use markdown.'}}]
+
+DB CRASH AT 2026-01-22 19:40:54.347098:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 432, in app
+    raise validation_error
+fastapi.exceptions.RequestValidationError: [{'type': 'missing', 'loc': ('body', 'question'), 'msg': 'Field required', 'input': {'query': 'Give me one short, inspiring Ayurvedic daily health tip (max 2 sentences) for general well-being. Do not use markdown.'}}]
+
+DB CRASH AT 2026-01-22 19:40:54.329010:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 432, in app
+    raise validation_error
+fastapi.exceptions.RequestValidationError: [{'type': 'missing', 'loc': ('body', 'question'), 'msg': 'Field required', 'input': {'query': 'Give me one short, inspiring Ayurvedic daily health tip (max 2 sentences) for general well-being. Do not use markdown.'}}]
+
+DB CRASH AT 2026-01-22 19:46:38.862450:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 432, in app
+    raise validation_error
+fastapi.exceptions.RequestValidationError: [{'type': 'missing', 'loc': ('body', 'question'), 'msg': 'Field required', 'input': {'query': 'Give me one short, inspiring Ayurvedic daily health tip (max 2 sentences) for general well-being. Do not use markdown.'}}]
+
+DB CRASH AT 2026-01-22 20:04:58.222164:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 391, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 290, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\main.py", line 217, in login
+    raise HTTPException(
+    ...<2 lines>...
+    )
+fastapi.exceptions.HTTPException: 401: Invalid email or password
+
+DB CRASH AT 2026-01-22 20:06:14.625537:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 391, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 290, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\main.py", line 217, in login
+    raise HTTPException(
+    ...<2 lines>...
+    )
+fastapi.exceptions.HTTPException: 401: Invalid email or password
+
+DB CRASH AT 2026-01-22 20:06:54.418916:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 391, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 290, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\main.py", line 217, in login
+    raise HTTPException(
+    ...<2 lines>...
+    )
+fastapi.exceptions.HTTPException: 401: Invalid email or password
+
+DB CRASH AT 2026-01-22 20:08:18.994125:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 432, in app
+    raise validation_error
+fastapi.exceptions.RequestValidationError: [{'type': 'missing', 'loc': ('body', 'question'), 'msg': 'Field required', 'input': {'query': 'Give me one short, inspiring Ayurvedic daily health tip (max 2 sentences) for general well-being. Do not use markdown.'}}]
+
+DB CRASH AT 2026-01-22 20:08:19.803709:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 432, in app
+    raise validation_error
+fastapi.exceptions.RequestValidationError: [{'type': 'missing', 'loc': ('body', 'question'), 'msg': 'Field required', 'input': {'query': 'Give me one short, inspiring Ayurvedic daily health tip (max 2 sentences) for general well-being. Do not use markdown.'}}]
+
