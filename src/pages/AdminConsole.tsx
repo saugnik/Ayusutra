@@ -483,7 +483,7 @@ const AdminConsole = () => {
               onClick={() => setStatusFilter('active')}
               className={`px-3 py-1 text-sm rounded-md transition-colors ${statusFilter === 'active' ? 'bg-green-50 text-green-700 font-medium' : 'text-gray-500 hover:text-gray-700'}`}
             >
-              Active
+              Online Now
             </button>
           </div>
           <button className="btn-primary px-4 py-2">
@@ -528,7 +528,19 @@ const AdminConsole = () => {
             </thead>
             <tbody>
               {users
-                .filter(u => userFilter === 'all' || u.role === userFilter)
+                .filter(u => userFilter === 'all' || u.role.toLowerCase() === userFilter.toLowerCase())
+                .filter(u => {
+                  if (statusFilter === 'all') return true;
+                  if (statusFilter === 'active') {
+                    // Check if user logged in within last 15 minutes (currently online)
+                    if (!u.last_login) return false;
+                    const lastLogin = new Date(u.last_login);
+                    const now = new Date();
+                    const diffMinutes = (now.getTime() - lastLogin.getTime()) / (1000 * 60);
+                    return diffMinutes <= 15; // Online if logged in within last 15 minutes
+                  }
+                  return true;
+                })
                 .map((user) => (
                   <tr key={user.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
                     <td className="py-4 px-4">
@@ -539,8 +551,8 @@ const AdminConsole = () => {
                     </td>
                     <td className="py-4 px-4">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium uppercase
-                          ${user.role === 'admin' ? 'bg-purple-100 text-purple-600' :
-                          user.role === 'practitioner' ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'}
+                          ${user.role.toLowerCase() === 'admin' ? 'bg-purple-100 text-purple-600' :
+                          user.role.toLowerCase() === 'practitioner' ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'}
                       `}>
                         {user.role}
                       </span>
@@ -575,11 +587,23 @@ const AdminConsole = () => {
                     </td>
                   </tr>
                 ))}
-              {users.filter(u => (userFilter === 'all' || u.role === userFilter) && (statusFilter === 'all' || (statusFilter === 'active' && u.is_active))).length === 0 && (
-                <tr>
-                  <td colSpan={6} className="text-center py-8 text-gray-500">No users found.</td>
-                </tr>
-              )}
+              {users.filter(u => {
+                const roleMatch = userFilter === 'all' || u.role.toLowerCase() === userFilter.toLowerCase();
+                if (!roleMatch) return false;
+                if (statusFilter === 'all') return true;
+                if (statusFilter === 'active') {
+                  if (!u.last_login) return false;
+                  const lastLogin = new Date(u.last_login);
+                  const now = new Date();
+                  const diffMinutes = (now.getTime() - lastLogin.getTime()) / (1000 * 60);
+                  return diffMinutes <= 15;
+                }
+                return true;
+              }).length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="text-center py-8 text-gray-500">No users found.</td>
+                  </tr>
+                )}
             </tbody>
           </table>
         </div>

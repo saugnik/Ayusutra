@@ -738,26 +738,55 @@ async def get_all_users(
     db: Session = Depends(get_db)
 ):
     """Get all users with optional filtering"""
-    query = db.query(User)
-    
-    if role:
-        target_role = None
-        if role.lower() == "patient": target_role = UserRole.PATIENT
-        elif role.lower() == "practitioner": target_role = UserRole.PRACTITIONER
-        elif role.lower() == "admin": target_role = UserRole.ADMIN
+    try:
+        query = db.query(User)
         
-        if target_role:
-            query = query.filter(User.role == target_role)
+        if role:
+            target_role = None
+            if role.lower() == "patient": target_role = UserRole.PATIENT
+            elif role.lower() == "practitioner": target_role = UserRole.PRACTITIONER
+            elif role.lower() == "admin": target_role = UserRole.ADMIN
             
-    if search:
-        search_filter = f"%{search}%"
-        query = query.filter(
-            (User.full_name.ilike(search_filter)) | 
-            (User.email.ilike(search_filter))
-        )
-        
-    users = query.offset(skip).limit(limit).all()
-    return users
+            if target_role:
+                query = query.filter(User.role == target_role)
+                
+        if search:
+            search_filter = f"%{search}%"
+            query = query.filter(
+                (User.full_name.ilike(search_filter)) | 
+                (User.email.ilike(search_filter))
+            )
+            
+        users = query.offset(skip).limit(limit).all()
+        return users
+    except Exception as e:
+        # Fallback to raw SQL if ORM fails (e.g., enum mismatch)
+        print(f"ORM query failed, using raw SQL fallback: {e}")
+        try:
+            sql = text("""
+                SELECT id, full_name, email, role, phone, is_active, is_verified, created_at, last_login
+                FROM users
+                ORDER BY created_at DESC
+                LIMIT :limit OFFSET :skip
+            """)
+            result = db.execute(sql, {"limit": limit, "skip": skip})
+            users_list = []
+            for row in result:
+                users_list.append({
+                    "id": row[0],
+                    "full_name": row[1],
+                    "email": row[2],
+                    "role": str(row[3]).upper() if row[3] else "UNKNOWN",  # Convert to uppercase
+                    "phone": row[4],
+                    "is_active": bool(row[5]),
+                    "is_verified": bool(row[6]),
+                    "created_at": str(row[7]) if row[7] else None,
+                    "last_login": str(row[8]) if row[8] else None
+                })
+            return users_list
+        except Exception as e2:
+            print(f"Raw SQL fallback also failed: {e2}")
+            raise HTTPException(status_code=500, detail=f"Failed to fetch users: {str(e)}")
 
 @app.get("/admin/users/{user_id}", response_model=AdminUserResponse)
 async def get_user_details(

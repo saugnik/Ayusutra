@@ -1,0 +1,17 @@
+{
+  "total_appointments": 0,
+  "upcoming_appointments": 0,
+  "completed_sessions": 0,
+  "active_treatments": 0,
+  "patient_satisfaction": 0.0,
+  "avg_session_duration": 0.0,
+  "total_patients": 12,
+  "today_appointments": 0,
+  "pending_reports": 0,
+  "success_rate": 0.0,
+  "avg_session_rating": 0.0,
+  "total_users": 37,
+  "total_practitioners": 21,
+  "recent_registrations": 18,
+  "system_health": 98.5
+}
