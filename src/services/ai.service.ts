@@ -13,15 +13,18 @@ export interface AIResponse {
 }
 
 const aiService = {
-    /**
-     * Send a query to the AyurGenius AI Health Assistant
-     */
+
     askQuestion: async (query: string, conversation_id?: string): Promise<AIResponse> => {
         try {
-            const response = await apiClient.post('/health/ask-ai', {
-                query,
-                conversation_id
-            });
+            const payload: { question: string; context?: { conversation_id: string } } = {
+                question: query
+            };
+
+            if (conversation_id) {
+                payload.context = { conversation_id };
+            }
+
+            const response = await apiClient.post('/health/ask-ai', payload);
             return response.data;
         } catch (error) {
             console.error('Error asking AI:', error);

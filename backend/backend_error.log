@@ -11421,3 +11421,409 @@ Traceback (most recent call last):
     raise validation_error
 fastapi.exceptions.RequestValidationError: [{'type': 'missing', 'loc': ('body', 'question'), 'msg': 'Field required', 'input': {'query': 'Give me one short, inspiring Ayurvedic daily health tip (max 2 sentences) for general well-being. Do not use markdown.'}}]
 
+DB CRASH AT 2026-01-23 05:40:05.635443:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 391, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 290, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\main.py", line 217, in login
+    raise HTTPException(
+    ...<2 lines>...
+    )
+fastapi.exceptions.HTTPException: 401: Invalid email or password
+
+DB CRASH AT 2026-01-23 05:40:26.656241:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 432, in app
+    raise validation_error
+fastapi.exceptions.RequestValidationError: [{'type': 'missing', 'loc': ('body', 'question'), 'msg': 'Field required', 'input': {'query': 'Give me one short, inspiring Ayurvedic daily health tip (max 2 sentences) for general well-being. Do not use markdown.'}}]
+
+DB CRASH AT 2026-01-23 05:40:26.752689:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 432, in app
+    raise validation_error
+fastapi.exceptions.RequestValidationError: [{'type': 'missing', 'loc': ('body', 'question'), 'msg': 'Field required', 'input': {'query': 'Give me one short, inspiring Ayurvedic daily health tip (max 2 sentences) for general well-being. Do not use markdown.'}}]
+
+DB CRASH AT 2026-01-23 06:00:46.473942:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 391, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 290, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\main.py", line 217, in login
+    raise HTTPException(
+    ...<2 lines>...
+    )
+fastapi.exceptions.HTTPException: 401: Invalid email or password
+
+DB CRASH AT 2026-01-23 06:01:03.874093:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 432, in app
+    raise validation_error
+fastapi.exceptions.RequestValidationError: [{'type': 'missing', 'loc': ('body', 'question'), 'msg': 'Field required', 'input': {'query': 'Give me one short, inspiring Ayurvedic daily health tip (max 2 sentences) for general well-being. Do not use markdown.'}}]
+
+DB CRASH AT 2026-01-23 06:01:04.197978:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 432, in app
+    raise validation_error
+fastapi.exceptions.RequestValidationError: [{'type': 'missing', 'loc': ('body', 'question'), 'msg': 'Field required', 'input': {'query': 'Give me one short, inspiring Ayurvedic daily health tip (max 2 sentences) for general well-being. Do not use markdown.'}}]
+
+DB CRASH AT 2026-01-23 06:25:42.977617:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 432, in app
+    raise validation_error
+fastapi.exceptions.RequestValidationError: [{'type': 'missing', 'loc': ('body', 'question'), 'msg': 'Field required', 'input': {'query': 'Give me one short, inspiring Ayurvedic daily health tip (max 2 sentences) for general well-being. Do not use markdown.'}}]
+
+DB CRASH AT 2026-01-23 06:25:43.440388:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 432, in app
+    raise validation_error
+fastapi.exceptions.RequestValidationError: [{'type': 'missing', 'loc': ('body', 'question'), 'msg': 'Field required', 'input': {'query': 'Give me one short, inspiring Ayurvedic daily health tip (max 2 sentences) for general well-being. Do not use markdown.'}}]
+
+DB CRASH AT 2026-01-23 08:03:02.932722:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 432, in app
+    raise validation_error
+fastapi.exceptions.RequestValidationError: [{'type': 'missing', 'loc': ('body', 'question'), 'msg': 'Field required', 'input': {'query': 'Give me one short, inspiring Ayurvedic daily health tip (max 2 sentences) for general well-being. Do not use markdown.'}}]
+
+DB CRASH AT 2026-01-23 08:17:18.574993:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 432, in app
+    raise validation_error
+fastapi.exceptions.RequestValidationError: [{'type': 'missing', 'loc': ('body', 'question'), 'msg': 'Field required', 'input': {'query': 'Give me one short, inspiring Ayurvedic daily health tip (max 2 sentences) for general well-being. Do not use markdown.'}}]
+
+DB CRASH AT 2026-01-23 08:21:32.942326:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 432, in app
+    raise validation_error
+fastapi.exceptions.RequestValidationError: [{'type': 'missing', 'loc': ('body', 'question'), 'msg': 'Field required', 'input': {'query': 'Give me one short, inspiring Ayurvedic daily health tip (max 2 sentences) for general well-being. Do not use markdown.'}}]
+
+DB CRASH AT 2026-01-23 08:21:33.356192:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 432, in app
+    raise validation_error
+fastapi.exceptions.RequestValidationError: [{'type': 'missing', 'loc': ('body', 'question'), 'msg': 'Field required', 'input': {'query': 'Give me one short, inspiring Ayurvedic daily health tip (max 2 sentences) for general well-being. Do not use markdown.'}}]
+
+DB CRASH AT 2026-01-23 08:35:00.460973:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 432, in app
+    raise validation_error
+fastapi.exceptions.RequestValidationError: [{'type': 'missing', 'loc': ('body', 'question'), 'msg': 'Field required', 'input': {'query': 'Give me one short, inspiring Ayurvedic daily health tip (max 2 sentences) for general well-being. Do not use markdown.'}}]
+
+DB CRASH AT 2026-01-23 08:36:26.636349:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 432, in app
+    raise validation_error
+fastapi.exceptions.RequestValidationError: [{'type': 'missing', 'loc': ('body', 'question'), 'msg': 'Field required', 'input': {'query': 'Give me one short, inspiring Ayurvedic daily health tip (max 2 sentences) for general well-being. Do not use markdown.'}}]
+
+DB CRASH AT 2026-01-23 09:26:53.552245:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 432, in app
+    raise validation_error
+fastapi.exceptions.RequestValidationError: [{'type': 'missing', 'loc': ('body', 'question'), 'msg': 'Field required', 'input': {'query': 'Give me one short, inspiring Ayurvedic daily health tip (max 2 sentences) for general well-being. Do not use markdown.'}}]
+
+DB CRASH AT 2026-01-23 09:50:16.373697:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 432, in app
+    raise validation_error
+fastapi.exceptions.RequestValidationError: [{'type': 'missing', 'loc': ('body', 'question'), 'msg': 'Field required', 'input': {'query': 'Give me one short, inspiring Ayurvedic daily health tip (max 2 sentences) for general well-being. Do not use markdown.'}}]
+
+DB CRASH AT 2026-01-23 09:56:25.715959:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 391, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 290, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\main.py", line 1766, in delete_health_conversation
+    raise HTTPException(status_code=404, detail="Conversation not found")
+fastapi.exceptions.HTTPException: 404: Conversation not found
+
+DB CRASH AT 2026-01-23 09:59:00.505961:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.IntegrityError: UNIQUE constraint failed: practitioners.license_number
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\main.py", line 190, in register
+    db.commit()
+    ~~~~~~~~~^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 2030, in commit
+    trans.commit(_to_root=True)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "<string>", line 2, in commit
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 1311, in commit
+    self._prepare_impl()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "<string>", line 2, in _prepare_impl
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 1286, in _prepare_impl
+    self.session.flush()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4331, in flush
+    self._flush(objects)
+    ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4466, in _flush
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\util\langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4427, in _flush
+    flush_context.execute()
+    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\unitofwork.py", line 466, in execute
+    rec.execute(self)
+    ~~~~~~~~~~~^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\unitofwork.py", line 642, in execute
+    util.preloaded.orm_persistence.save_obj(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self.mapper,
+        ^^^^^^^^^^^^
+        uow.states_for_mapper_hierarchy(self.mapper, False, False),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        uow,
+        ^^^^
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\persistence.py", line 93, in save_obj
+    _emit_insert_statements(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        base_mapper,
+        ^^^^^^^^^^^^
+    ...<3 lines>...
+        insert,
+        ^^^^^^^
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\persistence.py", line 1233, in _emit_insert_statements
+    result = connection.execute(
+        statement,
+        params,
+        execution_options=execution_options,
+    )
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1419, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\elements.py", line 527, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2363, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.IntegrityError: (sqlite3.IntegrityError) UNIQUE constraint failed: practitioners.license_number
+[SQL: INSERT INTO practitioners (user_id, license_number, specializations, experience_years, qualification, clinic_name, clinic_address, latitude, longitude, consultation_fee, availability_schedule, bio, rating, total_reviews, is_verified, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id, created_at]
+[parameters: (41, '236512', '["panchakarma"]', 0, None, 'new', None, None, None, 0.0, '{}', None, 0.0, 0, 0, None)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 391, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 290, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\main.py", line 205, in register
+    raise HTTPException(
+    ...<2 lines>...
+    )
+fastapi.exceptions.HTTPException: 500: Registration failed: (sqlite3.IntegrityError) UNIQUE constraint failed: practitioners.license_number
+[SQL: INSERT INTO practitioners (user_id, license_number, specializations, experience_years, qualification, clinic_name, clinic_address, latitude, longitude, consultation_fee, availability_schedule, bio, rating, total_reviews, is_verified, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id, created_at]
+[parameters: (41, '236512', '["panchakarma"]', 0, None, 'new', None, None, None, 0.0, '{}', None, 0.0, 0, 0, None)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+

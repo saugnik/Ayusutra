@@ -33,7 +33,7 @@ export const SubscriptionProvider: React.FC<{ children: ReactNode }> = ({ childr
     const [subscription, setSubscription] = useState<Subscription | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
-    const API_URL = 'http://localhost:8001';
+    const API_URL = 'http://localhost:8002';
 
     const getAuthHeader = () => {
         const token = localStorage.getItem('access_token');

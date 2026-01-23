@@ -11,6 +11,7 @@ import SimpleAuthPage from './pages/SimpleAuthPage';
 import PatientDashboard from './pages/PatientDashboard';
 import MySessions from './pages/MySessions';
 import Progress from './pages/Progress';
+import Notifications from './pages/Notifications';
 import PractitionerDashboard from './pages/PractitionerDashboard';
 import Scheduler from './pages/Scheduler';
 import TherapyRoom from './pages/TherapyRoom';
@@ -36,6 +37,7 @@ function App() {
                 <Route path="/patient" element={<PatientDashboard />} />
                 <Route path="/my-sessions" element={<MySessions />} />
                 <Route path="/progress" element={<Progress />} />
+                <Route path="/notifications" element={<Notifications />} />
                 <Route path="/practitioner" element={<PractitionerDashboard />} />
                 <Route path="/scheduler" element={<Scheduler />} />
                 <Route path="/therapy-room/:sessionId" element={<TherapyRoom />} />

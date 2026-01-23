@@ -81,7 +81,7 @@ const PatientDashboard = () => {
 
   const handleViewAllActivities = () => {
     setIsNotificationOpen(false);
-    navigate('/progress'); // Redirect to Progress for now as it has history/activity
+    navigate('/notifications'); // Navigate to dedicated notifications page
   };
 
   const handleCheckItem = (itemId: string) => {

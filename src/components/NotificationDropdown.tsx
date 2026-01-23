@@ -1,4 +1,5 @@
 import React, { useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Bell, X, Check, AlertCircle, Info, Calendar } from 'lucide-react';
 
 export interface Notification {
@@ -31,6 +32,11 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
+            const target = event.target as HTMLElement;
+            // Don't close if clicking the "View All Activity" link
+            if (target.closest('a[href="/notifications"]')) {
+                return;
+            }
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
                 onClose();
             }
@@ -99,65 +105,87 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                     </div>
                 ) : (
                     <div className="divide-y divide-gray-200 dark:divide-gray-700">
-                        {notifications.map((notification) => (
-                            <div
-                                key={notification.id}
-                                onClick={() => onMarkAsRead(notification.id)}
-                                className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors ${!notification.read ? 'bg-blue-50 dark:bg-blue-900/20' : ''
-                                    }`}
-                            >
-                                <div className="flex gap-3">
-                                    {!notification.read && (
-                                        <div className="flex-shrink-0 w-2 h-2 bg-blue-600 rounded-full mt-2" />
-                                    )}
+                        {notifications.map((notification) => {
+                            // Determine if this is a message notification and extract sender name
+                            const isMessageNotification = notification.title.toLowerCase().includes('message') ||
+                                notification.type === 'appointment';
+                            const senderName = notification.title.includes('from')
+                                ? notification.title.split('from')[1]?.trim()
+                                : notification.title;
 
-                                    <div className="flex-shrink-0 mt-1">
-                                        {getIcon(notification.type)}
+                            return (
+                                <div
+                                    key={notification.id}
+                                    onClick={() => {
+                                        onMarkAsRead(notification.id);
+                                        // If it's a message notification, redirect to chat
+                                        if (isMessageNotification) {
+                                            window.location.href = '/chat-support';
+                                        }
+                                    }}
+                                    className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors ${!notification.read ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+                                        }`}
+                                >
+                                    <div className="flex gap-3">
+                                        {!notification.read && (
+                                            <div className="flex-shrink-0 w-2 h-2 bg-blue-600 rounded-full mt-2" />
+                                        )}
+
+                                        <div className="flex-shrink-0 mt-1">
+                                            {getIcon(notification.type)}
+                                        </div>
+
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                                {notification.title}
+                                            </p>
+                                            {/* Only show message preview for non-message notifications */}
+                                            {!isMessageNotification && (
+                                                <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                                                    {notification.message}
+                                                </p>
+                                            )}
+                                            {isMessageNotification && (
+                                                <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                                                    Click to view message
+                                                </p>
+                                            )}
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                {notification.time}
+                                            </p>
+                                        </div>
+
+                                        {!notification.read && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onMarkAsRead(notification.id);
+                                                }}
+                                                className="flex-shrink-0 h-6 w-6 rounded-full flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                                                title="Mark as read"
+                                            >
+                                                <Check className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+                                            </button>
+                                        )}
                                     </div>
-
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-medium text-gray-900 dark:text-white">
-                                            {notification.title}
-                                        </p>
-                                        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                                            {notification.message}
-                                        </p>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                            {notification.time}
-                                        </p>
-                                    </div>
-
-                                    {!notification.read && (
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                onMarkAsRead(notification.id);
-                                            }}
-                                            className="flex-shrink-0 h-6 w-6 rounded-full flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                                            title="Mark as read"
-                                        >
-                                            <Check className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-                                        </button>
-                                    )}
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
             </div>
 
             {/* Footer */}
             <div className="p-3 border-t border-gray-200 dark:border-gray-700">
-                <button
+                <Link
+                    to="/notifications"
                     onClick={(e) => {
                         e.stopPropagation();
-                        e.preventDefault();
-                        onViewAll();
                     }}
-                    className="w-full text-center text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                    className="block w-full text-center text-sm text-blue-600 dark:text-blue-400 hover:underline font-medium py-2 cursor-pointer"
                 >
                     View All Activity
-                </button>
+                </Link>
             </div>
         </div>
     );

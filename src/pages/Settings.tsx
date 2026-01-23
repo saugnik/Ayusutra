@@ -29,6 +29,7 @@ import {
 import api from '../services/api';
 import Sidebar from '../components/Sidebar';
 import NotificationDropdown, { Notification } from '../components/NotificationDropdown';
+import HealthAgentChat from '../components/HealthAgentChat';
 
 interface UserProfile {
   full_name: string;
@@ -576,7 +577,7 @@ const Settings = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0">
         <main className="flex-1 overflow-y-auto focus:outline-none scroll-smooth">
           <div className="py-8 px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto">
@@ -693,6 +694,7 @@ const Settings = () => {
           </div>
         )}
       </div>
+      <HealthAgentChat />
     </div>
   );
 };
