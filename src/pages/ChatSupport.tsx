@@ -9,6 +9,7 @@ import {
     Heart,
     Home,
     Loader,
+    MapPin,
     MessageCircle,
     Send,
     Settings,
@@ -206,6 +207,7 @@ const ChatSupport = () => {
         { icon: Calendar, label: 'Appointments', path: '/appointments' },
         { icon: Activity, label: 'My Progress', path: '/progress' },
         { icon: Heart, label: 'Health Support', path: '/health-support' },
+        { icon: MapPin, label: 'Find Clinics', path: '/map' },
         { icon: MessageCircle, label: 'Chat Support', path: '/chat-support' },
         { icon: Settings, label: 'Settings', path: '/settings' }
     ];

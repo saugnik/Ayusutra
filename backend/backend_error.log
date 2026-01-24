@@ -11827,3 +11827,118 @@ fastapi.exceptions.HTTPException: 500: Registration failed: (sqlite3.IntegrityEr
 [parameters: (41, '236512', '["panchakarma"]', 0, None, 'new', None, None, None, 0.0, '{}', None, 0.0, 0, 0, None)]
 (Background on this error at: https://sqlalche.me/e/20/gkpj)
 
+DB CRASH AT 2026-01-24 08:36:07.510671:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 381, in app
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\dependencies\utils.py", line 615, in solve_dependencies
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\dependencies\utils.py", line 644, in solve_dependencies
+    solved = await call(**solved_result.values)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\security\http.py", line 309, in __call__
+    raise HTTPException(
+        status_code=HTTP_403_FORBIDDEN, detail="Not authenticated"
+    )
+fastapi.exceptions.HTTPException: 403: Not authenticated
+
+DB CRASH AT 2026-01-24 09:11:53.894969:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 432, in app
+    raise validation_error
+fastapi.exceptions.RequestValidationError: [{'type': 'missing', 'loc': ('body', 'email'), 'msg': 'Field required', 'input': {'username': 'patient@test.com', 'password': 'patient123'}}]
+
+DB CRASH AT 2026-01-24 09:13:02.173378:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 391, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 290, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\main.py", line 217, in login
+    raise HTTPException(
+    ...<2 lines>...
+    )
+fastapi.exceptions.HTTPException: 401: Invalid email or password
+
+DB CRASH AT 2026-01-24 10:08:49.415471:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 391, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 290, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\main.py", line 217, in login
+    raise HTTPException(
+    ...<2 lines>...
+    )
+fastapi.exceptions.HTTPException: 401: Invalid email or password
+
+DB CRASH AT 2026-01-24 10:09:30.744689:
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\database.py", line 39, in get_db
+    yield db
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\concurrency.py", line 27, in contextmanager_in_threadpool
+    yield await run_in_threadpool(cm.__enter__)
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 391, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\LENOVO\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 290, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\OneDrive\Desktop\Ayursutra\backend\main.py", line 217, in login
+    raise HTTPException(
+    ...<2 lines>...
+    )
+fastapi.exceptions.HTTPException: 401: Invalid email or password
+

@@ -60,6 +60,7 @@ const MySessions = () => {
         { icon: Calendar, label: 'My Sessions', path: '/my-sessions' },
         { icon: TrendingUp, label: 'Progress', path: '/progress' },
         { icon: FileText, label: 'Health Records', path: '/health-support' },
+        { icon: MapPin, label: 'Find Clinics', path: '/map' },
         { icon: MessageCircle, label: 'Chat Support', path: '/chat-support' },
         { icon: Settings, label: 'Settings', path: '/settings' }
     ];

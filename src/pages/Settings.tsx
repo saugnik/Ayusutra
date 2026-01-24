@@ -24,6 +24,7 @@ import {
   Calendar,
   Activity,
   MessageCircle,
+  MapPin,
   Settings as SettingsIcon
 } from 'lucide-react';
 import api from '../services/api';
@@ -564,6 +565,7 @@ const Settings = () => {
         { icon: Calendar, label: 'My Sessions', path: '/my-sessions' },
         { icon: Activity, label: 'My Progress', path: '/progress' },
         { icon: MessageCircle, label: 'Health Support', path: '/health-support' },
+        { icon: MapPin, label: 'Find Clinics', path: '/map' },
         { icon: SettingsIcon, label: 'Settings', path: '/settings' }
       ];
     }

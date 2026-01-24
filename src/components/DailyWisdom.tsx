@@ -1,12 +1,45 @@
 import React, { useState, useEffect } from 'react';
 import { Sun, RefreshCw, Sparkles } from 'lucide-react';
-import aiService from '../services/ai.service';
+
+// Array of Ayurvedic wisdom quotes
+const AYURVEDIC_WISDOM = [
+    "Start your day with warm water and lemon to kindle your digestive fire (Agni) and cleanse your system.",
+    "Practice oil pulling with sesame or coconut oil each morning to promote oral health and remove toxins.",
+    "Eat your largest meal at midday when your digestive fire is strongest, and keep dinner light.",
+    "Massage warm oil into your skin before bathing (Abhyanga) to nourish tissues and calm the nervous system.",
+    "Go to bed before 10 PM to align with nature's rhythms and ensure restorative sleep.",
+    "Drink warm water throughout the day to maintain digestive fire and remove toxins from your body.",
+    "Practice mindful eating: sit down, chew thoroughly, and avoid distractions during meals.",
+    "Include all six tastes (sweet, sour, salty, bitter, pungent, astringent) in your daily diet for balance.",
+    "Wake up during Brahma Muhurta (before sunrise) for enhanced mental clarity and spiritual connection.",
+    "Use spices like turmeric, ginger, and cumin in your cooking to support digestion and reduce inflammation.",
+    "Practice Pranayama (breathing exercises) daily to balance your doshas and calm your mind.",
+    "Eat seasonal and local foods to stay in harmony with nature's cycles.",
+    "Avoid ice-cold drinks and foods as they dampen your digestive fire.",
+    "Take a short walk after meals to aid digestion and prevent sluggishness.",
+    "Practice tongue scraping each morning to remove toxins accumulated overnight.",
+    "Meditate daily to calm the mind, reduce stress, and enhance overall well-being.",
+    "Use ghee (clarified butter) in moderation to nourish tissues and support healthy digestion.",
+    "Avoid eating when emotionally upset, as it can disturb digestion and create toxins.",
+    "Sleep on your left side to support digestion and promote better sleep quality.",
+    "Practice gratitude before meals to enhance digestion and appreciation for nourishment.",
+    "Drink herbal teas like ginger, tulsi, or fennel to support various bodily functions.",
+    "Maintain a regular daily routine (Dinacharya) to keep your doshas in balance.",
+    "Use natural, chemical-free products for skincare and personal hygiene.",
+    "Practice yoga asanas suited to your constitution for physical and mental balance.",
+    "Avoid overeating; leave one-third of your stomach empty to aid digestion.",
+    "Use copper vessels for storing water overnight to benefit from its antimicrobial properties.",
+    "Take time for self-care and rest; it's essential for maintaining health and vitality.",
+    "Connect with nature daily through walks, gardening, or simply being outdoors.",
+    "Use Triphala powder before bed to support gentle detoxification and regular elimination.",
+    "Practice self-massage with warm oil to ground Vata, cool Pitta, or stimulate Kapha."
+];
 
 const DailyWisdom = () => {
     const [tip, setTip] = useState<string>('');
     const [loading, setLoading] = useState(true);
 
-    const fetchTip = async (force: boolean = false) => {
+    const fetchTip = (force: boolean = false) => {
         setLoading(true);
 
         // Check local storage first (cache for 24h)
@@ -22,23 +55,19 @@ const DailyWisdom = () => {
             }
         }
 
-        try {
-            const response = await aiService.askQuestion(
-                "Give me one short, inspiring Ayurvedic daily health tip (max 2 sentences) for general well-being. Do not use markdown."
-            );
+        // Get wisdom based on day of year for consistent daily rotation
+        const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
+        const wisdomIndex = dayOfYear % AYURVEDIC_WISDOM.length;
+        const newTip = AYURVEDIC_WISDOM[wisdomIndex];
 
-            const newTip = response.answer.text;
-            setTip(newTip);
+        setTip(newTip);
 
-            localStorage.setItem('daily_wisdom', JSON.stringify({
-                date: today,
-                text: newTip
-            }));
-        } catch (error) {
-            setTip("Drink warm water throughout the day to maintain digestive fire (Agni) and remove toxins.");
-        } finally {
-            setLoading(false);
-        }
+        localStorage.setItem('daily_wisdom', JSON.stringify({
+            date: today,
+            text: newTip
+        }));
+
+        setLoading(false);
     };
 
     useEffect(() => {
