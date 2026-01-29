@@ -1,0 +1,171 @@
+SQLAlchemy version: 2.0.45
+Database connected.
+
+--- Raw SQL Check ---
+Email: dr.sharma@ayursutra.com, Raw Role: 'PRACTITIONER'
+Email: saugnikaich123@gmail.com, Raw Role: 'PATIENT'
+Email: patient@test.com, Raw Role: 'PATIENT'
+Email: rajesh.k@email.com, Raw Role: 'PATIENT'
+Email: patient2@test.com, Raw Role: 'PATIENT'
+
+--- ORM Check ---
+ID: 1, Email: dr.sharma@ayursutra.com
+  Role raw: UserRole.PRACTITIONER
+  Role type: <enum 'UserRole'>
+  Role value: practitioner
+ID: 2, Email: saugnikaich123@gmail.com
+  Role raw: UserRole.PATIENT
+  Role type: <enum 'UserRole'>
+  Role value: patient
+ID: 3, Email: patient@test.com
+  Role raw: UserRole.PATIENT
+  Role type: <enum 'UserRole'>
+  Role value: patient
+ID: 4, Email: rajesh.k@email.com
+  Role raw: UserRole.PATIENT
+  Role type: <enum 'UserRole'>
+  Role value: patient
+ID: 5, Email: patient2@test.com
+  Role raw: UserRole.PATIENT
+  Role type: <enum 'UserRole'>
+  Role value: patient
+ID: 6, Email: patient_123@test.com
+  Role raw: UserRole.PATIENT
+  Role type: <enum 'UserRole'>
+  Role value: patient
+ID: 7, Email: patient_1234@test.com
+  Role raw: UserRole.PRACTITIONER
+  Role type: <enum 'UserRole'>
+  Role value: practitioner
+ID: 8, Email: newnew123@gmail.com
+  Role raw: UserRole.PRACTITIONER
+  Role type: <enum 'UserRole'>
+  Role value: practitioner
+ID: 9, Email: mm3@gmail.com
+  Role raw: UserRole.ADMIN
+  Role type: <enum 'UserRole'>
+  Role value: admin
+ID: 11, Email: saunewww@gmail.com
+  Role raw: UserRole.PRACTITIONER
+  Role type: <enum 'UserRole'>
+  Role value: practitioner
+ID: 12, Email: comprehensive.test@example.com
+  Role raw: UserRole.PATIENT
+  Role type: <enum 'UserRole'>
+  Role value: patient
+ID: 13, Email: saugni@gmail.com
+  Role raw: UserRole.PRACTITIONER
+  Role type: <enum 'UserRole'>
+  Role value: practitioner
+ID: 14, Email: sah123@gmail.com
+  Role raw: UserRole.PRACTITIONER
+  Role type: <enum 'UserRole'>
+  Role value: practitioner
+ID: 15, Email: sah1@gmail.com
+  Role raw: UserRole.PRACTITIONER
+  Role type: <enum 'UserRole'>
+  Role value: practitioner
+ID: 16, Email: sah1@gm.com
+  Role raw: UserRole.PRACTITIONER
+  Role type: <enum 'UserRole'>
+  Role value: practitioner
+ID: 17, Email: unique_2@example.com
+  Role raw: UserRole.PRACTITIONER
+  Role type: <enum 'UserRole'>
+  Role value: practitioner
+ID: 18, Email: test_prac_9356@example.com
+  Role raw: UserRole.PRACTITIONER
+  Role type: <enum 'UserRole'>
+  Role value: practitioner
+ID: 19, Email: test_prac_7282@example.com
+  Role raw: UserRole.PRACTITIONER
+  Role type: <enum 'UserRole'>
+  Role value: practitioner
+ID: 20, Email: test_prac_7303@example.com
+  Role raw: UserRole.PRACTITIONER
+  Role type: <enum 'UserRole'>
+  Role value: practitioner
+ID: 21, Email: quicktest@example.com
+  Role raw: UserRole.PATIENT
+  Role type: <enum 'UserRole'>
+  Role value: patient
+ID: 22, Email: p_flow_1768449014@test.com
+  Role raw: UserRole.PATIENT
+  Role type: <enum 'UserRole'>
+  Role value: patient
+ID: 23, Email: p_flow_1768449354@test.com
+  Role raw: UserRole.PATIENT
+  Role type: <enum 'UserRole'>
+  Role value: patient
+ID: 24, Email: dr_flow_1768449014@test.com
+  Role raw: UserRole.PRACTITIONER
+  Role type: <enum 'UserRole'>
+  Role value: practitioner
+ID: 25, Email: dr_flow_1768449354@test.com
+  Role raw: UserRole.PRACTITIONER
+  Role type: <enum 'UserRole'>
+  Role value: practitioner
+ID: 26, Email: p_flow_1768449412@test.com
+  Role raw: UserRole.PATIENT
+  Role type: <enum 'UserRole'>
+  Role value: patient
+ID: 27, Email: dr_flow_1768449412@test.com
+  Role raw: UserRole.PRACTITIONER
+  Role type: <enum 'UserRole'>
+  Role value: practitioner
+ID: 28, Email: debug_timeout_1768453659@test.com
+  Role raw: UserRole.PRACTITIONER
+  Role type: <enum 'UserRole'>
+  Role value: practitioner
+ID: 29, Email: debug_timeout_1768453701@test.com
+  Role raw: UserRole.PRACTITIONER
+  Role type: <enum 'UserRole'>
+  Role value: practitioner
+ID: 30, Email: debug_timeout_1768453723@test.com
+  Role raw: UserRole.PRACTITIONER
+  Role type: <enum 'UserRole'>
+  Role value: practitioner
+ID: 31, Email: debug_timeout_1768453783@test.com
+  Role raw: UserRole.PRACTITIONER
+  Role type: <enum 'UserRole'>
+  Role value: practitioner
+ID: 32, Email: debug_timeout_1768453806@test.com
+  Role raw: UserRole.PRACTITIONER
+  Role type: <enum 'UserRole'>
+  Role value: practitioner
+ID: 33, Email: debug_timeout_1768453913@test.com
+  Role raw: UserRole.PRACTITIONER
+  Role type: <enum 'UserRole'>
+  Role value: practitioner
+ID: 34, Email: patient_403_test@test.com
+  Role raw: UserRole.PATIENT
+  Role type: <enum 'UserRole'>
+  Role value: patient
+ID: 35, Email: testagent1@example.com
+  Role raw: UserRole.PATIENT
+  Role type: <enum 'UserRole'>
+  Role value: patient
+ID: 36, Email: test_patient@ayursutra.com
+  Role raw: UserRole.PATIENT
+  Role type: <enum 'UserRole'>
+  Role value: patient
+ID: 37, Email: admin@ayursutra.com
+  Role raw: UserRole.ADMIN
+  Role type: <enum 'UserRole'>
+  Role value: admin
+ID: 38, Email: admin_new@ayursutra.com
+  Role raw: UserRole.ADMIN
+  Role type: <enum 'UserRole'>
+  Role value: admin
+ID: 39, Email: test_patient_gpu@ayursutra.com
+  Role raw: UserRole.PATIENT
+  Role type: <enum 'UserRole'>
+  Role value: patient
+ID: 40, Email: saugnikaich@gmail.com
+  Role raw: UserRole.PATIENT
+  Role type: <enum 'UserRole'>
+  Role value: patient
+ID: 41, Email: ttt@rrr.com
+  Role raw: UserRole.PRACTITIONER
+  Role type: <enum 'UserRole'>
+  Role value: practitioner
